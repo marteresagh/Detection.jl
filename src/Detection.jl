@@ -1,5 +1,5 @@
 module Detection
 
-greet() = print("Hello World!")
+    using Common
 
 end # module
