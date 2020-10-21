@@ -1,0 +1,7 @@
+name = "Detection"
+uuid = "8c84d9e7-d1c0-4468-ae63-6fb7f0258952"
+authors = ["marteresagh <marteresa28@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Common = "1e120bc2-2bd2-483a-9663-793997b3971f"
