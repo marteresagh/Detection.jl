@@ -82,25 +82,21 @@ function remove_points!(currents_inds::Array{Int64,1},R::Array{Int64,1})
 	setdiff!(currents_inds,R)
 end
 
-function get_hyperplane_from_random_init_point(PC::PointCloud, par::Float64, threshold::Float64)
-
-	#PC.dimension == dimensione in cui sto lavorando
-	# Init
-	listPoint = Array{Float64,2}[]
+function get_hyperplane_from_random_init_point(PC::PointCloud, currents_inds::Array{Int64,1}, par::Float64, threshold::Float64)
 
 	# firt sample
-	index, hyperplane = seedpoint(PC.points,threshold)
+	index, hyperplane, randindex = seedpoint(PC.points[:,currents_inds], threshold)
 	R = [index]
 
 	# search cluster
 	hyperplane = search_cluster(PC, R, hyperplane, par, threshold)
 
-	return hyperplane
+	return hyperplane, currents_inds[randindex]
 end
 
 
-function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64, threshold::Float64)
-	kdtree = KDTree(PC.points)
+function search_cluster(PC::PointCloud, currents_inds::Array{Int64,1}, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64, threshold::Float64)
+	kdtree = KDTree(PC.points[:,currents_inds])
 	seeds = copy(R)
 	visitedverts = copy(R)
 	listPoint = nothing
