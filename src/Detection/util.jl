@@ -15,7 +15,7 @@ function PlaneDetection(
 	failed::Int64,
 	maxnumplanetofind::Int64)
 
-	thres = 2*params.cloudMetadata.spacing
+	thres = 2*params.cloudMetadata.spacing/2^params.LOD
 	if params.rnd
 		planes = PlanesDetectionRandom(params.pointcloud, params.par, thres, params.failed)
 	else
@@ -29,6 +29,7 @@ function PlaneDetection(
 	savePlanesDataset(planes)
 
 end
+
 
 
 function init(
