@@ -78,36 +78,11 @@ end
 
 
 # ==============  SAVES DONE
-
-function savePlanesDataset(planes::Array{PlaneDataset,1},params::PlaneDetectionParams)
-	for i in 1:length(planes)
-		filename = params.output+"/plane$i"
-		savePlane(plane.plane,filename+."txt")
-		savePoints(plane.points,filename*".las")
-	end
-end
-
-function savePlane(plane::Plane, filename::String)
-	# plane2json(plane::Plane, filename::String)  JSON FORMAT
-	io = open(filename,"w")
-	write(io, "$(plane.normal[1]) $(plane.normal[2]) $(plane.normal[3]) ")
-	write(io, "$(plane.centroid[1]) $(plane.centroid[2]) $(plane.centroid[3])")
-	close(io)
-end
-
-function savePoints(pc::PointCloud, filename::String)
-	points = pc.points
-	rgbs = pc.rgbs
-	npoints = pc.n
-
-	aabb = Lar.boundingbox(pc.points)
-	header = PointClouds.newHeader(aabb,"PLANEDETECTION",SIZE_DATARECORD,npoints)
-
-	pvec = Array{LasPoint,1}(undef,npoints)
-	for i in 1:npoints
-		point = PointClouds.newPointRecord(points[:,i], rgbs[:,i], LasIO.LasPoint2, header)
-		pvec[i] = point
-	end
-
-	LasIO.save(filename,header,pvec)
-end
+#
+# function savePlanesDataset(planes::Array{PlaneDataset,1},params::PlaneDetectionParams)
+# 	for i in 1:length(planes)
+# 		filename = params.output+"/plane$i"
+# 		savePlane(plane.plane,filename+."txt")
+# 		savePoints(plane.points,filename*".las")
+# 	end
+# end

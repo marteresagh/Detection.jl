@@ -4,6 +4,10 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 	#PCcurrent = deepcopy(PC)
 	#gia da qui ho creato PC con punti 2D o 3D
 	#prova ad usare solo gli indici
+	# if PC.dimension == 2
+	# 	elimina vertici doppi
+	# end
+
 	currents_inds = [1:PC.n_points...]
 	hyperplanes = Hyperplanes[]
 	hyperplane = nothing
@@ -19,7 +23,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 
 		while !found && f < failed
 			try
-				hyperplane,R = get_hyperplane(PC, currents_inds, par, threshold)
+				hyperplane,R = get_hyperplane_from_random_init_point(PC, currents_inds, par, threshold)
 
 				validity(hyperplane, N) #validity gli passo l'iperpiano e
 				found = true
@@ -75,11 +79,12 @@ function deletePoints!(PC::PointCloud, todel::PointCloud)
 end
 
 function remove_points!(currents_inds::Array{Int64,1},R::Array{Int64,1})
-
+	setdiff!(currents_inds,R)
 end
 
-function detection_from_random_init_point(PC::PointCloud, par::Float64,threshold::Float64)
+function get_hyperplane_from_random_init_point(PC::PointCloud, par::Float64, threshold::Float64)
 
+	#PC.dimension == dimensione in cui sto lavorando
 	# Init
 	listPoint = Array{Float64,2}[]
 
@@ -90,7 +95,7 @@ function detection_from_random_init_point(PC::PointCloud, par::Float64,threshold
 	# search cluster
 	hyperplane = search_cluster(PC, R, hyperplane, par, threshold)
 
-	return LineDataset(pcOnLine, lineDetected)
+	return hyperplane
 end
 
 
@@ -124,7 +129,8 @@ function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplan
 	return Hyperplane(PointCloud(length(R), listPoint, listRGB), direction, centroid),R
 end
 
-
+"""
+"""
 function get_hyperplane(PC, currents_inds, par, threshold)
 	if PC.dimension == 3
 		return random_plane(PC, currents_inds, par, threshold)

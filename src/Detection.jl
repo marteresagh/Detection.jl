@@ -1,6 +1,7 @@
 module Detection
 
     using Common
+    using FileManager
 
     include("struct.jl")
 
