@@ -13,7 +13,7 @@ end
 remove from inds the i-th element described in todel
 """
 function remove_points!(inds::Array{Int64,1},todel::Array{Int64,1})
-	setdiff!(inds,inds[todel])
+	setdiff!(inds,todel)
 end
 
 """
