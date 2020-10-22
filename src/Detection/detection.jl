@@ -11,7 +11,8 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 	currents_inds = [1:PC.n_points...]
 	hyperplanes = Hyperplanes[]
 	hyperplane = nothing
-
+	R = nothing
+	
 	f = 0
 	i = 0
 
@@ -23,7 +24,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 
 		while !found && f < failed
 			try
-				hyperplane,R = get_hyperplane_from_random_init_point(PC, currents_inds, par, threshold)
+				hyperplane, R = get_hyperplane_from_random_init_point(PC, currents_inds, par, threshold)
 				validity(hyperplane, N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
 			catch y
@@ -58,7 +59,7 @@ function get_hyperplane_from_random_init_point(PC::PointCloud, currents_inds::Ar
 	# search cluster
 	hyperplane = search_cluster(PC, R, hyperplane, par, threshold)
 
-	return hyperplane, currents_inds[randindex]
+	return hyperplane, currents_inds[R]
 end
 
 
