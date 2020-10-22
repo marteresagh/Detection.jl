@@ -21,4 +21,4 @@ N = 50
 hyperplanes, current_inds = Detection.iterate_random_detection(PC2D, par, threshold, failed, N)
 
 visual = Visualization.mesh_lines(hyperplanes)
-GL.VIEW([Visualization.points_color_from_rgb(PC2D.coordinates,PC2D.rgbs,0.4),visual...])
+GL.VIEW([visual...])
