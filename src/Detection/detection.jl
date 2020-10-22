@@ -58,7 +58,7 @@ function get_hyperplane_from_random_init_point(PC::PointCloud, currents_inds::Ar
 	R = [index]
 
 	# search cluster
-	hyperplane = search_cluster(PC, R, hyperplane, par, threshold)
+	hyperplane = search_cluster(PC,currents_inds, R, hyperplane, par, threshold)
 
 	return hyperplane, currents_inds[R]
 end
@@ -76,15 +76,15 @@ function search_cluster(PC::PointCloud, currents_inds::Array{Int64,1}, R::Array{
 		N = Common.neighborhood(kdtree,PC,seeds,visitedverts,threshold)
 
 		for i in N
-			p = PC.points[:,currents_inds[i]]
-			if Common.residual(p,hyperplane) < par
+			p = points[:,i]
+			if Common.residual(hyperplane)(p) < par
 				push!(tmp,i)
 				push!(R,i)
 			end
 			push!(visitedverts,i)
 		end
 
-		listPoint = PC.points[:,currents_inds[R]]
+		listPoint = points[:,R]
 		direction, centroid = Common.LinearFit(listPoint)
 		hyperplane.direction = direction
 		hyperplane.centroid = centroid
@@ -92,5 +92,5 @@ function search_cluster(PC::PointCloud, currents_inds::Array{Int64,1}, R::Array{
 	end
 
 	listRGB = PC.rgbs[:,currents_inds[R]]
-	return Hyperplane(PointCloud(listPoint, listRGB), direction, centroid), currents_inds[R]
+	return Hyperplane(PointCloud(listPoint, listRGB), hyperplane.direction, hyperplane.centroid)
 end

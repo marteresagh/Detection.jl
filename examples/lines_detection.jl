@@ -18,9 +18,9 @@ par = 0.1
 threshold = 2*0.03
 failed = 400
 N = 50
-hyperplanes, currents_inds = Detection.iterate_random_detection(PC2D, par, threshold, failed, N)
-line = Detection.get_hyperplane_from_random_init_point(PC2D, [1:PC2D.n_points...], par, threshold)
+#hyperplanes, currents_inds = Detection.iterate_random_detection(PC2D, par, threshold, failed, N)
+line,i = Detection.get_hyperplane_from_random_init_point(PC2D, [1:PC2D.n_points...], par, threshold)
 
 GL.VIEW([
-    mesh_line([line])
+    Visualization.mesh_lines([line])
 ])

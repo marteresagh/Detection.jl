@@ -24,5 +24,5 @@ function seedpoint(PC::PointCloud, currents_inds::Array{Int64,1}, threshold::Flo
 	min_index = minresidual(seeds,hyperplane)
 	seed = idxseeds[min_index]
 
-	return currents_ind[seed], hyperplane, randindex
+	return currents_inds[seed], hyperplane, randindex
 end
