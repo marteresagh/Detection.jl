@@ -1,81 +1,33 @@
-function PlaneDetection(
-	source::String,
-	output::String,
-	LOD::Int64,
-	par::Float64,
-	fileseedpoints::String,
-	failed::Int64,
-	maxnumplanetofind::Int64)
+"""
+Delete points from model.
+"""
+function deletePoints!(PC::PointCloud, todel::PointCloud)
+	tokeep = setdiff([1:PC.n_points...],[Common.matchcolumn(todel.coordinates[:,i], PC.coordinates) for i in 1:todel.n_points])
 
-	params = PointClouds.init(source::String,
-	output::String,
-	LOD::Int64,
-	par::Float64,
-	fileseedpoints::String,
-	failed::Int64,
-	maxnumplanetofind::Int64)
-
-	thres = 2*params.cloudMetadata.spacing/2^params.LOD
-	if params.rnd
-		planes = PlanesDetectionRandom(params.pointcloud, params.par, thres, params.failed)
-	else
-		planes = PlaneDataset[]
-		for data in params.seedPoints
-			plane = PlaneDetectionFromGivenPoints(params.pointcloud, data, params.par, thres)
-			push!(planes,plane)
-		end
-	end
-
-	savePlanesDataset(planes)
-
+	coordinates = PC.coordinates[:,tokeep]
+	rgbs = PC.rgbs[:,tokeep]
+	PC = PointCloud(coordinates,rgbs)
 end
 
-
-
-function init(
-	source::String,
-	output::String,
-	LOD::Int64,
-	par::Float64,
-	fileseedpoints::Union{Nothing,String},
-	failed::Int64,
-	maxnumplanetofind::Int64)
-
-
-	#input
-	allfile = PointClouds.filelevel(source,LOD,false)
-	cloudMetadata = PointClouds.cloud_metadata(source)
-	pointcloud,_,rgb = PointClouds.loadlas(allfile...)
-
-	#output
-	if !isdir(output)
-		mkdir(output)
-	end
-
-	#seedpoints
-	rnd = true
-	seedPoints = Lar.Points
-	if !isnothing(fileseedpoints)
-		rnd = false
-		seedPoints = seedPointsFromFile(fileseedpoints)
-	end
-
-
-	return PlaneDetectionParams(
-	pointcloud,
-	cloudMetadata,
-	UInt16(LOD),
-	par,
-	output,
-	rnd,
-	seedPoints,
-	random,
-	UInt16(failed)
-	)
+function remove_points!(currents_inds::Array{Int64,1},R::Array{Int64,1})
+	setdiff!(currents_inds,R)
 end
 
-
-
+"""
+Assert the detected hyperplane is valid / interesting
+"""
+function validity(hyperplane::Hyperplane,N::Int64)
+	# VALIDITY
+	pc_on_hyperplane = hyperplane.points
+	#@show linedetected
+	@assert  pc_on_hyperplane.n_points > N "not valid"  #da automatizzare
+	# line = linedetected.line
+	# E,_ = PointClouds.DrawLine(pointsonline.points, line, 0.0)
+	# dist = Lar.norm(E[:,1]-E[:,2])
+	# rho = pointsonline.n/dist
+	# PointClouds.flushprintln("rho = $rho")
+	# @assert  rho > N "not valid"  #da automatizzare
+end
 
 # ==============  SAVES DONE
 #

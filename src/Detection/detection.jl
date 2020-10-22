@@ -24,8 +24,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 		while !found && f < failed
 			try
 				hyperplane,R = get_hyperplane_from_random_init_point(PC, currents_inds, par, threshold)
-
-				validity(hyperplane, N) #validity gli passo l'iperpiano e
+				validity(hyperplane, N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
 			catch y
 				f = f+1
@@ -46,41 +45,9 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 
 	end
 
-	return hyperplanes
+	return hyperplanes, currents_inds
 end
 
-"""
-Assert the detected hyperplane is valid / interesting
-"""
-function validity(hyperplane::Hyperplane,N::Int64)
-	# VALIDITY
-	pc_on_hyperplane = hyperplane.points
-	#@show linedetected
-	@assert  pc_on_hyperplane.n_points > N "not valid"  #da automatizzare
-	# line = linedetected.line
-	# E,_ = PointClouds.DrawLine(pointsonline.points, line, 0.0)
-	# dist = Lar.norm(E[:,1]-E[:,2])
-	# rho = pointsonline.n/dist
-	# PointClouds.flushprintln("rho = $rho")
-	# @assert  rho > N "not valid"  #da automatizzare
-end
-
-
-
-"""
-Delete points from model.
-"""
-function deletePoints!(PC::PointCloud, todel::PointCloud)
-	tokeep = setdiff([1:PC.n_points...],[Common.matchcolumn(todel.coordinates[:,i], PC.coordinates) for i in 1:todel.n_points])
-
-	coordinates = PC.coordinates[:,tokeep]
-	rgbs = PC.rgbs[:,tokeep]
-	PC = PointCloud(coordinates,rgbs)
-end
-
-function remove_points!(currents_inds::Array{Int64,1},R::Array{Int64,1})
-	setdiff!(currents_inds,R)
-end
 
 function get_hyperplane_from_random_init_point(PC::PointCloud, currents_inds::Array{Int64,1}, par::Float64, threshold::Float64)
 
@@ -103,34 +70,24 @@ function search_cluster(PC::PointCloud, currents_inds::Array{Int64,1}, R::Array{
 
 	while !isempty(seeds)
 		tmp = Int[]
-		N = PointClouds.neighborhood(kdtree,PC,seeds,visitedverts,threshold)
+		N = Common.neighborhood(kdtree,PC,seeds,visitedverts,threshold)
 
 		for i in N
-			p = PC.points[:,i]
-			if residual(p,hyperplane) <= par
+			p = PC.points[:,currents_inds[i]]
+			if Common.residual(p,hyperplane) < par
 				push!(tmp,i)
 				push!(R,i)
 			end
 			push!(visitedverts,i)
 		end
 
-		listPoint = PC.points[:,R]
-		direction, centroid = Common.Linear_fit(listPoint)
+		listPoint = PC.points[:,currents_inds[R]]
+		direction, centroid = Common.LinearFit(listPoint)
 		hyperplane.direction = direction
 		hyperplane.centroid = centroid
 		seeds = tmp
-		#setdiff!(seeds,seed)
 	end
-	listRGB = PC.rgbs[:,R]
-	return Hyperplane(PointCloud(length(R), listPoint, listRGB), direction, centroid),R
-end
 
-"""
-"""
-function get_hyperplane(PC, currents_inds, par, threshold)
-	if PC.dimension == 3
-		return random_plane(PC, currents_inds, par, threshold)
-	elseif PC.dimension == 2
-		return random_line(PC, currents_inds, par, threshold)
-	end
+	listRGB = PC.rgbs[:,currents_inds[R]]
+	return Hyperplane(PointCloud(listPoint, listRGB), direction, centroid), currents_inds[R]
 end

@@ -7,7 +7,8 @@ function seedpoint(points::Lar.Points, threshold::Float64, k=10::Int64)
 	Return index of point in points with minor residual.
 	"""
 	function minresidual(points::Lar.Points, hyperplane::Hyperplane)
-		return findmin([Common.residual(points[:,i],hyperplane) for i in 1:size(points,2)])[2]#TODO residual
+		res = Common.residual(hyperplane).([points[:,c] for c in 1:size(points,2)])
+		return findmin(res)[2]
 	end
 
 	kdtree = KDTree(points)
@@ -28,8 +29,8 @@ function seedpoint(points::Lar.Points, threshold::Float64, k=10::Int64)
 	# end
 
 	hyperplane = Hyperplane(direction,centroid)
-	minresidual = minresidual(seeds,hyperplane)
-	seed = idxseeds[minresidual]
+	min_index = minresidual(seeds,hyperplane)
+	seed = idxseeds[min_index]
 
 	return seed, hyperplane, randindex
 end
