@@ -9,10 +9,10 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 	# end
 
 	currents_inds = [1:PC.n_points...]
-	hyperplanes = Hyperplanes[]
+	hyperplanes = Hyperplane[]
 	hyperplane = nothing
 	R = nothing
-	
+
 	f = 0
 	i = 0
 
@@ -53,7 +53,8 @@ end
 function get_hyperplane_from_random_init_point(PC::PointCloud, currents_inds::Array{Int64,1}, par::Float64, threshold::Float64)
 
 	# firt sample
-	index, hyperplane, randindex = seedpoint(PC.points[:,currents_inds], threshold)
+	flushprintln("entro")
+	index, hyperplane, randindex = seedpoint(PC,currents_inds, threshold)
 	R = [index]
 
 	# search cluster
@@ -64,7 +65,8 @@ end
 
 
 function search_cluster(PC::PointCloud, currents_inds::Array{Int64,1}, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64, threshold::Float64)
-	kdtree = KDTree(PC.points[:,currents_inds])
+	points = PC.coordinates[:,currents_inds]
+	kdtree = Common.KDTree(points)
 	seeds = copy(R)
 	visitedverts = copy(R)
 	listPoint = nothing

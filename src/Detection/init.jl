@@ -1,7 +1,9 @@
 """
 Find seed point randomly.
 """
-function seedpoint(points::Lar.Points, threshold::Float64, k=10::Int64)
+function seedpoint(PC::PointCloud, currents_inds::Array{Int64,1}, threshold::Float64, k=10::Int64)
+
+	points = PC.coordinates[:,currents_inds]
 
 	"""
 	Return index of point in points with minor residual.
@@ -11,21 +13,16 @@ function seedpoint(points::Lar.Points, threshold::Float64, k=10::Int64)
 		return findmin(res)[2]
 	end
 
-	kdtree = KDTree(points)
+	kdtree = Common.KDTree(points)
 	randindex = rand(1:size(points,2))
 
-#TODO migliorare questo
-	idxs, dists = knn(kdtree, points[:,randindex], k, false)
-	filter = [dist<=threshold for dist in dists]
-	idxseeds = idxs[filter]
-
+	idxseeds = Common.neighborhood(kdtree,PointCloud(points),[randindex],Int64[],threshold)
 	seeds = points[:,idxseeds]
-
 	direction, centroid = Common.LinearFit(seeds)
 
 	hyperplane = Hyperplane(direction,centroid)
 	min_index = minresidual(seeds,hyperplane)
 	seed = idxseeds[min_index]
 
-	return seed, hyperplane, randindex
+	return currents_ind[seed], hyperplane, randindex
 end
