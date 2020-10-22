@@ -14,6 +14,7 @@ function seedpoint(points::Lar.Points, threshold::Float64, k=10::Int64)
 	kdtree = KDTree(points)
 	randindex = rand(1:size(points,2))
 
+#TODO migliorare questo
 	idxs, dists = knn(kdtree, points[:,randindex], k, false)
 	filter = [dist<=threshold for dist in dists]
 	idxseeds = idxs[filter]
@@ -21,12 +22,6 @@ function seedpoint(points::Lar.Points, threshold::Float64, k=10::Int64)
 	seeds = points[:,idxseeds]
 
 	direction, centroid = Common.LinearFit(seeds)
-	#dim = size(points,1)
-	# if dim = 3
-	# 	direction,centroid = Common.Plane_fit(seeds)
-	# elseif dim = 2
-	# 	direction,centroid = Common.Line_Fit(seeds)
-	# end
 
 	hyperplane = Hyperplane(direction,centroid)
 	min_index = minresidual(seeds,hyperplane)
