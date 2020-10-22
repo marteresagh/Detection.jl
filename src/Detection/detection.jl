@@ -65,6 +65,7 @@ function get_hyperplane_from_random_init_point(PC::PointCloud, current_inds::Arr
 	listPoint = PC.coordinates[:,current_inds[R]]
 	listRGB = PC.rgbs[:,current_inds[R]]
 	hyperplane.points = PointCloud(listPoint,listRGB)
+
 	return hyperplane, current_inds[R]
 end
 

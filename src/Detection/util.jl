@@ -9,8 +9,11 @@ function deletePoints!(PC::PointCloud, todel::PointCloud)
 	PC = PointCloud(coordinates,rgbs)
 end
 
-function remove_points!(current_inds::Array{Int64,1},R::Array{Int64,1})
-	setdiff!(current_inds,R)
+"""
+remove from inds the i-th element described in todel
+"""
+function remove_points!(inds::Array{Int64,1},todel::Array{Int64,1})
+	setdiff!(inds,inds[todel])
 end
 
 """
