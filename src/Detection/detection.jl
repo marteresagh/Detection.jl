@@ -24,7 +24,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 
 		while !found && f < failed
 			try
-				hyperplane, R = get_hyperplane_from_random_init_point(PC, current_inds, par, threshold)
+				hyperplane, cluster = get_hyperplane_from_random_init_point(PC, current_inds, par, threshold)
 				validity(hyperplane, N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
 			catch y
@@ -38,7 +38,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 			i = i+1
 			flushprintln("$i shapes found")
 			push!(hyperplanes,hyperplane)
-			remove_points!(current_inds,R)
+			remove_points!(current_inds,cluster)
 			# deletePoints!(PCcurrent,hyperplane.points)
 		else
 			search = false
