@@ -8,7 +8,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 	# 	elimina vertici doppi
 	# end
 
-	currents_inds = [1:PC.n_points...]
+	current_inds = [1:PC.n_points...]
 	hyperplanes = Hyperplane[]
 	hyperplane = nothing
 	R = nothing
@@ -24,7 +24,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 
 		while !found && f < failed
 			try
-				hyperplane, R = get_hyperplane_from_random_init_point(PC, currents_inds, par, threshold)
+				hyperplane, R = get_hyperplane_from_random_init_point(PC, current_inds, par, threshold)
 				validity(hyperplane, N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
 			catch y
@@ -38,7 +38,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 			i = i+1
 			flushprintln("$i shapes found")
 			push!(hyperplanes,hyperplane)
-			remove_points!(currents_inds,R)
+			remove_points!(current_inds,R)
 			# deletePoints!(PCcurrent,hyperplane.points)
 		else
 			search = false
@@ -46,26 +46,31 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 
 	end
 
-	return hyperplanes, currents_inds
+	return hyperplanes, current_inds
 end
 
 
-function get_hyperplane_from_random_init_point(PC::PointCloud, currents_inds::Array{Int64,1}, par::Float64, threshold::Float64)
+function get_hyperplane_from_random_init_point(PC::PointCloud, current_inds::Array{Int64,1}, par::Float64, threshold::Float64)
 
 	# firt sample
-	flushprintln("entro")
-	index, hyperplane, randindex = seedpoint(PC,currents_inds, threshold)
+	points = PC.coordinates[:,current_inds]
+
+	#da qui in poi indici relativi ai punti correnti
+	index, hyperplane, first_index = seedpoint(points, threshold)
 	R = [index]
 
 	# search cluster
-	hyperplane = search_cluster(PC,currents_inds, R, hyperplane, par, threshold)
+	hyperplane = search_cluster(points, R, hyperplane, par, threshold)
 
-	return hyperplane, currents_inds[R]
+	listPoint = PC.coordinates[:,current_inds[R]]
+	listRGB = PC.rgbs[:,current_inds[R]]
+	hyperplane.points = PointCloud(listPoint,listRGB)
+	return hyperplane, current_inds[R]
 end
 
 
-function search_cluster(PC::PointCloud, currents_inds::Array{Int64,1}, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64, threshold::Float64)
-	points = PC.coordinates[:,currents_inds]
+function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64, threshold::Float64)
+
 	kdtree = Common.KDTree(points)
 	seeds = copy(R)
 	visitedverts = copy(R)
@@ -73,7 +78,7 @@ function search_cluster(PC::PointCloud, currents_inds::Array{Int64,1}, R::Array{
 
 	while !isempty(seeds)
 		tmp = Int[]
-		N = Common.neighborhood(kdtree,PC,seeds,visitedverts,threshold)
+		N = Common.neighborhood(kdtree,points,seeds,visitedverts,threshold)
 
 		for i in N
 			p = points[:,i]
@@ -91,6 +96,6 @@ function search_cluster(PC::PointCloud, currents_inds::Array{Int64,1}, R::Array{
 		seeds = tmp
 	end
 
-	listRGB = PC.rgbs[:,currents_inds[R]]
-	return Hyperplane(PointCloud(listPoint, listRGB), hyperplane.direction, hyperplane.centroid)
+
+	return Hyperplane(hyperplane.direction, hyperplane.centroid)
 end

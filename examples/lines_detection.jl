@@ -14,13 +14,11 @@ PC = FileManager.las2pointcloud(fname)
 
 PC2D = PointCloud(PC.coordinates[1:2,:],PC.rgbs)
 
-par = 0.1
+par = 0.07
 threshold = 2*0.03
 failed = 400
 N = 50
-#hyperplanes, currents_inds = Detection.iterate_random_detection(PC2D, par, threshold, failed, N)
-line,i = Detection.get_hyperplane_from_random_init_point(PC2D, [1:PC2D.n_points...], par, threshold)
+hyperplanes, current_inds = Detection.iterate_random_detection(PC2D, par, threshold, failed, N)
 
-GL.VIEW([
-    Visualization.mesh_lines([line])
-])
+visual = Visualization.mesh_lines(hyperplanes)
+GL.VIEW([Visualization.points_color_from_rgb(PC2D.coordinates,PC2D.rgbs,0.4),visual...])
