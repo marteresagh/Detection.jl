@@ -11,7 +11,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 	current_inds = [1:PC.n_points...]
 	hyperplanes = Hyperplane[]
 	hyperplane = nothing
-	R = nothing
+	cluster = nothing
 
 	f = 0
 	i = 0
