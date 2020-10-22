@@ -1,6 +1,6 @@
 struct Parameters
 	pointcloud::PointCloud
-	cloudMetadata::PointClouds.CloudMetadata
+	cloudMetadata::CloudMetadata
 	LOD::UInt16
 	par::Float64,
 	output::String
