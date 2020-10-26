@@ -1,9 +1,6 @@
 function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float64, failed::Int64, N::Int64)
 
 	# 1. - initialization
-	#PCcurrent = deepcopy(PC)
-	#gia da qui ho creato PC con punti 2D o 3D
-	#prova ad usare solo gli indici
 	# if PC.dimension == 2
 	# 	elimina vertici doppi
 	# end
@@ -89,7 +86,9 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 			end
 			push!(visitedverts,i)
 		end
-
+		# == prova ad aggiungere qui l'eliminazione dei punti che hanno residuo troppo alto
+		punti_da_buttare!(points, R, hyperplane, par)
+		# ===
 		listPoint = points[:,R]
 		direction, centroid = Common.LinearFit(listPoint)
 		hyperplane.direction = direction
@@ -99,4 +98,18 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 
 
 	return Hyperplane(hyperplane.direction, hyperplane.centroid)
+end
+
+
+function punti_da_buttare!(points::Lar.Points,R::Array{Int64,1},hyperplane::Hyperplane, par::Float64)
+	res = Common.residual(hyperplane).([points[:,i] for i in R])
+
+	mu = Statistics.mean(res)
+	rho = Statistics.varm(res,mu)
+
+	s = (res.-mu).^2
+
+	filt = [s[i] < rho for i in 1:length(s)  ]
+
+	R = R[filt]
 end
