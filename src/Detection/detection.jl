@@ -63,6 +63,8 @@ function get_hyperplane_from_random_init_point(PC::PointCloud, current_inds::Arr
 	listRGB = PC.rgbs[:,current_inds[R]]
 	hyperplane.points = PointCloud(listPoint,listRGB)
 
+	@show hyperplane.points.n_points
+
 	return hyperplane, current_inds[R]
 end
 
@@ -86,30 +88,38 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 			end
 			push!(visitedverts,i)
 		end
-		# == prova ad aggiungere qui l'eliminazione dei punti che hanno residuo troppo alto
-		punti_da_buttare!(points, R, hyperplane)
-		# ===
+
 		listPoint = points[:,R]
 		direction, centroid = Common.LinearFit(listPoint)
 		hyperplane.direction = direction
 		hyperplane.centroid = centroid
 		seeds = tmp
+		flushprintln("prima ", length(R))
 	end
 
+	# == prova ad aggiungere qui l'eliminazione dei punti che hanno residuo troppo alto
 
+	punti_da_tenere!(points, R, hyperplane)
+	flushprintln("dopo ", length(R))
+	listPoint = points[:,R]
+	direction, centroid = Common.LinearFit(listPoint)
+	hyperplane.direction = direction
+	hyperplane.centroid = centroid
+	# ===
 	return Hyperplane(hyperplane.direction, hyperplane.centroid)
 end
 
 
-function punti_da_buttare!(points::Lar.Points,R::Array{Int64,1},hyperplane::Hyperplane)
+function punti_da_tenere!(points::Lar.Points, R::Array{Int64,1},hyperplane::Hyperplane)
 	res = Common.residual(hyperplane).([points[:,i] for i in R])
 
 	mu = Statistics.mean(res)
 	rho = Statistics.varm(res,mu)
 
-	s = (res.-mu).^2
+	s = (res).^2
 
 	filt = [s[i] < rho for i in 1:length(s)  ]
 
 	R = R[filt]
+
 end
