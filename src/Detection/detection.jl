@@ -99,7 +99,7 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 
 	# == prova ad aggiungere qui l'eliminazione dei punti che hanno residuo troppo alto
 
-	punti_da_tenere!(points, R, hyperplane)
+	R = punti_da_tenere!(points, R, hyperplane)
 	flushprintln("dopo ", length(R))
 	listPoint = points[:,R]
 	direction, centroid = Common.LinearFit(listPoint)
@@ -121,5 +121,5 @@ function punti_da_tenere!(points::Lar.Points, R::Array{Int64,1},hyperplane::Hype
 	filt = [s[i] < rho for i in 1:length(s)  ]
 
 	R = R[filt]
-
+	return R
 end
