@@ -87,11 +87,7 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 			push!(visitedverts,i)
 		end
 		# == prova ad aggiungere qui l'eliminazione dei punti che hanno residuo troppo alto
-		flushprintln("prima ", R)
-
 		punti_da_buttare!(points, R, hyperplane)
-
-		flushprintln("dopo ", R)
 		# ===
 		listPoint = points[:,R]
 		direction, centroid = Common.LinearFit(listPoint)
