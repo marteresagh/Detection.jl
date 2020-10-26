@@ -59,6 +59,7 @@ function get_hyperplane_from_random_init_point(PC::PointCloud, current_inds::Arr
 	# search cluster
 	hyperplane = search_cluster(points, R, hyperplane, par, threshold)
 
+	flushprintln("fuori dalla funzione ", length(R))
 	listPoint = PC.coordinates[:,current_inds[R]]
 	listRGB = PC.rgbs[:,current_inds[R]]
 	hyperplane.points = PointCloud(listPoint,listRGB)
@@ -94,12 +95,11 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		hyperplane.direction = direction
 		hyperplane.centroid = centroid
 		seeds = tmp
-		flushprintln("prima ", length(R))
 	end
 
 	# == prova ad aggiungere qui l'eliminazione dei punti che hanno residuo troppo alto
-
-	R = punti_da_tenere!(points, R, hyperplane)
+	flushprintln("prima ", length(R))
+	punti_da_tenere!(points, R, hyperplane)
 	flushprintln("dopo ", length(R))
 	listPoint = points[:,R]
 	direction, centroid = Common.LinearFit(listPoint)
@@ -118,8 +118,7 @@ function punti_da_tenere!(points::Lar.Points, R::Array{Int64,1},hyperplane::Hype
 
 	s = (res).^2
 
-	filt = [s[i] < rho for i in 1:length(s)  ]
+	todel = [s[i] > rho for i in 1:length(s)  ]
 
-	R = R[filt]
-	return R
+	setdiff!(R, R[todel])
 end
