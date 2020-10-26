@@ -23,6 +23,19 @@ hyperplanes, current_inds = Detection.iterate_random_detection(PC2D, par, thresh
 visual = Visualization.mesh_lines(hyperplanes)
 GL.VIEW([visual...])
 
+
+new_hyperplanes = update_hyperplanes(hyperplanes)
+
+L,EL = Common.DrawLines(hyperplanes,0.0)
+T,ET = Common.DrawLines(new_hyperplanes,0.0)
+
+GL.VIEW([   #GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[1]),
+            #GL.GLPoints(convert(Lar.Points,points[:,R[todel]]'),GL.COLORS[2]),
+            GL.GLGrid(L,EL,GL.COLORS[1],1.0),
+            #GL.GLGrid(T,ET,GL.COLORS[12],1.0)
+        ])
+
+
 presi = setdiff!([1:PC.n_points...],current_inds)
 punti_presi= PointCloud(PC.coordinates[:,presi],PC.rgbs[:,presi])
 
@@ -56,14 +69,23 @@ PC = FileManager.las2pointcloud(fname)
 
 PC2D = PointCloud(PC.coordinates[1:2,:],PC.rgbs)
 
-par = 0.07
+par = 0.09
 threshold = 2*0.03
 failed = 500
-N = 100
+N = 200
 hyperplanes, current_inds = Detection.iterate_random_detection(PC2D, par, threshold, failed, N)
 
 visual = Visualization.mesh_lines(hyperplanes)
 GL.VIEW([visual...])
+
+L,EL = Common.DrawLines(hyperplanes,0.0)
+
+GL.VIEW([   #GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[1]),
+            #GL.GLPoints(convert(Lar.Points,points[:,R[todel]]'),GL.COLORS[2]),
+            GL.GLGrid(L,EL,GL.COLORS[1],1.0),
+        ])
+
+
 
 presi = setdiff!([1:PC.n_points...],current_inds)
 punti_presi= PointCloud(PC.coordinates[:,presi],PC.rgbs[:,presi])

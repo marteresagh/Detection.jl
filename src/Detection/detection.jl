@@ -59,12 +59,10 @@ function get_hyperplane_from_random_init_point(PC::PointCloud, current_inds::Arr
 	# search cluster
 	hyperplane = search_cluster(points, R, hyperplane, par, threshold)
 
-	flushprintln("fuori dalla funzione ", length(R))
 	listPoint = PC.coordinates[:,current_inds[R]]
 	listRGB = PC.rgbs[:,current_inds[R]]
 	hyperplane.points = PointCloud(listPoint,listRGB)
 
-	@show hyperplane.points.n_points
 
 	return hyperplane, current_inds[R]
 end
@@ -95,30 +93,54 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		hyperplane.direction = direction
 		hyperplane.centroid = centroid
 		seeds = tmp
+		# == optimize da sistemare
+		direction, centroid = optimize(points,R,hyperplane,par)
+		hyperplane.direction = direction
+		hyperplane.centroid = centroid
+		# ==
 	end
 
 	# == prova ad aggiungere qui l'eliminazione dei punti che hanno residuo troppo alto
-	flushprintln("prima ", length(R))
-	punti_da_tenere!(points, R, hyperplane)
-	flushprintln("dopo ", length(R))
-	listPoint = points[:,R]
-	direction, centroid = Common.LinearFit(listPoint)
+	# punti_da_tenere!(points, R, hyperplane)
+	# listPoint = points[:,R]
+	# direction, centroid = Common.LinearFit(listPoint)
+	# ===
+	# == optimize da sistemare
+	direction, centroid = optimize(points,R,hyperplane,par)
 	hyperplane.direction = direction
 	hyperplane.centroid = centroid
-	# ===
+	# ==
 	return Hyperplane(hyperplane.direction, hyperplane.centroid)
 end
 
 
 function punti_da_tenere!(points::Lar.Points, R::Array{Int64,1},hyperplane::Hyperplane)
+
 	res = Common.residual(hyperplane).([points[:,i] for i in R])
-
 	mu = Statistics.mean(res)
-	rho = Statistics.varm(res,mu)
-
-	s = (res).^2
-
-	todel = [s[i] > rho for i in 1:length(s)  ]
+	rho = Statistics.std(res)
+	todel = [mu - rho < res[i] < mu + rho for i in 1:length(res)  ]
 
 	setdiff!(R, R[todel])
+end
+
+
+function optimize(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
+
+	# prima parte
+	res = Common.residual(hyperplane).([points[:,i] for i in R])
+	mu = Statistics.mean(res)
+	rho = Statistics.std(res)
+
+	filter = [mu - rho < res[i] < mu + rho for i in 1:length(res)  ]
+	tokeep = R[filter]
+
+	listPoint = points[:,tokeep]
+	direction, centroid = Common.LinearFit(listPoint)
+
+	# seconda parte
+	res = Common.residual(Hyperplane(direction,centroid)).([points[:,i] for i in R])
+	todel = [ res[i] > par/2 for i in 1:length(res) ]
+	setdiff!(R,R[todel])
+	return direction, centroid
 end
