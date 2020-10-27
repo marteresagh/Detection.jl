@@ -1,16 +1,16 @@
-function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float64, failed::Int64, N::Int64)
+function iterate_random_detection(params::initParams)
 
 	# 1. - initialization
 	# if PC.dimension == 2
 	# 	elimina vertici doppi
 	# end
 
-	current_inds = [1:PC.n_points...]
+	#current_inds = [1:PC.n_points...]
 	hyperplanes = Hyperplane[]
 	hyperplane = nothing
 	cluster = nothing
-	visited = Int64[]
-
+	#visited = Int64[]
+	visits = nothing
 	f = 0
 	i = 0
 
@@ -20,11 +20,10 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 	while search
 		found = false
 		@show length(visited)
-		while !found && f < failed
+		while !found && f < params.failed
 			try
-				hyperplane, cluster, visits = get_hyperplane_from_random_init_point(PC, current_inds, par, threshold, visited)
-				union!(visited,visits)
-				validity(hyperplane, N) #validity gli passo l'iperpiano e i parametri per la validità
+				hyperplane, cluster, visits = get_hyperplane_from_random_init_point(params)#PC, current_inds, par, threshold, visited)
+				validity(hyperplane, params.N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
 			catch y
 				f = f+1
@@ -38,6 +37,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 			flushprintln("$i shapes found")
 			push!(hyperplanes,hyperplane)
 			remove_points!(current_inds,cluster)
+			union!(params.visited,visits)
 			# deletePoints!(PCcurrent,hyperplane.points)
 		else
 			search = false
@@ -49,18 +49,17 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 end
 
 
-function get_hyperplane_from_random_init_point(PC::PointCloud, current_inds::Array{Int64,1}, par::Float64, threshold::Float64, visited::Array{Int64,1})
+function get_hyperplane_from_random_init_point(params::initParams)#PC::PointCloud, current_inds::Array{Int64,1}, par::Float64, threshold::Float64, visited::Array{Int64,1})
 
 	# firt sample
-	points = PC.coordinates[:,current_inds]
-	not_visited = setdiff(current_inds,visited)
+	points = params.PC.coordinates[:,params.current_inds]
+	not_visited = setdiff(params.current_inds,params.visited)
 	#da qui in poi indici relativi ai punti correnti
-	index, hyperplane, first_index = seedpoint(points, threshold, not_visited)
+	index, hyperplane, first_index = seedpoint(points, params.threshold, not_visited)
 	R = [index]
 
 	# search cluster
 	visited = search_cluster(points, R, hyperplane, par, threshold)
-	union!(visited,first_index)
 	listPoint = PC.coordinates[:,current_inds[R]]
 	listRGB = PC.rgbs[:,current_inds[R]]
 	hyperplane.points = PointCloud(listPoint,listRGB)
@@ -70,7 +69,7 @@ function get_hyperplane_from_random_init_point(PC::PointCloud, current_inds::Arr
 end
 
 
-function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64, threshold::Float64)
+function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, params::initParams)
 
 	kdtree = Common.KDTree(points)
 	seeds = copy(R)
@@ -79,11 +78,11 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 
 	while !isempty(seeds)
 		tmp = Int[]
-		N = Common.neighborhood(kdtree,points,seeds,visitedverts,threshold)
+		N = Common.neighborhood(kdtree,points,seeds,visitedverts,params.threshold)
 
 		for i in N
 			p = points[:,i]
-			if Common.residual(hyperplane)(p) < par
+			if Common.residual(hyperplane)(p) < params.par
 				push!(tmp,i)
 				push!(R,i)
 			end
@@ -96,24 +95,24 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		hyperplane.centroid = centroid
 		seeds = tmp
 		# == optimize da sistemare
-		optimize!(points,R,hyperplane,par)
+		optimize!(points,R,hyperplane,params.par)
 		# ==
 	end
 
 	return visitedverts
 end
 
-
-function punti_da_tenere!(points::Lar.Points, R::Array{Int64,1},hyperplane::Hyperplane)
-
-	res = Common.residual(hyperplane).([points[:,i] for i in R])
-	mu = Statistics.mean(res)
-	rho = Statistics.std(res)
-	todel = [mu - rho < res[i] < mu + rho for i in 1:length(res)  ]
-
-	setdiff!(R, R[todel])
-end
-
+#
+# function punti_da_tenere!(points::Lar.Points, R::Array{Int64,1},hyperplane::Hyperplane)
+#
+# 	res = Common.residual(hyperplane).([points[:,i] for i in R])
+# 	mu = Statistics.mean(res)
+# 	rho = Statistics.std(res)
+# 	todel = [mu - rho < res[i] < mu + rho for i in 1:length(res)  ]
+#
+# 	setdiff!(R, R[todel])
+# end
+#
 
 function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
 

@@ -1,11 +1,21 @@
-struct Parameters
-	pointcloud::PointCloud
-	cloudMetadata::CloudMetadata
-	LOD::UInt16
+# struct Parameters
+# 	pointcloud::PointCloud
+# 	cloudMetadata::CloudMetadata
+# 	LOD::UInt16
+# 	par::Float64
+# 	output::String
+# 	rnd::Bool
+# 	seedPoints::Lar.Points
+# 	random::Bool
+# 	failed::UInt16
+# end
+
+mutable struct initParams
+	PC::PointCloud
 	par::Float64
-	output::String
-	rnd::Bool
-	seedPoints::Lar.Points
-	random::Bool
-	failed::UInt16
+	threshold::Float64
+	failed::Int64
+	N::Int64
+	visited::Array{Int64,1}
+	current_inds::Array{Int64,1}
 end
