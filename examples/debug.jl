@@ -39,28 +39,14 @@ PC = FileManager.las2pointcloud(fname)
 #     ]
 # )
 
-PC2D = PointCloud(PC.coordinates[1:2,:],PC.rgbs)
+PC2D = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 
 par = 0.07
 threshold = 2*0.03
-failed = 100
+failed = 200
 N = 100
 hyperplanes, current_inds = Detection.iterate_random_detection(PC2D, par, threshold, failed, N)
 
-daprendere = Int64[]
-corrs = Float64[]
-for i in 1:length(hyperplanes)
-    hyperplane = hyperplanes[i]
-    points = hyperplane.points.coordinates
-    corr = Statistics.cor(points[1,:],points[2,:])
-    push!(corrs,corr)
-    if Lar.abs(corr) > 0.8
-        push!(daprendere,i)
-    end
-end
-planes = hyperplanes[daprendere]
-
-GL.VIEW([Visualization.mesh_lines(planes)...])
 GL.VIEW([Visualization.mesh_lines(hyperplanes)...])
 
 # ===============
@@ -136,7 +122,7 @@ GL.VIEW(
 par = 0.02
 threshold = 2*0.03
 failed = 400
-N = 50
+N = 100
 hyperplanes, current_inds = Detection.iterate_random_detection(PC, par, threshold, failed, N)
 
 visual = Visualization.mesh_lines(hyperplanes)

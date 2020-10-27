@@ -9,6 +9,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 	hyperplanes = Hyperplane[]
 	hyperplane = nothing
 	cluster = nothing
+	visited = Int64[]
 
 	f = 0
 	i = 0
@@ -21,7 +22,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 
 		while !found && f < failed
 			try
-				hyperplane, cluster = get_hyperplane_from_random_init_point(PC, current_inds, par, threshold)
+				hyperplane, cluster, visited = get_hyperplane_from_random_init_point(PC, current_inds, par, threshold, visited)
 				validity(hyperplane, N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
 			catch y
@@ -47,24 +48,25 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 end
 
 
-function get_hyperplane_from_random_init_point(PC::PointCloud, current_inds::Array{Int64,1}, par::Float64, threshold::Float64)
+function get_hyperplane_from_random_init_point(PC::PointCloud, current_inds::Array{Int64,1}, par::Float64, threshold::Float64, visited::Array{Int64,1})
 
 	# firt sample
 	points = PC.coordinates[:,current_inds]
-
+	not_visited = [1:PC.n_points...]
+	setdiff!(not_visited,visited)
 	#da qui in poi indici relativi ai punti correnti
-	index, hyperplane, first_index = seedpoint(points, threshold)
+	index, hyperplane, first_index = seedpoint(points, threshold, not_visited)
 	R = [index]
 
 	# search cluster
-	hyperplane = search_cluster(points, R, hyperplane, par, threshold)
+	hyperplane, visited = search_cluster(points, R, hyperplane, par, threshold)
 
 	listPoint = PC.coordinates[:,current_inds[R]]
 	listRGB = PC.rgbs[:,current_inds[R]]
 	hyperplane.points = PointCloud(listPoint,listRGB)
 
 
-	return hyperplane, current_inds[R]
+	return hyperplane, current_inds[R], current_inds[visited]
 end
 
 
@@ -99,18 +101,13 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		hyperplane.centroid = centroid
 		# ==
 	end
-
-	# == prova ad aggiungere qui l'eliminazione dei punti che hanno residuo troppo alto
-	# punti_da_tenere!(points, R, hyperplane)
-	# listPoint = points[:,R]
-	# direction, centroid = Common.LinearFit(listPoint)
 	# ===
 	# == optimize da sistemare
-	direction, centroid = optimize(points,R,hyperplane,par)
-	hyperplane.direction = direction
-	hyperplane.centroid = centroid
+	# direction, centroid = optimize(points,R,hyperplane,par)
+	# hyperplane.direction = direction
+	# hyperplane.centroid = centroid
 	# ==
-	return Hyperplane(hyperplane.direction, hyperplane.centroid)
+	return Hyperplane(hyperplane.direction, hyperplane.centroid), visitedverts
 end
 
 
