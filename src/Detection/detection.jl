@@ -134,10 +134,13 @@ function optimize(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane,
 
 	listPoint = points[:,tokeep]
 	direction, centroid = Common.LinearFit(listPoint)
+	hyperplane.direction = direction
+	hyperplane.centroid = centroid
 
 	# seconda parte
 	res = Common.residual(Hyperplane(direction,centroid)).([points[:,i] for i in R])
 	todel = [ res[i] > par/2 for i in 1:length(res) ]
 	setdiff!(R,R[todel])
-	return direction, centroid
+	
+	#return direction, centroid
 end

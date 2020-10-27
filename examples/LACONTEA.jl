@@ -23,16 +23,12 @@ hyperplanes, current_inds = Detection.iterate_random_detection(PC2D, par, thresh
 visual = Visualization.mesh_lines(hyperplanes)
 GL.VIEW([visual...])
 
-
-new_hyperplanes = update_hyperplanes(hyperplanes)
-
 L,EL = Common.DrawLines(hyperplanes,0.0)
-T,ET = Common.DrawLines(new_hyperplanes,0.0)
+
 
 GL.VIEW([   #GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[1]),
             #GL.GLPoints(convert(Lar.Points,points[:,R[todel]]'),GL.COLORS[2]),
             GL.GLGrid(L,EL,GL.COLORS[1],1.0),
-            #GL.GLGrid(T,ET,GL.COLORS[12],1.0)
         ])
 
 
@@ -42,6 +38,7 @@ punti_presi= PointCloud(PC.coordinates[:,presi],PC.rgbs[:,presi])
 
 punti_rimasti = PointCloud(PC.coordinates[:,current_inds],PC.rgbs[:,current_inds])
 
+FileManager.save_pointcloud(punti_presi, "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\risultati\\sezione_z650_puntipresi.las")
 FileManager.save_pointcloud(punti_rimasti, "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\risultati\\sezione_z650_puntirimasti.las")
 
 V,EV = Common.DrawLines(hyperplanes, 0.0)
