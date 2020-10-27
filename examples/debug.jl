@@ -4,40 +4,10 @@ using Common
 using FileManager
 using Statistics
 
-
-function update_hyperplanes(hyperplanes::Array{Hyperplane,1})
-    new_hyperplanes = Hyperplane[]
-
-    for hyperplane in hyperplanes
-        points = hyperplane.points.coordinates
-        R = [1:hyperplane.points.n_points...]
-
-        res = Common.residual(hyperplane).([points[:,i] for i in R])
-        mu = Statistics.mean(res)
-        rho = Statistics.std(res)
-
-        todel = [mu - rho < res[i] < mu + rho for i in 1:length(res)  ]
-
-        # Detection.punti_da_tenere!(points,R,hyperplane)
-        listPoint = points[:,R[todel]]
-        direction, centroid = Common.LinearFit(listPoint)
-        hyperplane_update = Hyperplane(PointCloud(listPoint),direction,centroid)
-        push!(new_hyperplanes,hyperplane_update)
-    end
-    return new_hyperplanes
-end
-
-
 fname = "examples/wall.las"
 fname = "examples/muriAngolo.las"
 fname = "examples/area.las"
 PC = FileManager.las2pointcloud(fname)
-
-# GL.VIEW(
-#     [
-#     Visualization.points_color_from_rgb(PC.coordinates,PC.rgbs)
-#     ]
-# )
 
 PC2D = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 
@@ -45,7 +15,16 @@ par = 0.07
 threshold = 2*0.03
 failed = 200
 N = 100
-hyperplanes, current_inds = Detection.iterate_random_detection(PC2D, par, threshold, failed, N)
+hyperplanes, current_inds, visited = Detection.iterate_random_detection(PC2D, par, threshold, failed, N)
+
+presi = setdiff!([1:PC.n_points...],current_inds)
+
+GL.VIEW([
+            GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,current_inds]'),GL.COLORS[2]),
+            GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,visited]'),GL.COLORS[1]),
+            GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,presi]'),GL.COLORS[12]),
+
+        ])
 
 GL.VIEW([Visualization.mesh_lines(hyperplanes)...])
 
@@ -74,15 +53,13 @@ visual = Visualization.mesh_lines(planes)
 
 GL.VIEW([visual...])
 
-new_hyperplanes = update_hyperplanes(hyperplanes)
 
 L,EL = Common.DrawLines(hyperplanes,0.0)
-T,ET = Common.DrawLines(new_hyperplanes,0.0)
+
 
 GL.VIEW([   GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[1]),
             #GL.GLPoints(convert(Lar.Points,points[:,R[todel]]'),GL.COLORS[2]),
             GL.GLGrid(L,EL,GL.COLORS[2],0.8),
-            GL.GLGrid(T,ET,GL.COLORS[12],1.0)
         ])
 
 visual = Visualization.mesh_lines([hyperplane])
@@ -127,3 +104,64 @@ hyperplanes, current_inds = Detection.iterate_random_detection(PC, par, threshol
 
 visual = Visualization.mesh_lines(hyperplanes)
 GL.VIEW([visual...])
+
+#######################  REMOVE POINTS
+using NearestNeighbors
+function remove_isolated_points(PC, current_inds, k)
+	points = PC.coordinates
+	kdtree = NearestNeighbors.KDTree(points[:,current_inds])
+	idxs, dists = NearestNeighbors.knn(kdtree, points, k, true)
+
+	density = Float64[]
+	for i in 1:length(current_inds)
+		rho = sum(dists[i])/k
+		push!(density,1/rho)
+	end
+	AVGRelDensity = Float64[]
+	for i in 1:length(current_inds)
+		rel = density[i]/((1/k)*sum(density[idxs[i]]))
+		push!(AVGRelDensity,rel)
+	end
+	return density,AVGRelDensity
+end
+
+
+fname = "examples/muriAngolo.las"
+PC = FileManager.las2pointcloud(fname)
+PC2D = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
+# points = hcat(rand(2,1000),[2.0,2.0])
+# PC = PointCloud(points)
+current_inds = [1:PC2D.n_points...]
+density,AVGRelDensity = remove_isolated_points(PC2D,current_inds,20)
+
+
+current_inds = [1:PC2D.n_points...]
+density,AVGRelDensity = remove_isolated_points(PC2D,current_inds,20)
+mu = Statistics.mean(AVGRelDensity)
+rho = Statistics.std(AVGRelDensity)
+outliers = [AVGRelDensity[i]<mu-rho for i in current_inds ]
+da_rimuovere = current_inds[outliers]
+da_tenere = setdiff(current_inds,da_rimuovere)
+PC = PointCloud(PC2D.coordinates[:,da_tenere],PC2D.rgbs)
+GL.VIEW([  	GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[2]) ,
+  			#GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,da_rimuovere]'),GL.COLORS[1]),
+			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,da_tenere]'),GL.COLORS[12])
+			 ])
+
+
+
+
+par = 0.02
+threshold = 2*0.03
+failed = 500
+N = 100
+
+hyperplanes, current_inds,visited = Detection.iterate_random_detection(PC, par, threshold, failed, N)
+visual = Visualization.mesh_lines(hyperplanes)
+GL.VIEW([visual...])
+
+GL.VIEW(
+    [
+    Visualization.points_color_from_rgb(PC.coordinates,PC.rgbs)
+    ]
+)

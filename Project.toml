@@ -6,4 +6,3 @@ version = "0.1.0"
 [deps]
 Common = "1e120bc2-2bd2-483a-9663-793997b3971f"
 FileManager = "0bd84659-c0f7-4690-a84b-0a06eabf7473"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"

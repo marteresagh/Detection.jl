@@ -19,10 +19,11 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 	search = true
 	while search
 		found = false
-
+		@show length(visited)
 		while !found && f < failed
 			try
-				hyperplane, cluster, visited = get_hyperplane_from_random_init_point(PC, current_inds, par, threshold, visited)
+				hyperplane, cluster, visits = get_hyperplane_from_random_init_point(PC, current_inds, par, threshold, visited)
+				union!(visited,visits)
 				validity(hyperplane, N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
 			catch y
@@ -44,7 +45,7 @@ function iterate_random_detection(PC::PointCloud, par::Float64, threshold::Float
 
 	end
 
-	return hyperplanes, current_inds
+	return hyperplanes, current_inds, visited
 end
 
 
@@ -52,15 +53,14 @@ function get_hyperplane_from_random_init_point(PC::PointCloud, current_inds::Arr
 
 	# firt sample
 	points = PC.coordinates[:,current_inds]
-	not_visited = [1:PC.n_points...]
-	setdiff!(not_visited,visited)
+	not_visited = setdiff(current_inds,visited)
 	#da qui in poi indici relativi ai punti correnti
 	index, hyperplane, first_index = seedpoint(points, threshold, not_visited)
 	R = [index]
 
 	# search cluster
-	hyperplane, visited = search_cluster(points, R, hyperplane, par, threshold)
-
+	visited = search_cluster(points, R, hyperplane, par, threshold)
+	union!(visited,first_index)
 	listPoint = PC.coordinates[:,current_inds[R]]
 	listRGB = PC.rgbs[:,current_inds[R]]
 	hyperplane.points = PointCloud(listPoint,listRGB)
@@ -96,18 +96,11 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		hyperplane.centroid = centroid
 		seeds = tmp
 		# == optimize da sistemare
-		direction, centroid = optimize(points,R,hyperplane,par)
-		hyperplane.direction = direction
-		hyperplane.centroid = centroid
+		optimize!(points,R,hyperplane,par)
 		# ==
 	end
-	# ===
-	# == optimize da sistemare
-	# direction, centroid = optimize(points,R,hyperplane,par)
-	# hyperplane.direction = direction
-	# hyperplane.centroid = centroid
-	# ==
-	return Hyperplane(hyperplane.direction, hyperplane.centroid), visitedverts
+
+	return visitedverts
 end
 
 
@@ -122,7 +115,7 @@ function punti_da_tenere!(points::Lar.Points, R::Array{Int64,1},hyperplane::Hype
 end
 
 
-function optimize(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
+function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
 
 	# prima parte
 	res = Common.residual(hyperplane).([points[:,i] for i in R])
@@ -141,6 +134,6 @@ function optimize(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane,
 	res = Common.residual(Hyperplane(direction,centroid)).([points[:,i] for i in R])
 	todel = [ res[i] > par/2 for i in 1:length(res) ]
 	setdiff!(R,R[todel])
-	
+
 	#return direction, centroid
 end

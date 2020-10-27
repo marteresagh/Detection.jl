@@ -32,6 +32,11 @@ function validity(hyperplane::Hyperplane,N::Int64)
 	# @assert  rho > N "not valid"  #da automatizzare
 end
 
+
+function remove_isolated_points(PC, current_inds, k=10)
+	
+
+end
 # ==============  SAVES DONE
 #
 # function savePlanesDataset(planes::Array{PlaneDataset,1},params::PlaneDetectionParams)
