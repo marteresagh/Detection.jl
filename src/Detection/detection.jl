@@ -52,7 +52,6 @@ function get_hyperplane_from_random_init_point(params::initParams)#PC::PointClou
 
 
 	points = params.PC.coordinates[:,params.current_inds]
-	@show "entro "
 	# 1. ricerca del seed
 	# qui gli indici sono relativi ai candidati
 	candidates = setdiff(params.current_inds,params.visited)
@@ -66,7 +65,6 @@ function get_hyperplane_from_random_init_point(params::initParams)#PC::PointClou
 	# search cluster
 	# da qui in poi indici relativi ai punti correnti
 	visitati = search_cluster(points, R, hyperplane, params) #punti che non devono far parte dei mie seeds
-	@show "uscito "
 	listPoint = params.PC.coordinates[:,params.current_inds[R]]
 	listRGB = params.PC.rgbs[:,params.current_inds[R]]
 	hyperplane.points = PointCloud(listPoint,listRGB)
