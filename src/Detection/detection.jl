@@ -20,14 +20,14 @@ function iterate_random_detection(params::initParams)
 	while search
 		found = false
 		while !found && f < params.failed
-			try
+		#	try
 				hyperplane, cluster, no_seeds = get_hyperplane_from_random_init_point(params)#PC, current_inds, par, threshold, visited)
-				validity(hyperplane, params.N) #validity gli passo l'iperpiano e i parametri per la validità
+				#validity(hyperplane, params.N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
-			catch y
-				f = f+1
-				flushprintln("failed = $f")
-			end
+			# catch y
+			# 	f = f+1
+			# 	flushprintln("failed = $f")
+			# end
 		end
 
 		if found
@@ -52,19 +52,21 @@ function get_hyperplane_from_random_init_point(params::initParams)#PC::PointClou
 
 
 	points = params.PC.coordinates[:,params.current_inds]
-
+	@show "entro "
 	# 1. ricerca del seed
 	# qui gli indici sono relativi ai candidati
 	candidates = setdiff(params.current_inds,params.visited)
 	possible_seeds = params.PC.coordinates[:,candidates]
+
 	push!(params.possible_seeds,possible_seeds)
+
 	index, hyperplane = seedpoint(possible_seeds, params)
 	R = [candidates[index]]
 
 	# search cluster
 	# da qui in poi indici relativi ai punti correnti
 	visitati = search_cluster(points, R, hyperplane, params) #punti che non devono far parte dei mie seeds
-
+	@show "uscito "
 	listPoint = params.PC.coordinates[:,params.current_inds[R]]
 	listRGB = params.PC.rgbs[:,params.current_inds[R]]
 	hyperplane.points = PointCloud(listPoint,listRGB)
@@ -83,8 +85,9 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 
 	while !isempty(seeds)
 		tmp = Int[]
+		@show "cerco"
 		N = Common.neighborhood(kdtree,points,seeds,visitedverts,params.threshold)
-
+		@show length(N)
 		for i in N
 			p = points[:,i]
 			if Common.residual(hyperplane)(p) < params.par
@@ -95,6 +98,7 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		end
 
 		listPoint = points[:,R]
+		@show size(listPoint,2)
 		direction, centroid = Common.LinearFit(listPoint)
 		hyperplane.direction = direction
 		hyperplane.centroid = centroid

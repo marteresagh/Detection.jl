@@ -14,8 +14,9 @@ function seedpoint(points::Lar.Points, params::initParams, k=10::Int64)
 	kdtree = Common.KDTree(points)
 	randindex = rand(1:size(points,2))
 
-	@show points[:,randindex]
 	push!(params.punti_random_iniziali,points[:,randindex])
+
+	
 	idxseeds = Common.neighborhood(kdtree,points,[randindex],Int64[],params.threshold)
 	seeds = points[:,idxseeds]
 	direction, centroid = Common.LinearFit(seeds)
