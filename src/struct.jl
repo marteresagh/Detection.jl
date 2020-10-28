@@ -18,4 +18,5 @@ mutable struct initParams
 	N::Int64
 	visited::Array{Int64,1}
 	current_inds::Array{Int64,1}
+	punti_random_iniziali::Array{Array{Float64,1},1}
 end
