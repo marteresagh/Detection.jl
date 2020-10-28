@@ -20,14 +20,14 @@ function iterate_random_detection(params::initParams)
 	while search
 		found = false
 		while !found && f < params.failed
-		#	try
+			try
 				hyperplane, cluster, no_seeds = get_hyperplane_from_random_init_point(params)#PC, current_inds, par, threshold, visited)
-				#validity(hyperplane, params.N) #validity gli passo l'iperpiano e i parametri per la validità
+				validity(hyperplane, params.N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
-			# catch y
-			# 	f = f+1
-			# 	flushprintln("failed = $f")
-			# end
+			catch y
+				f = f+1
+				flushprintln("failed = $f")
+			end
 		end
 
 		if found
@@ -37,7 +37,6 @@ function iterate_random_detection(params::initParams)
 			push!(hyperplanes,hyperplane)
 			remove_points!(params.current_inds,cluster)
 			#union!(params.visited,no_seeds)
-			# deletePoints!(PCcurrent,hyperplane.points)
 		else
 			search = false
 		end
@@ -57,10 +56,8 @@ function get_hyperplane_from_random_init_point(params::initParams)#PC::PointClou
 	candidates = setdiff(params.current_inds,params.visited)
 	possible_seeds = params.PC.coordinates[:,candidates]
 
-	push!(params.possible_seeds,possible_seeds)
-
 	index, hyperplane = seedpoint(possible_seeds, params)
-	R = [candidates[index]]
+	R = findall(x->x==candidates[index], params.current_inds)
 
 	# search cluster
 	# da qui in poi indici relativi ai punti correnti
@@ -83,9 +80,7 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 
 	while !isempty(seeds)
 		tmp = Int[]
-		@show "cerco"
 		N = Common.neighborhood(kdtree,points,seeds,visitedverts,params.threshold)
-		@show length(N)
 		for i in N
 			p = points[:,i]
 			if Common.residual(hyperplane)(p) < params.par
@@ -96,7 +91,6 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		end
 
 		listPoint = points[:,R]
-		@show size(listPoint,2)
 		direction, centroid = Common.LinearFit(listPoint)
 		hyperplane.direction = direction
 		hyperplane.centroid = centroid
