@@ -1,26 +1,44 @@
 """
-Find seed point randomly.
+programmino
 """
-function seedpoint(points::Lar.Points, params::Initializer, k=10::Int64)
+function detection_and_saves(PC::PointCloud,
+	 						par::Float64,
+							threshold::Float64,
+							failed::Int64,
+							N::Int64,
+							k=10::Int64,
+							affine_matrix::Matrix,
+							folder::String,
+							filename::String,
+							lines = true::Bool)
 
-	"""
-	Return index of point in points with minor residual.
-	"""
-	function minresidual(points::Lar.Points, hyperplane::Hyperplane)
-		res = Common.residual(hyperplane).([points[:,c] for c in 1:size(points,2)])
-		return findmin(res)[2]
+	# 1. ricerca degli outliers
+	outliers = Common.outliers(PC, [1:PC.n_points...], k)
+
+	# 2. faccio partire il processo
+	if lines
+		INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
+	else
+		INPUT_PC = PC
 	end
 
-	kdtree = Common.KDTree(points)
-	randindex = rand(1:size(points,2))
+	no_seeds = copy(outliers)
+	params = Initializer(INPUT_PC, par, threshold, failed, N, k, no_seeds)
 
-	idxseeds = Common.neighborhood(kdtree,points,[randindex],Int64[],params.threshold)
-	seeds = points[:,idxseeds]
-	direction, centroid = Common.LinearFit(seeds)
+	hyperplanes = Detection.iterate_random_detection(params)
 
-	hyperplane = Hyperplane(direction,centroid)
-	min_index = minresidual(seeds,hyperplane)
-	seed = idxseeds[min_index]
+	# 3. salvo tutto
+	points_fitted = setdiff([1:PC.n_points...],params.current_inds)
+	PC_fitted = PointCloud(PC.coordinates[:,points_fitted],PC.rgbs[:,points_fitted])
+	PC_unfitted = PointCloud(PC.coordinates[:,params.current_inds],PC.rgbs[:,params.current_inds])
 
-	return seed, hyperplane
+	FileManager.save_lines_txt(joinpath(folder,filename)*"_lines.txt", hyperplanes, affine_matrix)
+
+	FileManager.save_pointcloud(joinpath(folder,filename)*"_pts_fitted.las", PC_fitted, "DETECTION" )
+	FileManager.save_points_rgbs_txt(joinpath(folder,filename)*"_pts_fitted.txt", PC_fitted)
+
+	FileManager.save_pointcloud(joinpath(folder,filename)*"_pts_unfitted.las", PC_unfitted, "DETECTION")
+	FileManager.save_points_rgbs_txt(joinpath(folder,filename)*"_pts_unfitted.txt", PC_unfitted)
+
+
 end

@@ -1,12 +1,28 @@
 """
-Delete points from model.
+Find first seed randomly.
 """
-function deletePoints!(PC::PointCloud, todel::PointCloud)
-	tokeep = setdiff([1:PC.n_points...],[Common.matchcolumn(todel.coordinates[:,i], PC.coordinates) for i in 1:todel.n_points])
+function seedpoint(points::Lar.Points, params::Initializer, k=10::Int64)
 
-	coordinates = PC.coordinates[:,tokeep]
-	rgbs = PC.rgbs[:,tokeep]
-	PC = PointCloud(coordinates,rgbs)
+	"""
+	Return index of point in points with minor residual.
+	"""
+	function minresidual(points::Lar.Points, hyperplane::Hyperplane)
+		res = Common.residual(hyperplane).([points[:,c] for c in 1:size(points,2)])
+		return findmin(res)[2]
+	end
+
+	kdtree = Common.KDTree(points)
+	randindex = rand(1:size(points,2))
+
+	idxseeds = Common.neighborhood(kdtree,points,[randindex],Int64[],params.threshold)
+	seeds = points[:,idxseeds]
+	direction, centroid = Common.LinearFit(seeds)
+
+	hyperplane = Hyperplane(direction,centroid)
+	min_index = minresidual(seeds,hyperplane)
+	seed = idxseeds[min_index]
+
+	return seed, hyperplane
 end
 
 """

@@ -31,7 +31,6 @@ function PlaneDetection(
 end
 
 
-
 function init(
 	source::String,
 	output::String,
