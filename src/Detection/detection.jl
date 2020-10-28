@@ -57,6 +57,7 @@ function get_hyperplane_from_random_init_point(params::initParams)#PC::PointClou
 	# qui gli indici sono relativi ai candidati
 	candidates = setdiff(params.current_inds,params.visited)
 	possible_seeds = params.PC.coordinates[:,candidates]
+	push!(params.possible_seeds,possible_seeds)
 	index, hyperplane = seedpoint(possible_seeds, params)
 	R = [candidates[index]]
 

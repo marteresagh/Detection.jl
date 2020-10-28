@@ -7,45 +7,6 @@ using Statistics
 fname = "examples/wall.las"
 fname = "examples/muriAngolo.las"
 fname = "examples/area.las"
-PC = FileManager.las2pointcloud(fname)
-
-PC2D = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
-
-par = 0.07
-threshold = 2*0.03
-failed = 200
-N = 100
-hyperplanes, current_inds, visited = Detection.iterate_random_detection(PC2D, par, threshold, failed, N)
-
-presi = setdiff!([1:PC.n_points...],current_inds)
-
-GL.VIEW([
-            GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,current_inds]'),GL.COLORS[2]),
-            GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,visited]'),GL.COLORS[1]),
-            GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,presi]'),GL.COLORS[12]),
-        ])
-
-GL.VIEW([Visualization.mesh_lines(hyperplanes)...])
-
-# ===============
-hyperplane = hyperplanes[5]
-points = hyperplane.points.coordinates
-Statistics.cor(points[1,:],points[2,:])
-R = [1:hyperplane.points.n_points...]
-res = Common.residual(hyperplane).([points[:,i] for i in R])
-max(res...)
-min(res...)
-mu = Statistics.mean(res)
-rho = Statistics.stdm(res,0.0)
-
-L,EL = Common.DrawLine(hyperplane,0.0)
-
-GL.VIEW([   GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[1]),
-            #GL.GLPoints(convert(Lar.Points,points[:,R[todel]]'),GL.COLORS[2]),
-
-            GL.GLGrid(L,EL,GL.COLORS[12],1.0)
-        ])
-
 
 #######################  REMOVE POINTS
 fname = "examples/muriAngolo.las"
@@ -54,7 +15,7 @@ PC2D = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 current_inds = [1:PC2D.n_points...]
 k = 5
 outliers = Common.outliers(PC2D, current_inds, k)
- da_tenere = setdiff(current_inds,outliers)
+da_tenere = setdiff(current_inds,outliers)
 
 GL.VIEW([  	#GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[2]) ,
   			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,outliers]'),GL.COLORS[2]),
@@ -62,12 +23,12 @@ GL.VIEW([  	#GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[2]) ,
 		])
 
 par = 0.07
-threshold = 2*0.07
-failed = 2000
+threshold = 2*0.03
+failed = 200
 N = 100
 current_inds = [1:PC2D.n_points...]
 visited = copy(outliers)
-params = initParams(PC2D,par,threshold,failed,N,visited,current_inds)
+params = initParams(PC2D,par,threshold,failed,N,visited,current_inds,[],[])
 
 
 hyperplanes = Detection.iterate_random_detection(params)
@@ -85,9 +46,12 @@ GL.VIEW([
 
 		])
 
+
+punti = hcat(params.punti_random_iniziali...)
 GL.VIEW(
     [
-    Visualization.points_color_from_rgb(PC.coordinates,PC.rgbs)
+	GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[2]),
+    GL.GLPoints(convert(Lar.Points,punti'),GL.COLORS[12]),
     ]
 )
 
