@@ -1,7 +1,7 @@
 """
 Find seed point randomly.
 """
-function seedpoint(points::Lar.Points, params::initParams, k=10::Int64)
+function seedpoint(points::Lar.Points, params::Initializer, k=10::Int64)
 
 	"""
 	Return index of point in points with minor residual.

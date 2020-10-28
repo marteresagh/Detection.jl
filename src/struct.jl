@@ -10,7 +10,7 @@
 # 	failed::UInt16
 # end
 
-mutable struct initParams
+mutable struct Initializer
 	PC::PointCloud
 	par::Float64
 	threshold::Float64
@@ -18,6 +18,7 @@ mutable struct initParams
 	N::Int64
 	visited::Array{Int64,1}
 	current_inds::Array{Int64,1}
-	# punti_random_iniziali::Array{Array{Float64,1},1}
-	# possible_seeds::Array{Lar.Points,1}
+
+	Initializer(PC, par, threshold, failed, N, visited) = new(PC, par, threshold, failed, N, visited, [1:PC.n_points...])
+	Initializer(PC, par, threshold, failed, N) = new(PC, par, threshold, failed, N, [], [1:PC.n_points...])
 end

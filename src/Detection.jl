@@ -9,5 +9,5 @@ module Detection
     include("Detection/init.jl")
     include("Detection/util.jl")
 
-    export initParams
+    export Initializer
 end # module

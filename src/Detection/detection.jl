@@ -1,4 +1,4 @@
-function iterate_random_detection(params::initParams)
+function iterate_random_detection(params::Initializer)
 
 	# 1. - initialization
 	# if PC.dimension == 2
@@ -36,7 +36,7 @@ function iterate_random_detection(params::initParams)
 			flushprintln("$i shapes found")
 			push!(hyperplanes,hyperplane)
 			remove_points!(params.current_inds,cluster)
-			#union!(params.visited,no_seeds)
+			union!(params.visited,no_seeds)
 		else
 			search = false
 		end
@@ -47,7 +47,7 @@ function iterate_random_detection(params::initParams)
 end
 
 
-function get_hyperplane_from_random_init_point(params::initParams)#PC::PointCloud, current_inds::Array{Int64,1}, par::Float64, threshold::Float64, visited::Array{Int64,1})
+function get_hyperplane_from_random_init_point(params::Initializer)#PC::PointCloud, current_inds::Array{Int64,1}, par::Float64, threshold::Float64, visited::Array{Int64,1})
 
 
 	points = params.PC.coordinates[:,params.current_inds]
@@ -71,7 +71,7 @@ function get_hyperplane_from_random_init_point(params::initParams)#PC::PointClou
 end
 
 
-function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, params::initParams)
+function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, params::Initializer)
 
 	kdtree = Common.KDTree(points)
 	seeds = copy(R)
