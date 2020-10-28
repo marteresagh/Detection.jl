@@ -19,11 +19,11 @@ end
 """
 Assert the detected hyperplane is valid / interesting
 """
-function validity(hyperplane::Hyperplane,N::Int64)
+function validity(hyperplane::Hyperplane, params::Initializer)
 	# VALIDITY
 	pc_on_hyperplane = hyperplane.points
 	#@show linedetected
-	@assert  pc_on_hyperplane.n_points > N "not valid"  #da automatizzare
+	@assert  pc_on_hyperplane.n_points > params.N "not valid" #TODO da ottimizzare
 	# line = linedetected.line
 	# E,_ = PointClouds.DrawLine(pointsonline.points, line, 0.0)
 	# dist = Lar.norm(E[:,1]-E[:,2])

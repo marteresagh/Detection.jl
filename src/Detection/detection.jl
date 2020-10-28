@@ -1,16 +1,12 @@
 function iterate_random_detection(params::Initializer)
 
 	# 1. - initialization
-	# if PC.dimension == 2
-	# 	elimina vertici doppi
-	# end
-
-	#current_inds = [1:PC.n_points...]
 	hyperplanes = Hyperplane[]
+
 	hyperplane = nothing
 	cluster = nothing
-	#visited = Int64[]
-	no_seeds = nothing
+	all_visited_verts = nothing
+
 	f = 0
 	i = 0
 
@@ -21,7 +17,7 @@ function iterate_random_detection(params::Initializer)
 		found = false
 		while !found && f < params.failed
 			try
-				hyperplane, cluster, no_seeds = get_hyperplane_from_random_init_point(params)#PC, current_inds, par, threshold, visited)
+				hyperplane, cluster, all_visited_verts = get_hyperplane_from_random_init_point(params)#PC, current_inds, par, threshold, visited)
 				validity(hyperplane, params.N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
 			catch y
@@ -35,8 +31,8 @@ function iterate_random_detection(params::Initializer)
 			i = i+1
 			flushprintln("$i shapes found")
 			push!(hyperplanes,hyperplane)
-			remove_points!(params.current_inds,cluster)
-			union!(params.visited,no_seeds)
+			remove_points!(params.current_inds,cluster) # nuovi punti di input
+			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed
 		else
 			search = false
 		end
@@ -47,27 +43,28 @@ function iterate_random_detection(params::Initializer)
 end
 
 
-function get_hyperplane_from_random_init_point(params::Initializer)#PC::PointCloud, current_inds::Array{Int64,1}, par::Float64, threshold::Float64, visited::Array{Int64,1})
-
+function get_hyperplane_from_random_init_point(params::Initializer)
 
 	points = params.PC.coordinates[:,params.current_inds]
+
 	# 1. ricerca del seed
+
 	# qui gli indici sono relativi ai candidati
 	candidates = setdiff(params.current_inds,params.visited)
 	possible_seeds = params.PC.coordinates[:,candidates]
-
 	index, hyperplane = seedpoint(possible_seeds, params)
+
+	# da qui in poi indici relativi ai punti correnti
 	R = findall(x->x==candidates[index], params.current_inds)
 
-	# search cluster
-	# da qui in poi indici relativi ai punti correnti
-	visitati = search_cluster(points, R, hyperplane, params) #punti che non devono far parte dei mie seeds
+	# 2.  search cluster
+	all_visited_verts = search_cluster(points, R, hyperplane, params) #punti che non devono far parte dei mie seeds
 	listPoint = params.PC.coordinates[:,params.current_inds[R]]
 	listRGB = params.PC.rgbs[:,params.current_inds[R]]
 	hyperplane.points = PointCloud(listPoint,listRGB)
 
 	# gli indici tornano relativi ai punti totali
-	return hyperplane, params.current_inds[R], params.current_inds[visitati]
+	return hyperplane, params.current_inds[R], params.current_inds[all_visited_verts]
 end
 
 
@@ -132,7 +129,7 @@ function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane
 
 	# seconda parte
 	res = Common.residual(Hyperplane(direction,centroid)).([points[:,i] for i in R])
-	todel = [ res[i] > par/2 for i in 1:length(res) ]
+	todel = [ res[i] > par/2 for i in 1:length(res) ] #TODO da ottimizzare
 	setdiff!(R,R[todel])
 
 	#return direction, centroid
