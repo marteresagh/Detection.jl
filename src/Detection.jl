@@ -2,7 +2,6 @@ module Detection
 
     using Common
     using FileManager
-    using Statistics
 
     include("struct.jl")
 

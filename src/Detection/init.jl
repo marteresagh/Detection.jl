@@ -1,7 +1,7 @@
 """
 Find seed point randomly.
 """
-function seedpoint(points::Lar.Points, threshold::Float64, not_visited::Array{Int64,1}, k=10::Int64)
+function seedpoint(points::Lar.Points, params::initParams, k=10::Int64)
 
 	"""
 	Return index of point in points with minor residual.
@@ -12,9 +12,11 @@ function seedpoint(points::Lar.Points, threshold::Float64, not_visited::Array{In
 	end
 
 	kdtree = Common.KDTree(points)
-	randindex = rand(not_visited) #rand(1:size(points,2))
+	randindex = rand(1:size(points,2))
 
-	idxseeds = Common.neighborhood(kdtree,points,[randindex],Int64[],threshold)
+	@show points[:,randindex]
+	push!(params.punti_random_iniziali,points[:,randindex])
+	idxseeds = Common.neighborhood(kdtree,points,[randindex],Int64[],params.threshold)
 	seeds = points[:,idxseeds]
 	direction, centroid = Common.LinearFit(seeds)
 
@@ -22,5 +24,5 @@ function seedpoint(points::Lar.Points, threshold::Float64, not_visited::Array{In
 	min_index = minresidual(seeds,hyperplane)
 	seed = idxseeds[min_index]
 
-	return seed, hyperplane, randindex
+	return seed, hyperplane
 end

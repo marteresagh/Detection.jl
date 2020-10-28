@@ -10,7 +10,7 @@ function iterate_random_detection(params::initParams)
 	hyperplane = nothing
 	cluster = nothing
 	#visited = Int64[]
-	visits = nothing
+	no_seeds = nothing
 	f = 0
 	i = 0
 
@@ -19,10 +19,9 @@ function iterate_random_detection(params::initParams)
 	search = true
 	while search
 		found = false
-		@show length(visited)
 		while !found && f < params.failed
 			try
-				hyperplane, cluster, visits = get_hyperplane_from_random_init_point(params)#PC, current_inds, par, threshold, visited)
+				hyperplane, cluster, no_seeds = get_hyperplane_from_random_init_point(params)#PC, current_inds, par, threshold, visited)
 				validity(hyperplane, params.N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
 			catch y
@@ -36,8 +35,8 @@ function iterate_random_detection(params::initParams)
 			i = i+1
 			flushprintln("$i shapes found")
 			push!(hyperplanes,hyperplane)
-			remove_points!(current_inds,cluster)
-			union!(params.visited,visits)
+			remove_points!(params.current_inds,cluster)
+			#union!(params.visited,no_seeds)
 			# deletePoints!(PCcurrent,hyperplane.points)
 		else
 			search = false
@@ -45,27 +44,32 @@ function iterate_random_detection(params::initParams)
 
 	end
 
-	return hyperplanes, current_inds, visited
+	return hyperplanes
 end
 
 
 function get_hyperplane_from_random_init_point(params::initParams)#PC::PointCloud, current_inds::Array{Int64,1}, par::Float64, threshold::Float64, visited::Array{Int64,1})
 
-	# firt sample
+
 	points = params.PC.coordinates[:,params.current_inds]
-	not_visited = setdiff(params.current_inds,params.visited)
-	#da qui in poi indici relativi ai punti correnti
-	index, hyperplane, first_index = seedpoint(points, params.threshold, not_visited)
-	R = [index]
+
+	# 1. ricerca del seed
+	# qui gli indici sono relativi ai candidati
+	candidates = setdiff(params.current_inds,params.visited)
+	possible_seeds = params.PC.coordinates[:,candidates]
+	index, hyperplane = seedpoint(possible_seeds, params)
+	R = [candidates[index]]
 
 	# search cluster
-	visited = search_cluster(points, R, hyperplane, par, threshold)
-	listPoint = PC.coordinates[:,current_inds[R]]
-	listRGB = PC.rgbs[:,current_inds[R]]
+	# da qui in poi indici relativi ai punti correnti
+	visitati = search_cluster(points, R, hyperplane, params) #punti che non devono far parte dei mie seeds
+
+	listPoint = params.PC.coordinates[:,params.current_inds[R]]
+	listRGB = params.PC.rgbs[:,params.current_inds[R]]
 	hyperplane.points = PointCloud(listPoint,listRGB)
 
-
-	return hyperplane, current_inds[R], current_inds[visited]
+	# gli indici tornano relativi ai punti totali
+	return hyperplane, params.current_inds[R], params.current_inds[visitati]
 end
 
 

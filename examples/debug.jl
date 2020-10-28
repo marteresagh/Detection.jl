@@ -52,25 +52,38 @@ fname = "examples/muriAngolo.las"
 PC = FileManager.las2pointcloud(fname)
 PC2D = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 current_inds = [1:PC2D.n_points...]
-k = 10
+k = 5
 outliers = Common.outliers(PC2D, current_inds, k)
-da_tenere = setdiff(current_inds,outliers)
+ da_tenere = setdiff(current_inds,outliers)
 
 GL.VIEW([  	#GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[2]) ,
   			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,outliers]'),GL.COLORS[2]),
 			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,da_tenere]'),GL.COLORS[12])
 		])
 
-
 par = 0.07
-threshold = 2*0.05
+threshold = 2*0.07
 failed = 2000
 N = 100
+current_inds = [1:PC2D.n_points...]
+visited = copy(outliers)
+params = initParams(PC2D,par,threshold,failed,N,visited,current_inds)
 
-hyperplanes, current_inds, visited = Detection.iterate_random_detection(PC2D, par, threshold, failed, N, outliers)
+
+hyperplanes = Detection.iterate_random_detection(params)
+#Detection.get_hyperplane_from_random_init_point(params)
+presi = setdiff!([1:PC.n_points...],params.current_inds)
 
 visual = Visualization.mesh_lines(hyperplanes)
 GL.VIEW([visual...])
+L,EL = Common.DrawLines(hyperplanes,0.0)
+GL.VIEW([
+  			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,current_inds]'),GL.COLORS[12]),
+			GL.GLGrid(L,EL,GL.COLORS[8],1.0),
+			#GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,presi]'),GL.COLORS[2]) ,
+			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,params.visited]'),GL.COLORS[1]),
+
+		])
 
 GL.VIEW(
     [
@@ -78,14 +91,33 @@ GL.VIEW(
     ]
 )
 
-presi = setdiff!([1:PC.n_points...],current_inds)
 
 GL.VIEW([
             GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,current_inds]'),GL.COLORS[2]),
             GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,visited]'),GL.COLORS[1]),
             GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,presi]'),GL.COLORS[12]),
-        ])
+])
 
+
+PC_finale = PointCloud(PC.coordinates[1:2,current_inds], PC.rgbs[:,current_inds])
+current_inds = [1:PC_finale.n_points...]
+k = 10
+outliers = Common.outliers(PC2D, current_inds, k)
+params = initParams(PC_finale,par,threshold,failed,N,outliers,current_inds)
+hyperplanes = Detection.iterate_random_detection(params)
+#Detection.get_hyperplane_from_random_init_point(params)
+presi = setdiff!([1:PC.n_points...],params.current_inds)
+
+visual = Visualization.mesh_lines(hyperplanes)
+GL.VIEW([visual...])
+L,EL = Common.DrawLines(hyperplanes,0.0)
+GL.VIEW([
+  			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,current_inds]'),GL.COLORS[12]),
+			GL.GLGrid(L,EL,GL.COLORS[8],1.0),
+			#GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,presi]'),GL.COLORS[2]) ,
+			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,params.visited]'),GL.COLORS[1]),
+
+		])
 
 
 # # ======================= INPUT generation === Semi-cerchio
