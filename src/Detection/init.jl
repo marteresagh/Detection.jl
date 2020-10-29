@@ -3,7 +3,7 @@ programmino
 """
 function detection_and_saves(
 							folder::String,
-							filename::String,
+							project_name::String,
 							source::String,
 	 						par::Float64,
 							threshold::Float64,
@@ -14,7 +14,16 @@ function detection_and_saves(
 							lines = true::Bool
 							)
 
+
 	flushprintln("=========== INIT =============")
+
+	@assert isdir(folder) "$folder not an existing folder"
+	proj_folder = joinpath(folder,project_name)
+
+	if !isdir(proj_folder)
+		mkdir(proj_folder)
+	end
+
 	PC = FileManager.las2pointcloud(source)
 
 	flushprintln(" Found possible outliers to remove ")
@@ -34,7 +43,7 @@ function detection_and_saves(
 
 	# 3. salvo tutto
 	flushprintln("=========== SAVES =============")
-	name = joinpath(folder,filename)
+	name = joinpath(proj_folder,project_name)
 	saves_data(PC, params, hyperplanes, affine_matrix, name)
 
 	return hyperplanes,params

@@ -12,7 +12,7 @@ function parse_commandline()
 		"source"
 			help = "Input file LAS"
 			required = true
-		"--projectname", "-n"
+		"--projectname", "-p"
             help = "Project name"
 			required = true
 		"--output", "-o"
@@ -68,7 +68,7 @@ function main()
 
 	affine_matrix = Detection.Lar.t(0,0,q)
 
-	#Detection.detection_and_saves(output_folder, project_name, source, par, threshold, failed, N, k, affine_matrix	)
+	Detection.detection_and_saves(output_folder, project_name, source, par, threshold, failed, N, k, affine_matrix	)
 end
 
 @time main()
