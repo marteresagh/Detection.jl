@@ -36,9 +36,9 @@ end
 
 
 function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperplane,1},affine_matrix::Matrix, path2name::String)
-	points_fitted = setdiff([1:PC.n_points...],params.current_inds)
-	PC_fitted = PointCloud(PC.coordinates[:,points_fitted],PC.rgbs[:,points_fitted])
-	PC_unfitted = PointCloud(PC.coordinates[:,params.current_inds],PC.rgbs[:,params.current_inds])
+	points_unfitted = setdiff([1:PC.n_points...],params.visited)
+	PC_fitted = PointCloud(PC.coordinates[:,params.visited],PC.rgbs[:,params.visited])
+	PC_unfitted = PointCloud(PC.coordinates[:,points_unfitted],PC.rgbs[:,points_unfitted])
 	PC_outliers = PointCloud(PC.coordinates[:,params.outliers],PC.rgbs[:,params.outliers])
 
 	FileManager.save_lines_txt(path2name*"_lines.txt", hyperplanes, affine_matrix)
