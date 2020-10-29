@@ -51,27 +51,31 @@ end
 
 
 function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperplane,1},affine_matrix::Matrix, path2name::String)
-	points_unfitted = setdiff([1:PC.n_points...],params.visited)
-	PC_fitted = PointCloud(PC.coordinates[:,params.visited],PC.rgbs[:,params.visited])
+	points_unfitted = setdiff([1:PC.n_points...],params.fitted)
+	PC_fitted = PointCloud(PC.coordinates[:,params.fitted],PC.rgbs[:,params.fitted])
 	PC_unfitted = PointCloud(PC.coordinates[:,points_unfitted],PC.rgbs[:,points_unfitted])
-	red_color =  hcat(fill([1,.0,.0],length(params.outliers))...)
+	red_color =  hcat(fill(LasIO.N0f16.([1,.0,.0]),length(params.outliers))...)
 	PC_outliers = PointCloud(PC.coordinates[:,params.outliers],red_color)
 
 	flushprintln("Lines: saving...")
+	flushprintln("Detect $(length(hyperplanes)) lines")
 	FileManager.save_lines_txt(path2name*"_lines.txt", hyperplanes, affine_matrix)
 	flushprintln("Lines: done...")
 
 	flushprintln("Fitted points: saving...")
+	flushprintln("Fitted $(length(params.visited)) points")
 	FileManager.save_pointcloud(path2name*"_pts_fitted.las", PC_fitted, "DETECTION" )
 	FileManager.save_points_rgbs_txt(path2name*"_pts_fitted.txt", PC_fitted)
 	flushprintln("Fitted points: done...")
 
 	flushprintln("Unfitted points: saving...")
+	flushprintln("Unfitted $(length(points_unfitted)) points")
 	FileManager.save_pointcloud(path2name*"_pts_unfitted.las", PC_unfitted, "DETECTION")
 	FileManager.save_points_rgbs_txt(path2name*"_pts_unfitted.txt", PC_unfitted)
 	flushprintln("Unfitted points: done...")
 
 	flushprintln("Outliers points: saving...")
+	flushprintln("Marked $(length(params.outliers)) outliers")
 	FileManager.save_pointcloud(path2name*"_pts_outliers.las", PC_outliers, "DETECTION")
 	FileManager.save_points_rgbs_txt(path2name*"_pts_outliers.txt", PC_outliers)
 	flushprintln("Outliers points: done...")

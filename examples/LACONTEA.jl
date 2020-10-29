@@ -8,11 +8,11 @@ using FileManager
 source = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\Sezione_z650.las"
 
 folder = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\TEST_LINES\\prova"
-filename = "sezione_z650_provaScript"
+filename = "SCRIPT"
 PC = FileManager.las2pointcloud(fname)
 par = 0.07
 threshold = 2*0.03
-failed = 100
+failed = 3
 N = 100
 k = 10
 affine_matrix = Lar.r(0,0,6.50)
@@ -30,6 +30,8 @@ hyperplanes,params = Detection.detection_and_saves(
 							k,
 							affine_matrix
 							)
+
+# julia detection.jl "C:\Users\marte\Documents\GEOWEB\FilePotree\orthoCONTEA\Sezione_z650.las" -p "PROVA" -o "C:\Users\marte\Documents\GEOWEB\FilePotree\TEST_LINES\prova" --par 0.02 --thr 0.06 --quote 6.50
 
 GL.VIEW([ Visualization.mesh_lines(hyperplanes)...])
 

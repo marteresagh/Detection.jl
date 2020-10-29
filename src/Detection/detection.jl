@@ -31,6 +31,7 @@ function iterate_random_detection(params::Initializer)
 			i = i+1
 			flushprintln("$i shapes found")
 			push!(hyperplanes,hyperplane)
+			union!(params.fitted,cluster)
 			#remove_points!(params.current_inds,cluster) # nuovi punti di input
 			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed
 			union!(params.visited,cluster) # non li tolgo dal modello ma li marco come visitati
