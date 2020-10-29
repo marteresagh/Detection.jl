@@ -54,7 +54,8 @@ function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperp
 	points_unfitted = setdiff([1:PC.n_points...],params.visited)
 	PC_fitted = PointCloud(PC.coordinates[:,params.visited],PC.rgbs[:,params.visited])
 	PC_unfitted = PointCloud(PC.coordinates[:,points_unfitted],PC.rgbs[:,points_unfitted])
-	PC_outliers = PointCloud(PC.coordinates[:,params.outliers],PC.rgbs[:,params.outliers])
+	red_color =  hcat(fill([1,.0,.0],length(params.outliers))...)
+	PC_outliers = PointCloud(PC.coordinates[:,params.outliers],red_color)
 
 	flushprintln("Lines: saving...")
 	FileManager.save_lines_txt(path2name*"_lines.txt", hyperplanes, affine_matrix)
