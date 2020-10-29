@@ -35,7 +35,7 @@ function detection_and_saves(
 end
 
 
-function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperplanes,1},affine_matrix::Matrix, path2name::String)
+function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperplane,1},affine_matrix::Matrix, path2name::String)
 	points_fitted = setdiff([1:PC.n_points...],params.current_inds)
 	PC_fitted = PointCloud(PC.coordinates[:,points_fitted],PC.rgbs[:,points_fitted])
 	PC_unfitted = PointCloud(PC.coordinates[:,params.current_inds],PC.rgbs[:,params.current_inds])
