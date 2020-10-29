@@ -31,6 +31,7 @@ function detection_and_saves(
 	name = joinpath(folder,filename)
 	saves_data(PC, params, hyperplanes, affine_matrix, name)
 
+	return hyperplanes,params
 end
 
 
