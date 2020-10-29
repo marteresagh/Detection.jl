@@ -14,20 +14,24 @@ function detection_and_saves(
 							lines = true::Bool
 							)
 
+	flushprintln("====== Found outliers to remove =======")
 	# 1. ricerca degli outliers
 	outliers = Common.outliers(PC, [1:PC.n_points...], k)
 
-	# 2. faccio partire il processo
+
 	if lines
 		INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 	else
 		INPUT_PC = PC
 	end
 
+	flushprintln("=========== PROCESSING =============")
+	# 2. faccio partire il processo
 	params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
 	hyperplanes = Detection.iterate_random_detection(params)
 
 	# 3. salvo tutto
+	flushprintln("=========== SAVES =============")
 	name = joinpath(folder,filename)
 	saves_data(PC, params, hyperplanes, affine_matrix, name)
 
