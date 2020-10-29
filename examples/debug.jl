@@ -13,7 +13,7 @@ fname = "examples/muriAngolo.las"
 PC = FileManager.las2pointcloud(fname)
 PC2D = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 current_inds = [1:PC2D.n_points...]
-k = 5
+k = 20
 outliers = Common.outliers(PC2D, current_inds, k)
 da_tenere = setdiff(current_inds,outliers)
 
@@ -26,20 +26,19 @@ par = 0.07
 threshold = 2*0.03
 failed = 100
 N = 100
-current_inds = [1:PC2D.n_points...]
+
 visited = copy(outliers)
-params = Initializer(PC2D,par,threshold,failed,N,visited,current_inds)
-
-
+params = Initializer(PC2D,par,threshold,failed,N,visited)
 hyperplanes = Detection.iterate_random_detection(params)
 
+Detection.get_hyperplane_from_random_init_point(params)
 presi = setdiff!([1:PC.n_points...],params.current_inds)
 
 visual = Visualization.mesh_lines(hyperplanes)
 GL.VIEW([visual...])
 L,EL = Common.DrawLines(hyperplanes,0.0)
 GL.VIEW([
-  			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,current_inds]'),GL.COLORS[12]),
+  			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,params.current_inds]'),GL.COLORS[12]),
 			GL.GLGrid(L,EL,GL.COLORS[8],1.0),
 			#GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,presi]'),GL.COLORS[2]) ,
 			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,params.visited]'),GL.COLORS[1]),

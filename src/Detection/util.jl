@@ -1,7 +1,7 @@
 """
 Find first seed randomly.
 """
-function seedpoint(points::Lar.Points, params::Initializer, k=10::Int64)
+function seedpoint(points::Lar.Points, params::Initializer)
 
 	"""
 	Return index of point in points with minor residual.
@@ -14,7 +14,7 @@ function seedpoint(points::Lar.Points, params::Initializer, k=10::Int64)
 	kdtree = Common.KDTree(points)
 	randindex = rand(1:size(points,2))
 
-	idxseeds = Common.neighborhood(kdtree,points,[randindex],Int64[],params.threshold)
+	idxseeds = Common.neighborhood(kdtree,points,[randindex],Int64[],params.threshold,params.k)
 	seeds = points[:,idxseeds]
 	direction, centroid = Common.LinearFit(seeds)
 

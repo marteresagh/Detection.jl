@@ -17,7 +17,7 @@ function iterate_random_detection(params::Initializer)
 		found = false
 		while !found && f < params.failed
 			try
-				hyperplane, cluster, all_visited_verts = get_hyperplane_from_random_init_point(params)#PC, current_inds, par, threshold, visited)
+				hyperplane, cluster, all_visited_verts = get_hyperplane_from_random_init_point(params)
 				validity(hyperplane, params.N) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
 			catch y
@@ -31,8 +31,9 @@ function iterate_random_detection(params::Initializer)
 			i = i+1
 			flushprintln("$i shapes found")
 			push!(hyperplanes,hyperplane)
-			remove_points!(params.current_inds,cluster) # nuovi punti di input
+			#remove_points!(params.current_inds,cluster) # nuovi punti di input
 			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed
+			union!(params.visited,cluster) # non li tolgo dal modello ma li marco come visitati
 		else
 			search = false
 		end
@@ -77,7 +78,7 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 
 	while !isempty(seeds)
 		tmp = Int[]
-		N = Common.neighborhood(kdtree,points,seeds,visitedverts,params.threshold)
+		N = Common.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k)
 		for i in N
 			p = points[:,i]
 			if Common.residual(hyperplane)(p) < params.par
@@ -91,9 +92,10 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		direction, centroid = Common.LinearFit(listPoint)
 		hyperplane.direction = direction
 		hyperplane.centroid = centroid
-		seeds = tmp
+		# seeds = tmp
 		# == optimize da sistemare
-		optimize!(points,R,hyperplane,params.par)
+		todel = optimize!(points,R,hyperplane,params.par) #TODO da sistemare questa cosa
+		seeds = setdiff(tmp,todel)
 		# ==
 	end
 
@@ -130,7 +132,8 @@ function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane
 	# seconda parte
 	res = Common.residual(Hyperplane(direction,centroid)).([points[:,i] for i in R])
 	todel = [ res[i] > par/2 for i in 1:length(res) ] #TODO da ottimizzare
-	setdiff!(R,R[todel])
+	to_del = R[todel]
+	setdiff!(R,to_del)
 
-	#return direction, centroid
+	return to_del
 end

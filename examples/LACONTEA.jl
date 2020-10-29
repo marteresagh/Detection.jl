@@ -24,7 +24,7 @@ failed = 100
 N = 100
 current_inds = [1:PC2D.n_points...]
 visited = copy(outliers)
-params = Initializer(PC2D,par,threshold,failed,N,visited,current_inds)
+params = Initializer(PC2D,par,threshold,failed,N,visited)
 
 hyperplanes = Detection.iterate_random_detection(params)
 
@@ -35,6 +35,7 @@ punti_presi = PointCloud(PC.coordinates[:,presi],PC.rgbs[:,presi])
 punti_rimasti = PointCloud(PC.coordinates[:,params.current_inds],PC.rgbs[:,params.current_inds])
 V,EV = Common.DrawLines(hyperplanes, 0.0)
 
+
 GL.VIEW(
     [
     GL.GLGrid(V,EV,GL.COLORS[1],1.0)
@@ -42,9 +43,11 @@ GL.VIEW(
 )
 
 
-GL.VIEW([   GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,params.current_inds]'),GL.COLORS[12]),
-            GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,presi]'),GL.COLORS[2]),
-            GL.GLGrid(L,EL,GL.COLORS[1],1.0),
+GL.VIEW([  # GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,params.current_inds]'),GL.COLORS[12]),
+			GL.GLPoints(convert(Lar.Points,PC_unfitted.coordinates[1:2,:]'),GL.COLORS[12]),
+            GL.GLPoints(convert(Lar.Points,PC_fitted.coordinates[1:2,:]'),GL.COLORS[2]),
+
+            GL.GLGrid(V,EV,GL.COLORS[1],1.0),
         ])
 
 # ============== DEBUG
