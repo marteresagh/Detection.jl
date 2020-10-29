@@ -1,5 +1,5 @@
 function iterate_random_detection(params::Initializer)
-
+	inputBuffer = monitorInput()
 	# 1. - initialization
 	hyperplanes = Hyperplane[]
 
@@ -14,6 +14,10 @@ function iterate_random_detection(params::Initializer)
 	flushprintln("======= Start search =======")
 	search = true
 	while search
+		if isready(inputBuffer) && take!(inputBuffer) == 'q'
+	        break
+	    end
+		
 		found = false
 		while !found && f < params.failed
 			try
