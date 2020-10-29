@@ -9,10 +9,10 @@ source = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\Sezione_
 
 folder = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\TEST_LINES\\prova"
 filename = "SCRIPT"
-PC = FileManager.las2pointcloud(fname)
+PC = FileManager.las2pointcloud(source)
 par = 0.07
 threshold = 2*0.03
-failed = 3
+failed = 1
 N = 100
 k = 10
 affine_matrix = Lar.r(0,0,6.50)
