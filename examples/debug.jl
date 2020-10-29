@@ -24,14 +24,13 @@ GL.VIEW([  	#GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[2]) ,
 
 par = 0.07
 threshold = 2*0.03
-failed = 100
+failed = 10
 N = 100
 
-visited = copy(outliers)
-params = Initializer(PC2D,par,threshold,failed,N,visited)
+params = Initializer(PC2D,par,threshold,failed,N,k,outliers)
 hyperplanes = Detection.iterate_random_detection(params)
 
-Detection.get_hyperplane_from_random_init_point(params)
+hyperplane,_= Detection.get_hyperplane_from_random_init_point(params)
 presi = setdiff!([1:PC.n_points...],params.current_inds)
 
 visual = Visualization.mesh_lines(hyperplanes)

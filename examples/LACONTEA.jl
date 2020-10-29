@@ -5,28 +5,31 @@ using FileManager
 
 
 # ============== DEBUG
-fname = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\Sezione_z650.las"
+source = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\Sezione_z650.las"
+
+folder = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\TEST_LINES\\prova"
+filename = "sezione_z650_provaScript"
 PC = FileManager.las2pointcloud(fname)
-PC2D = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
-current_inds = [1:PC2D.n_points...]
-k = 20
-outliers = Common.outliers(PC2D, current_inds, k)
-da_tenere = setdiff(current_inds,outliers)
-
-GL.VIEW([  	#GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[2]) ,
-  			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,outliers]'),GL.COLORS[2]),
-			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,da_tenere]'),GL.COLORS[12])
-		])
-
 par = 0.07
 threshold = 2*0.03
 failed = 100
 N = 100
-current_inds = [1:PC2D.n_points...]
-visited = copy(outliers)
-params = Initializer(PC2D,par,threshold,failed,N,visited)
+k = 10
+affine_matrix = Lar.r(0,0,6.50)
 
-hyperplanes = Detection.iterate_random_detection(params)
+# direction,centroid = Common.LinearFit(PC.coordinates)
+
+hyperplanes,params = Detection.detection_and_saves(
+							folder,
+							filename,
+							source,
+	 						par,
+							threshold,
+							failed,
+							N,
+							k,
+							affine_matrix
+							)
 
 GL.VIEW([ Visualization.mesh_lines(hyperplanes)...])
 

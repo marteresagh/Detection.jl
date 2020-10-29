@@ -18,10 +18,8 @@ function iterate_random_detection(params::Initializer)
 		while !found && f < params.failed
 			try
 				hyperplane, cluster, all_visited_verts = get_hyperplane_from_random_init_point(params)
-				@show "sono qui"
 				validity(hyperplane, params) #validity gli passo l'iperpiano e i parametri per la validità
 				found = true
-				@show "trovato"
 			catch y
 				f = f+1
 				flushprintln("failed = $f")

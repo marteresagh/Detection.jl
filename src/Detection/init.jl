@@ -4,7 +4,7 @@ programmino
 function detection_and_saves(
 							folder::String,
 							filename::String,
-							PC::PointCloud,
+							source::String,
 	 						par::Float64,
 							threshold::Float64,
 							failed::Int64,
@@ -14,10 +14,12 @@ function detection_and_saves(
 							lines = true::Bool
 							)
 
-	flushprintln("====== Found outliers to remove =======")
+	flushprintln("=========== INIT =============")
+	PC = FileManager.las2pointcloud(source)
+
+	flushprintln(" Found possible outliers to remove ")
 	# 1. ricerca degli outliers
 	outliers = Common.outliers(PC, [1:PC.n_points...], k)
-
 
 	if lines
 		INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
@@ -45,14 +47,22 @@ function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperp
 	PC_unfitted = PointCloud(PC.coordinates[:,points_unfitted],PC.rgbs[:,points_unfitted])
 	PC_outliers = PointCloud(PC.coordinates[:,params.outliers],PC.rgbs[:,params.outliers])
 
+	flushprintln("Lines: saving...")
 	FileManager.save_lines_txt(path2name*"_lines.txt", hyperplanes, affine_matrix)
+	flushprintln("Lines: done...")
 
+	flushprintln("Fitted points: saving...")
 	FileManager.save_pointcloud(path2name*"_pts_fitted.las", PC_fitted, "DETECTION" )
 	FileManager.save_points_rgbs_txt(path2name*"_pts_fitted.txt", PC_fitted)
+	flushprintln("Fitted points: done...")
 
+	flushprintln("Unfitted points: saving...")
 	FileManager.save_pointcloud(path2name*"_pts_unfitted.las", PC_unfitted, "DETECTION")
 	FileManager.save_points_rgbs_txt(path2name*"_pts_unfitted.txt", PC_unfitted)
+	flushprintln("Unfitted points: done...")
 
+	flushprintln("Outliers points: saving...")
 	FileManager.save_pointcloud(path2name*"_pts_outliers.las", PC_outliers, "DETECTION")
 	FileManager.save_points_rgbs_txt(path2name*"_pts_outliers.txt", PC_outliers)
+	flushprintln("Outliers points: done...")
 end
