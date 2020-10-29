@@ -9,7 +9,7 @@ function detection_and_saves(
 							threshold::Float64,
 							failed::Int64,
 							N::Int64,
-							k=10::Int64,
+							k::Int64,
 							affine_matrix::Matrix,
 							lines = true::Bool
 							)
