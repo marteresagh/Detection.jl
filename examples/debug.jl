@@ -4,6 +4,27 @@ using Common
 using FileManager
 using Statistics
 
+function disegnalinee(line::Hyperplane, u=0.02)
+	max_value = -Inf
+	min_value = +Inf
+	points = line.points
+	for i in 1:points.n_points
+		p = points.coordinates[:,i] - line.centroid
+		value = Lar.dot(line.direction,p)
+		if value > max_value
+			max_value = value
+		end
+		if value < min_value
+			min_value = value
+		end
+	end
+	p_min = line.centroid + (min_value - u)*line.direction
+	p_max = line.centroid + (max_value + u)*line.direction
+	V = hcat(p_min,p_max)
+	EV = [[1,2]]
+    return V, EV
+end
+
 fname = "examples/wall.las"
 fname = "examples/muriAngolo.las"
 fname = "examples/area.las"
@@ -14,12 +35,14 @@ PC = FileManager.las2pointcloud(fname)
 PC2D = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 current_inds = [1:PC2D.n_points...]
 k = 20
-outliers = Common.outliers(PC2D, current_inds, k)
-da_tenere = setdiff(current_inds,outliers)
+
+outliers = outliers(PC2D, current_inds, k)
+da_tenere = setdiff(current_inds,out)
 
 GL.VIEW([  	#GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[2]) ,
-  			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,outliers]'),GL.COLORS[2]),
-			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,da_tenere]'),GL.COLORS[12])
+			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,da_tenere]'),GL.COLORS[12]),
+  			#GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,out]'),GL.COLORS[2]),
+
 		])
 
 par = 0.07
@@ -27,8 +50,18 @@ threshold = 2*0.03
 failed = 10
 N = 100
 
-params = Initializer(PC2D,par,threshold,failed,N,k,outliers)
+params = Initializer(PC2D,par,threshold,failed,N,k,out)
 hyperplanes = Detection.iterate_random_detection(params)
+
+
+
+V,EV = DrawLine(hyperplanes[1])
+GL.VIEW([
+
+			GL.GLGrid(V,EV,GL.COLORS[8],1.0),
+
+		])
+
 
 hyperplane,_= Detection.get_hyperplane_from_random_init_point(params)
 presi = setdiff!([1:PC.n_points...],params.current_inds)

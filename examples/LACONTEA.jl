@@ -8,7 +8,7 @@ using FileManager
 source = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\Sezione_z650.las"
 
 folder = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\TEST_LINES\\prova"
-filename = "SCRIPT"
+filename = "OUTLIERS2"
 PC = FileManager.las2pointcloud(source)
 par = 0.07
 threshold = 2*0.03
