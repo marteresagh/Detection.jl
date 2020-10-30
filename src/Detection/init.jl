@@ -2,17 +2,17 @@
 programmino
 """
 function detection_and_saves(
-							folder::String,
-							project_name::String,
-							source::String,
-	 						par::Float64,
-							threshold::Float64,
-							failed::Int64,
-							N::Int64,
-							k::Int64,
-							affine_matrix::Matrix,
-							lines = true::Bool
-							)
+	folder::String,
+	project_name::String,
+	source::String,
+	par::Float64,
+	threshold::Float64,
+	failed::Int64,
+	N::Int64,
+	k::Int64,
+	affine_matrix::Matrix,
+	lines = true::Bool
+	)
 
 
 	flushprintln("=========== INIT =============")
@@ -26,15 +26,15 @@ function detection_and_saves(
 
 	PC = FileManager.las2pointcloud(source)
 
-	flushprintln(" Found possible outliers to remove ")
-	# 1. ricerca degli outliers
-	outliers = Common.outliers(PC, [1:PC.n_points...], k)
-
 	if lines
 		INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 	else
 		INPUT_PC = PC
 	end
+	flushprintln(" Found possible outliers to remove ")
+	# 1. ricerca degli outliers
+
+	outliers = Common.outliers(INPUT_PC, [1:INPUT_PC.n_points...], k)
 
 	flushprintln("=========== PROCESSING =============")
 	# 2. faccio partire il processo
