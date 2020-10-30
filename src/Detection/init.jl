@@ -62,24 +62,24 @@ function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperp
 
 	flushprintln("Lines: saving...")
 	flushprintln("Detect $(length(hyperplanes)) lines")
-	FileManager.save_lines_txt(path2name*"_lines.txt", hyperplanes, affine_matrix)
+	FileManager.save_lines_txt(path2name*"_vectorized_1D.txt", hyperplanes, affine_matrix)
 	flushprintln("Lines: done...")
 
 	flushprintln("Fitted points: saving...")
 	flushprintln("Fitted $(length(params.visited)) points")
-	FileManager.save_pointcloud(path2name*"_pts_fitted.las", PC_fitted, "DETECTION" )
-	FileManager.save_points_rgbs_txt(path2name*"_pts_fitted.txt", PC_fitted)
+	FileManager.save_pointcloud(path2name*"_fitted_points.las", PC_fitted, "DETECTION" )
+	FileManager.save_points_rgbs_txt(path2name*"_fitted_points.txt", PC_fitted)
 	flushprintln("Fitted points: done...")
 
 	flushprintln("Unfitted points: saving...")
 	flushprintln("Unfitted $(length(points_unfitted)) points")
-	FileManager.save_pointcloud(path2name*"_pts_unfitted.las", PC_unfitted, "DETECTION")
-	FileManager.save_points_rgbs_txt(path2name*"_pts_unfitted.txt", PC_unfitted)
+	FileManager.save_pointcloud(path2name*"_unfitted_points.las", PC_unfitted, "DETECTION")
+	FileManager.save_points_rgbs_txt(path2name*"_unfitted_points.txt", PC_unfitted)
 	flushprintln("Unfitted points: done...")
 
 	flushprintln("Outliers points: saving...")
 	flushprintln("Marked $(length(params.outliers)) outliers")
-	FileManager.save_pointcloud(path2name*"_pts_outliers.las", PC_outliers, "DETECTION")
-	FileManager.save_points_rgbs_txt(path2name*"_pts_outliers.txt", PC_outliers)
+	FileManager.save_pointcloud(path2name*"_outliers_points.las", PC_outliers, "DETECTION")
+	FileManager.save_points_rgbs_txt(path2name*"_outliers_points.txt", PC_outliers)
 	flushprintln("Outliers points: done...")
 end

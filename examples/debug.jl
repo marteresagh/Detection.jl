@@ -4,7 +4,7 @@ using Common
 using FileManager
 using Statistics
 
-function disegnalinee(line::Hyperplane, u=0.02)
+function disegna(line::Hyperplane, u=0.02)
 	max_value = -Inf
 	min_value = +Inf
 	points = line.points
@@ -36,12 +36,12 @@ PC2D = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 current_inds = [1:PC2D.n_points...]
 k = 20
 
-outliers = outliers(PC2D, current_inds, k)
-da_tenere = setdiff(current_inds,out)
+outliers = Common.outliers(PC2D, current_inds, k)
+da_tenere = setdiff(current_inds,outliers)
 
 GL.VIEW([  	#GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[2]) ,
 			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,da_tenere]'),GL.COLORS[12]),
-  			#GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,out]'),GL.COLORS[2]),
+  			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,outliers]'),GL.COLORS[2]),
 
 		])
 
@@ -50,12 +50,12 @@ threshold = 2*0.03
 failed = 10
 N = 100
 
-params = Initializer(PC2D,par,threshold,failed,N,k,out)
+params = Initializer(PC2D,par,threshold,failed,N,k,outliers)
 hyperplanes = Detection.iterate_random_detection(params)
 
+line = hyperplanes[1]
 
-
-V,EV = DrawLine(hyperplanes[1])
+V,EV = disegna(hyperplanes[1])
 GL.VIEW([
 
 			GL.GLGrid(V,EV,GL.COLORS[8],1.0),

@@ -38,9 +38,9 @@ function parse_commandline()
 			help = "number of neighbors"
 			arg_type = Int64
 			default = 10
-		"--quote"
-			help = "z coordinate of section"
-			arg_type = Float64
+		"--plane"
+			help = "a, b, c, d parameters described the plane"
+			arg_type = String
 			required = true
     end
 
@@ -64,9 +64,13 @@ function main()
 	failed = args["failed"]
 	N = args["validity"]
 	k = args["k"]
-	q = args["quote"]
+	plane = args["plane"]
 
-	affine_matrix = Detection.Lar.t(0,0,q)
+	b = tryparse.(Float64,split(plane, " "))
+	@assert length(b) == 4
+		plane = Detection.Plane(b[1],b[2],b[3],b[4]])
+	end
+	affine_matrix = plane.matrix
 
 	Detection.detection_and_saves(output_folder, project_name, source, par, threshold, failed, N, k, affine_matrix	)
 end
