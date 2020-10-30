@@ -27,14 +27,18 @@ function iterate_random_detection(params::Initializer)
 				found = true
 			catch y
 				f = f+1
-				flushprintln("failed = $f")
+				if f%10 == 0
+					flushprintln("failed = $f")
+				end
 			end
 		end
 
 		if found
 			f = 0
 			i = i+1
-			flushprintln("$i shapes found")
+			if i%10 == 0
+				flushprintln("$i shapes found")
+			end
 			push!(hyperplanes,hyperplane)
 			union!(params.fitted,cluster)
 			#remove_points!(params.current_inds,cluster) # nuovi punti di input

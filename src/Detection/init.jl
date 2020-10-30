@@ -31,17 +31,20 @@ function detection_and_saves(
 	else
 		INPUT_PC = PC
 	end
-	flushprintln(" Found possible outliers to remove ")
+
 	# 1. ricerca degli outliers
-
+	flushprintln("= Search of possible outliers to remove =")
 	outliers = Common.outliers(INPUT_PC, [1:INPUT_PC.n_points...], k)
+	flushprintln("($length(outliers)) outliers to remove") #TODO rimuovere davvero dal modello o solo marcati??
 
+	flushprintln()
 	flushprintln("=========== PROCESSING =============")
 	# 2. faccio partire il processo
 	params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
 	hyperplanes = Detection.iterate_random_detection(params)
 
 	# 3. salvo tutto
+	flushprintln()
 	flushprintln("=========== SAVES =============")
 	name = joinpath(proj_folder,project_name)
 	saves_data(PC, params, hyperplanes, affine_matrix, name)
