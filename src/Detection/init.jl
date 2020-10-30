@@ -35,7 +35,7 @@ function detection_and_saves(
 	# 1. ricerca degli outliers
 	flushprintln("= Search of possible outliers to remove =")
 	outliers = Common.outliers(INPUT_PC, [1:INPUT_PC.n_points...], k)
-	flushprintln("($length(outliers)) outliers to remove") #TODO rimuovere davvero dal modello o solo marcati??
+	flushprintln("$(length(outliers)) outliers to remove") #TODO rimuovere davvero dal modello o solo marcati??
 
 	flushprintln()
 	flushprintln("=========== PROCESSING =============")
