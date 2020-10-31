@@ -72,7 +72,7 @@ function main()
 	end
 	affine_matrix = plane.matrix
 
-	Detection.detection_and_saves(output_folder, project_name, source, par, threshold, failed, N, k, affine_matrix	)
+	Detection.detection_and_saves(output_folder, project_name, source, par, threshold, failed, N, k, affine_matrix)
 end
 
 @time main()

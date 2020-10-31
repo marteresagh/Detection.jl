@@ -27,7 +27,7 @@ function detection_and_saves(
 	PC = FileManager.las2pointcloud(source)
 
 	if lines
-		INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
+		INPUT_PC = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),points_rot)[1:2,:], PC.rgbs)
 	else
 		INPUT_PC = PC
 	end
@@ -47,6 +47,7 @@ function detection_and_saves(
 	flushprintln()
 	flushprintln("=========== SAVES =============")
 	name = joinpath(proj_folder,project_name)
+
 	saves_data(PC, params, hyperplanes, affine_matrix, name)
 
 	return hyperplanes,params
