@@ -67,9 +67,9 @@ function main()
 	plane = args["plane"]
 
 	b = tryparse.(Float64,split(plane, " "))
-	@assert length(b) == 4
-		plane = Detection.Plane(b[1],b[2],b[3],b[4]])
-	end
+	@assert length(b) == 4 "$plane: Please described the plane in Hessian normal form"
+	plane = Detection.Plane(b[1],b[2],b[3],b[4]])
+
 	affine_matrix = plane.matrix
 
 	Detection.detection_and_saves(output_folder, project_name, source, par, threshold, failed, N, k, affine_matrix)
