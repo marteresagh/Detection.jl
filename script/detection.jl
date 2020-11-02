@@ -68,7 +68,7 @@ function main()
 
 	b = tryparse.(Float64,split(plane, " "))
 	@assert length(b) == 4 "$plane: Please described the plane in Hessian normal form"
-	plane = Detection.Plane(b[1],b[2],b[3],b[4]])
+	plane = Detection.Plane(b[1],b[2],b[3],b[4])
 
 	affine_matrix = plane.matrix
 
