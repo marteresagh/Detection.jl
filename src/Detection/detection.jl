@@ -50,13 +50,14 @@ function iterate_random_detection(params::Initializer)
 
 	end
 
-	try
-	    Base.throwto(task, InterruptException())
-	catch y
-		flushprintln("interrotto")
-	finally
-		return hyperplanes
-	end
+	return hyperplanes
+	# try
+	#     Base.throwto(task, InterruptException())
+	# catch y
+	# 	flushprintln("interrotto")
+	# finally
+	#
+	# end
 end
 
 
