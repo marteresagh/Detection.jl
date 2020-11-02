@@ -32,6 +32,7 @@ N = 100
 params = Initializer(PC2D,par,threshold,failed,N,k,outliers)
 hyperplanes = Detection.iterate_random_detection(params)
 
+GL.VIEW([ Visualization.mesh_lines(hyperplanes)...])
 
 # # ======================= INPUT generation === Semi-cerchio
 # npoints = 2000
