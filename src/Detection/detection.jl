@@ -1,5 +1,6 @@
 function iterate_random_detection(params::Initializer)
 	inputBuffer,task = monitorInput()
+
 	# 1. - initialization
 	hyperplanes = Hyperplane[]
 
@@ -146,7 +147,7 @@ function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane
 
 	# seconda parte
 	res = Common.residual(hyperplane).([points[:,i] for i in R])
-	todel = [ res[i] > par for i in 1:length(res) ] #TODO da ottimizzare
+	todel = [ res[i] > par/2 for i in 1:length(res) ] #TODO da ottimizzare
 	to_del = R[todel]
 	setdiff!(R,to_del)
 

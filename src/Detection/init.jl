@@ -55,11 +55,8 @@ end
 
 
 function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperplane,1},affine_matrix::Matrix, path2name::String)
-	points_unfitted = setdiff([1:PC.n_points...],params.fitted)
 	PC_fitted = PointCloud(PC.coordinates[:,params.fitted],PC.rgbs[:,params.fitted])
 	PC_unfitted = PointCloud(PC.coordinates[:,points_unfitted],PC.rgbs[:,points_unfitted])
-	red_color =  hcat(fill(LasIO.N0f16.([1,.0,.0]),length(params.outliers))...)
-	PC_outliers = PointCloud(PC.coordinates[:,params.outliers],red_color)
 
 	flushprintln("Lines: saving...")
 	flushprintln("Detect $(length(hyperplanes)) lines")
@@ -72,15 +69,23 @@ function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperp
 	FileManager.save_points_rgbs_txt(path2name*"_fitted_points.txt", PC_fitted)
 	flushprintln("Fitted points: done...")
 
-	flushprintln("Unfitted points: saving...")
-	flushprintln("Unfitted $(length(points_unfitted)) points")
-	FileManager.save_pointcloud(path2name*"_unfitted_points.las", PC_unfitted, "DETECTION")
-	FileManager.save_points_rgbs_txt(path2name*"_unfitted_points.txt", PC_unfitted)
-	flushprintln("Unfitted points: done...")
+	points_unfitted = setdiff([1:PC.n_points...],params.fitted)
+	if !isempy(points_unfitted)
+		PC_unfitted = PointCloud(PC.coordinates[:,points_unfitted],PC.rgbs[:,points_unfitted])
+		flushprintln("Unfitted points: saving...")
+		flushprintln("Unfitted $(length(points_unfitted)) points")
+		FileManager.save_pointcloud(path2name*"_unfitted_points.las", PC_unfitted, "DETECTION")
+		FileManager.save_points_rgbs_txt(path2name*"_unfitted_points.txt", PC_unfitted)
+		flushprintln("Unfitted points: done...")
+	end
 
-	flushprintln("Outliers points: saving...")
-	flushprintln("Marked $(length(params.outliers)) outliers")
-	FileManager.save_pointcloud(path2name*"_outliers_points.las", PC_outliers, "DETECTION")
-	FileManager.save_points_rgbs_txt(path2name*"_outliers_points.txt", PC_outliers)
-	flushprintln("Outliers points: done...")
+	if !isempy(outliers)
+		red_color =  hcat(fill(LasIO.N0f16.([1,.0,.0]),length(params.outliers))...)
+		PC_outliers = PointCloud(PC.coordinates[:,params.outliers],red_color)
+		flushprintln("Outliers points: saving...")
+		flushprintln("Marked $(length(params.outliers)) outliers")
+		FileManager.save_pointcloud(path2name*"_outliers_points.las", PC_outliers, "DETECTION")
+		FileManager.save_points_rgbs_txt(path2name*"_outliers_points.txt", PC_outliers)
+		flushprintln("Outliers points: done...")
+	end
 end

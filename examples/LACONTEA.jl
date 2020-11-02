@@ -56,3 +56,4 @@ GL.VIEW([  # GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,params.current_in
         ])
 
 # ============== DEBUG
+# julia detection.jl "C:\Users\marte\Documents\GEOWEB\FilePotree\TEST_LINES\Sezione_z39_10cm.las" -p "ALTRASEZ" -o "C:\Users\marte\Documents\GEOWEB\FilePotree\TEST_LINES\prova" --failed 10 --par 0.02 --thr 0.02 --plane "0 0 1 6.50"
