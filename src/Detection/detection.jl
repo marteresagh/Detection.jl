@@ -1,5 +1,5 @@
 function iterate_random_detection(params::Initializer)
-	inputBuffer = monitorInput()
+	inputBuffer,task = monitorInput()
 	# 1. - initialization
 	hyperplanes = Hyperplane[]
 
@@ -11,7 +11,7 @@ function iterate_random_detection(params::Initializer)
 	i = 0
 
 	# find shapes
-	flushprintln("======= Start search =======")
+	flushprintln("= Start search =")
 	search = true
 	while search
 
@@ -48,6 +48,11 @@ function iterate_random_detection(params::Initializer)
 			search = false
 		end
 
+	end
+
+	try
+	    Base.throwto(task, InterruptException())
+	catch y
 	end
 
 	return hyperplanes

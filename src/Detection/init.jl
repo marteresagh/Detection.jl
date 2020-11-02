@@ -33,9 +33,9 @@ function detection_and_saves(
 	end
 
 	# 1. ricerca degli outliers
-	flushprintln("= Search of possible outliers to remove =")
+	flushprintln("Search of possible outliers to remove: ")
 	outliers = Common.outliers(INPUT_PC, [1:INPUT_PC.n_points...], k)
-	flushprintln("$(length(outliers)) outliers to remove")
+	println("$(length(outliers)) outliers")
 
 	flushprintln()
 	flushprintln("=========== PROCESSING =============")

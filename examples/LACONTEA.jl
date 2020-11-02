@@ -31,7 +31,7 @@ hyperplanes,params = Detection.detection_and_saves(
 							affine_matrix
 							)
 
-# julia detection.jl "C:\Users\marte\Documents\GEOWEB\FilePotree\orthoCONTEA\Sezione_z650.las" -p "PROVA" -o "C:\Users\marte\Documents\GEOWEB\FilePotree\TEST_LINES\prova" --par 0.02 --thr 0.06 --quote 6.50
+# julia detection.jl "C:\Users\marte\Documents\GEOWEB\FilePotree\orthoCONTEA\Sezione_z650.las" -p "PLANE" -o "C:\Users\marte\Documents\GEOWEB\FilePotree\TEST_LINES\prova" --validity 50 --par 0.02 --thr 0.06 --plane "0 0 1 6.50"
 
 GL.VIEW([ Visualization.mesh_lines(hyperplanes)...])
 

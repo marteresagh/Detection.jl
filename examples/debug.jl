@@ -2,28 +2,7 @@ using Detection
 using Visualization
 using Common
 using FileManager
-using Statistics
-
-function disegna(line::Hyperplane, u=0.02)
-	max_value = -Inf
-	min_value = +Inf
-	points = line.points
-	for i in 1:points.n_points
-		p = points.coordinates[:,i] - line.centroid
-		value = Lar.dot(line.direction,p)
-		if value > max_value
-			max_value = value
-		end
-		if value < min_value
-			min_value = value
-		end
-	end
-	p_min = line.centroid + (min_value - u)*line.direction
-	p_max = line.centroid + (max_value + u)*line.direction
-	V = hcat(p_min,p_max)
-	EV = [[1,2]]
-    return V, EV
-end
+#using Statistics
 
 fname = "examples/wall.las"
 fname = "examples/muriAngolo.las"
@@ -53,59 +32,6 @@ N = 100
 params = Initializer(PC2D,par,threshold,failed,N,k,outliers)
 hyperplanes = Detection.iterate_random_detection(params)
 
-line = hyperplanes[1]
-
-V,EV = disegna(hyperplanes[1])
-GL.VIEW([
-
-			GL.GLGrid(V,EV,GL.COLORS[8],1.0),
-
-		])
-
-
-hyperplane,_= Detection.get_hyperplane_from_random_init_point(params)
-presi = setdiff!([1:PC.n_points...],params.current_inds)
-
-visual = Visualization.mesh_lines(hyperplanes)
-GL.VIEW([visual...])
-L,EL = Common.DrawLines(hyperplanes,0.0)
-GL.VIEW([
-  			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,params.current_inds]'),GL.COLORS[12]),
-			GL.GLGrid(L,EL,GL.COLORS[8],1.0),
-			#GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,presi]'),GL.COLORS[2]) ,
-			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,params.visited]'),GL.COLORS[1]),
-
-		])
-
-
-punti = hcat(params.punti_random_iniziali...)
-for i in 10:20
-	GL.VIEW(
-	    [
-		GL.GLPoints(convert(Lar.Points,params.possible_seeds[i]'),GL.COLORS[2]),
-		GL.GLPoints(convert(Lar.Points,punti[:,i]'),GL.COLORS[12]),
-	    ]
-	)
-end
-
-hyperplane.points = PC2D
-GL.VIEW([
-            GL.GLPoints(convert(Lar.Points,PC2D.coordinates'),GL.COLORS[2]),
-			GL.GLGrid(L,EL,GL.COLORS[8],1.0),
-])
-
-
-visual = Visualization.mesh_lines(hyperplanes)
-GL.VIEW([visual...])
-L,EL = Common.DrawLine(hyperplane,0.0)
-GL.VIEW([
-
-			GL.GLGrid(L,EL,GL.COLORS[8],1.0),
-			#GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,presi]'),GL.COLORS[2]) ,
-			GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,params.visited]'),GL.COLORS[1]),
-
-		])
-
 
 # # ======================= INPUT generation === Semi-cerchio
 # npoints = 2000
@@ -130,7 +56,20 @@ GL.VIEW([
 # threshold = 2*0.03
 # failed = 400
 # N = 100
-# hyperplanes, current_inds = Detection.iterate_random_detection(PC, par, threshold, failed, N)
+# params = Initializer(PC,par,threshold,failed,N,10,[])
+# hyperplanes, current_inds = Detection.iterate_random_detection(params)
 #
 # visual = Visualization.mesh_lines(hyperplanes)
 # GL.VIEW([visual...])
+#
+#
+#
+# fname = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\TEST_LINES\\prova\\PLANE\\PLANE_vectorized_1D.txt"
+#
+# V,EV = FileManager.load_segment(fname)
+#
+# GL.VIEW([
+#
+# 			GL.GLGrid(V,EV,GL.COLORS[1],1.0),
+# 		])
+#
