@@ -50,14 +50,12 @@ function iterate_random_detection(params::Initializer)
 
 	end
 
-	return hyperplanes
 	# try
 	#     Base.throwto(task, InterruptException())
 	# catch y
 	# 	flushprintln("interrotto")
-	# finally
-	#
 	# end
+	return hyperplanes
 end
 
 
@@ -147,8 +145,8 @@ function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane
 	hyperplane.centroid = centroid
 
 	# seconda parte
-	res = Common.residual(Hyperplane(direction,centroid)).([points[:,i] for i in R])
-	todel = [ res[i] > par/2 for i in 1:length(res) ] #TODO da ottimizzare
+	res = Common.residual(hyperplane).([points[:,i] for i in R])
+	todel = [ res[i] > par for i in 1:length(res) ] #TODO da ottimizzare
 	to_del = R[todel]
 	setdiff!(R,to_del)
 
