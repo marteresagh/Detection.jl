@@ -53,6 +53,8 @@ function iterate_random_detection(params::Initializer)
 	try
 	    Base.throwto(task, InterruptException())
 	catch y
+		flushprintln("interrotto")
+	finally
 		return hyperplanes
 	end
 end
