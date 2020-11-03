@@ -147,18 +147,11 @@ function optimize!(points::Lar.Points,visitedverts::Array{Int64,1}, R::Array{Int
 	hyperplane.direction = direction
 	hyperplane.centroid = centroid
 
-	# # seconda parte
-	res = Common.residual(hyperplane).([points[:,i] for i in visitedverts])
+	# seconda parte
+	res = Common.residual(hyperplane).([points[:,i] for i in R])
 	todel = [ res[i] > par/2 for i in 1:length(res) ] #TODO da ottimizzare
-	to_del = visitedverts[todel]
-	union!(R,visitedverts)
-	setdiff!(R,todel)
+	to_del = R[todel]
+	setdiff!(R,to_del)
 
 	return to_del
-	# res = Common.residual(hyperplane).([points[:,i] for i in R])
-	# todel = [ res[i] > par/2 for i in 1:length(res) ] #TODO da ottimizzare
-	# to_del = R[todel]
-	# setdiff!(R,to_del)
-	#
-	# return to_del
 end
