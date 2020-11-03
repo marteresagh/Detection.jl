@@ -35,7 +35,7 @@ hyperplanes,params = Detection.detection_and_saves(
 
 GL.VIEW([ Visualization.mesh_lines(hyperplanes)...])
 
-presi = setdiff!([1:PC.n_points...],params.current_inds)
+presi = setdiff!(collect(1:PC.n_points),params.current_inds)
 punti_presi = PointCloud(PC.coordinates[:,presi],PC.rgbs[:,presi])
 punti_rimasti = PointCloud(PC.coordinates[:,params.current_inds],PC.rgbs[:,params.current_inds])
 V,EV = Common.DrawLines(hyperplanes, 0.0)
