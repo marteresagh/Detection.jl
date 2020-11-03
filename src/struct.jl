@@ -23,6 +23,6 @@ mutable struct Initializer
 	fitted::Array{Int64,1}
 
 	Initializer(PC, par, threshold, failed, N, k, outliers, current_inds) = new(PC, par, threshold, failed, N, k, outliers, visited, current_inds,[])
-	Initializer(PC, par, threshold, failed, N, k, outliers) = new(PC, par, threshold, failed, N, k, outliers, copy(outliers), [1:PC.n_points...],[])
-	Initializer(PC, par, threshold, failed, N, k) = new(PC, par, threshold, failed, N, k, [], [], [1:PC.n_points...],[])
+	Initializer(PC, par, threshold, failed, N, k, outliers) = new(PC, par, threshold, failed, N, k, outliers, copy(outliers), collect(1:PC.n_points),[])
+	Initializer(PC, par, threshold, failed, N, k) = new(PC, par, threshold, failed, N, k, [], [], collect(1:PC.n_points),[])
 end

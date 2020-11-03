@@ -50,11 +50,10 @@ end
 function main()
     args = parse_commandline()
 
-
-	Detection.flushprintln("== params ==")
-    for (arg,val) in args
-        Detection.flushprintln("$arg  =>  $val")
-    end
+	# Detection.flushprintln("== params ==")
+    # for (arg,val) in args
+    #     Detection.flushprintln("$arg  =>  $val")
+    # end
 
 	source = args["source"]
 	project_name = args["projectname"]
@@ -69,8 +68,18 @@ function main()
 	b = tryparse.(Float64,split(plane, " "))
 	@assert length(b) == 4 "$plane: Please described the plane in Hessian normal form"
 	plane = Detection.Plane(b[1],b[2],b[3],b[4])
-
 	affine_matrix = plane.matrix
+
+	Detection.flushprintln("== Parameters ==")
+	Detection.flushprintln("Source  =>  $source")
+	Detection.flushprintln("Project name  =>  $project_name")
+	Detection.flushprintln("Output folder  =>  $output_folder")
+	Detection.flushprintln("Parameter  =>  $par")
+	Detection.flushprintln("Threshold  =>  $threshold")
+	Detection.flushprintln("N. of failed  =>  $failed")
+	Detection.flushprintln("N. of points on line  =>  $N")
+	Detection.flushprintln("N. of k-nn  =>  $k")
+	Detection.flushprintln("Affine matrix =>  $affine_matrix")
 
 	Detection.detection_and_saves(output_folder, project_name, source, par, threshold, failed, N, k, affine_matrix)
 end

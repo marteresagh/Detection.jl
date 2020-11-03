@@ -34,7 +34,7 @@ function detection_and_saves(
 
 	# 1. ricerca degli outliers
 	flushprintln("Search of possible outliers to remove: ")
-	outliers = Common.outliers(INPUT_PC, [1:INPUT_PC.n_points...], k)
+	outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 	flushprintln("$(length(outliers)) outliers")
 
 	flushprintln()
@@ -69,7 +69,7 @@ function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperp
 	FileManager.save_points_rgbs_txt(path2name*"_fitted_points.txt", PC_fitted)
 	flushprintln("Fitted points: done...")
 
-	points_unfitted = setdiff([1:PC.n_points...],params.fitted)
+	points_unfitted = setdiff(collect(1:PC.n_points),params.fitted)
 	if !isempy(points_unfitted)
 		PC_unfitted = PointCloud(PC.coordinates[:,points_unfitted],PC.rgbs[:,points_unfitted])
 		flushprintln("Unfitted points: saving...")
