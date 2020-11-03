@@ -56,7 +56,6 @@ end
 
 function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperplane,1},affine_matrix::Matrix, path2name::String)
 	PC_fitted = PointCloud(PC.coordinates[:,params.fitted],PC.rgbs[:,params.fitted])
-	PC_unfitted = PointCloud(PC.coordinates[:,points_unfitted],PC.rgbs[:,points_unfitted])
 
 	flushprintln("Lines: saving...")
 	flushprintln("Detect $(length(hyperplanes)) lines")
