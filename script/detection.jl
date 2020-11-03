@@ -33,7 +33,7 @@ function parse_commandline()
 		"--validity"
 			help = "number of points in a line"
 			arg_type = Int64
-			default = 100
+			default = 5
 		"--k"
 			help = "number of neighbors"
 			arg_type = Int64
