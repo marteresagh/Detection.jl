@@ -112,7 +112,7 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		hyperplane.centroid = centroid
 		# seeds = tmp
 		# == optimize da sistemare
-		todel = optimize!(points,visitedverts,R,hyperplane,params.par) #TODO da sistemare questa cosa
+		todel = optimize!(points,R,hyperplane,params.par) #TODO da sistemare questa cosa
 		seeds = setdiff(tmp,todel)
 		# ==
 	end
@@ -132,7 +132,7 @@ end
 # end
 #
 
-function optimize!(points::Lar.Points,visitedverts::Array{Int64,1}, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
+function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
 
 	# prima parte
 	res = Common.residual(hyperplane).([points[:,i] for i in R])
