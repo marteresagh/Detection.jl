@@ -78,7 +78,7 @@ function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperp
 		flushprintln("Unfitted points: done...")
 	end
 
-	if !isempty(outliers)
+	if !isempty(params.outliers)
 		red_color =  hcat(fill(LasIO.N0f16.([1,.0,.0]),length(params.outliers))...)
 		PC_outliers = PointCloud(PC.coordinates[:,params.outliers],red_color)
 		flushprintln("Outliers points: saving...")

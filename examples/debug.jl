@@ -9,7 +9,8 @@ fname = "examples/muriAngolo.las"
 fname = "examples/area.las"
 
 #######################  REMOVE POINTS
-fname = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\Sezione_z650.las"#"C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\TEST_LINES\\Sezione_z39_10cm.las"
+"C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\Sezione_z650.las"
+fname = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\TEST_LINES\\Sezione_z39_10cm.las"
 PC = FileManager.las2pointcloud(fname)
 PC2D = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 current_inds = [1:PC2D.n_points...]
