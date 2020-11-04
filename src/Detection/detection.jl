@@ -1,4 +1,4 @@
-function iterate_random_detection(params::Initializer)
+function iterate_random_detection(params::Initializer; debug = false)
 	inputBuffer,task = monitorInput()
 
 	# 1. - initialization
@@ -52,11 +52,13 @@ function iterate_random_detection(params::Initializer)
 
 	end
 
-	# try
-	#     Base.throwto(task, InterruptException())
-	# catch y
-	# 	flushprintln("interrotto")
-	# end
+	if debug
+		try
+		    Base.throwto(task, InterruptException())
+		catch y
+			flushprintln("interrotto")
+		end
+	end
 
 	return hyperplanes
 end
