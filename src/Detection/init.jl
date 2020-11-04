@@ -26,7 +26,6 @@ function detection_and_saves(
 		mkdir(proj_folder)
 	end
 
-	#TODO leggi tutti i punti dai file del potree
 	cloud_metadata = CloudMetadata(source)
 
 	if lod == -1

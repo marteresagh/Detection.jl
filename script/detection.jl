@@ -26,10 +26,6 @@ function parse_commandline()
 		help = "Level of detail. If -1, all points are taken"
 		arg_type = Int64
 		required = true
-	"--thr"
-		help = "threshold"
-		arg_type = Float64
-		required = true
 	"--failed"
 		help = "number of failed before exit"
 		arg_type = Int64
@@ -46,9 +42,9 @@ function parse_commandline()
 		help = "a, b, c, d parameters described the plane"
 		arg_type = String
 		required = true
-end
+	end
 
-return parse_args(s)
+	return parse_args(s)
 end
 
 function main()
