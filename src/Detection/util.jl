@@ -52,15 +52,3 @@ end
 # 	rho = pc_on_hyperplane.n_points/dist
 # 	@assert  rho > N "not valid"  #da automatizzare
 # end
-
-
-
-# ==============  SAVES DONE
-#
-# function savePlanesDataset(planes::Array{PlaneDataset,1},params::PlaneDetectionParams)
-# 	for i in 1:length(planes)
-# 		filename = params.output+"/plane$i"
-# 		savePlane(plane.plane,filename+."txt")
-# 		savePoints(plane.points,filename*".las")
-# 	end
-# end

@@ -6,7 +6,7 @@ module Detection
     include("struct.jl")
 
     include("Detection/detection.jl")
-    include("Detection/init.jl")
+    include("Detection/main.jl")
     include("Detection/util.jl")
 
     export Initializer
