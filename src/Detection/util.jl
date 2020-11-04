@@ -35,17 +35,23 @@ end
 """
 Assert the detected hyperplane is valid / interesting
 """
-function validity(hyperplane::Hyperplane, params::Initializer, cluster, all_visited)
+function validity(hyperplane::Hyperplane, params::Initializer)
 	# VALIDITY
 	pc_on_hyperplane = hyperplane.points
-	#@show length(cluster)/length(all_visited)
-	#@assert  pc_on_hyperplane.n_points > params.N "not valid" #TODO da ottimizzare
-
-	E,_ = Common.DrawLine(hyperplane, 0.0)
-	dist = Lar.norm(E[:,1]-E[:,2])
-	rho = pc_on_hyperplane.n_points/dist
-	@assert  rho > N "not valid"  #da automatizzare
+	@assert  pc_on_hyperplane.n_points > params.N "not valid"
 end
+
+# function validity(hyperplane::Hyperplane, params::Initializer, cluster, all_visited)
+# 	# VALIDITY
+# 	pc_on_hyperplane = hyperplane.points
+# 	#@show length(cluster)/length(all_visited)
+# 	#@assert  pc_on_hyperplane.n_points > params.N "not valid" #TODO da ottimizzare
+#
+# 	E,_ = Common.DrawLine(hyperplane, 0.0)
+# 	dist = Lar.norm(E[:,1]-E[:,2])
+# 	rho = pc_on_hyperplane.n_points/dist
+# 	@assert  rho > N "not valid"  #da automatizzare
+# end
 
 
 
