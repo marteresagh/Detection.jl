@@ -31,7 +31,7 @@ function detection_and_saves(
 	if lod == -1
 		trie = potree2trie(source)
 		max_level = FileManager.max_depth(trie)
-		all_files = FileManager.get_files_in_potree_folder(source,max_level)
+		all_files = FileManager.truncate_trie(trie, max_level, String[])
 		threshold = 2*cloud_metadata.spacing/2^max_level
 	else
 		all_files = FileManager.get_files_in_potree_folder(source,lod)
