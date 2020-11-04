@@ -38,7 +38,7 @@ function detection_and_saves(
 		threshold = 2*cloud_metadata.spacing/2^lod
 	end
 
-	PC = FileManager.las2pointcloud(all_files)
+	PC = FileManager.las2pointcloud(all_files...)
 
 	if lines
 		INPUT_PC = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),PC.coordinates)[1:2,:], PC.rgbs)
