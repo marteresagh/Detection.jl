@@ -3,8 +3,8 @@ using FileManager
 using Common
 using Visualization
 
-fname = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\TEST_LINES\\prova\\SEZIONE_AMPHI\\SEZIONE_AMPHI_vectorized_1D.txt"
-source = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\AMPHI\\sezione_AMPHI_z39_5cm.las"
+fname = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\TEST_LINES\\prova\\SEZIONE_250LACONTEA\\SEZIONE_250LACONTEA_vectorized_1D.txt"
+source = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\Sezione_z250.las"
 V,EV = FileManager.load_segment(fname)
 PC = FileManager.las2pointcloud(source)
 
