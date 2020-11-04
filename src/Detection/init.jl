@@ -16,6 +16,8 @@ function detection_and_saves(
 
 
 	flushprintln("=========== INIT =============")
+	all_files = nothing
+	threshold = nothing
 
 	@assert isdir(folder) "$folder not an existing folder"
 	proj_folder = joinpath(folder,project_name)
@@ -26,17 +28,18 @@ function detection_and_saves(
 
 	#TODO leggi tutti i punti dai file del potree
 	cloud_metadata = CloudMetadata(source)
-	trie = FileManager.potree2trie(source)
 
 	if lod == -1
-		max_depth = 1
-		threshold = 2*cloud_metadata.spacing/2^max_depth
+		trie = potree2trie(source)
+		max_level = FileManager.max_depth(trie)
+		all_files = FileManager.get_files_in_potree_folder(source,max_level)
+		threshold = 2*cloud_metadata.spacing/2^max_level
 	else
+		all_files = FileManager.get_files_in_potree_folder(source,lod)
 		threshold = 2*cloud_metadata.spacing/2^lod
 	end
 
-	allfiles = []
-	PC = FileManager.las2pointcloud(allfiles)
+	PC = FileManager.las2pointcloud(all_files)
 
 	if lines
 		INPUT_PC = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),PC.coordinates)[1:2,:], PC.rgbs)
