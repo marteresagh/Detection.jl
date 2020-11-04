@@ -1,4 +1,4 @@
-function iterate_random_detection(params::Initializer)
+function iterate_random_detection(params::Initializer; debug = false)
 	inputBuffer,task = monitorInput()
 
 	# 1. - initialization
@@ -17,14 +17,15 @@ function iterate_random_detection(params::Initializer)
 	while search
 
 		if isready(inputBuffer) && take!(inputBuffer) == 'q'
-	        break
-	    end
+			break
+		end
 
 		found = false
 		while !found && f < params.failed
 			try
 				hyperplane, cluster, all_visited_verts = get_hyperplane_from_random_init_point(params)
 				validity(hyperplane, params) #validity gli passo l'iperpiano e i parametri per la validità
+				#validity(hyperplane, params, cluster, all_visited_verts)
 				found = true
 			catch y
 				f = f+1
@@ -51,15 +52,20 @@ function iterate_random_detection(params::Initializer)
 
 	end
 
-	# try
-	#     Base.throwto(task, InterruptException())
-	# catch y
-	# 	flushprintln("interrotto")
-	# end
+	if debug
+		try
+		    Base.throwto(task, InterruptException())
+		catch y
+			flushprintln("interrotto")
+		end
+	end
+
 	return hyperplanes
 end
 
-
+"""
+find hyperplane randomly
+"""
 function get_hyperplane_from_random_init_point(params::Initializer)
 
 	points = params.PC.coordinates[:,params.current_inds]
@@ -95,13 +101,13 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 	while !isempty(seeds)
 		tmp = Int[]
 		N = Common.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k)
+		union!(visitedverts,N)
 		for i in N
 			p = points[:,i]
 			if Common.residual(hyperplane)(p) < params.par
 				push!(tmp,i)
 				push!(R,i)
 			end
-			push!(visitedverts,i)
 		end
 
 		listPoint = points[:,R]
@@ -118,18 +124,9 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 	return visitedverts
 end
 
-#
-# function punti_da_tenere!(points::Lar.Points, R::Array{Int64,1},hyperplane::Hyperplane)
-#
-# 	res = Common.residual(hyperplane).([points[:,i] for i in R])
-# 	mu = Statistics.mean(res)
-# 	rho = Statistics.std(res)
-# 	todel = [mu - rho < res[i] < mu + rho for i in 1:length(res)  ]
-#
-# 	setdiff!(R, R[todel])
-# end
-#
-
+"""
+Optimize lines found.
+"""
 function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
 
 	# prima parte

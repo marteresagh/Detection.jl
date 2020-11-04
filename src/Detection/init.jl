@@ -6,7 +6,7 @@ function detection_and_saves(
 	project_name::String,
 	source::String,
 	par::Float64,
-	threshold::Float64,
+	lod::Int64,
 	failed::Int64,
 	N::Int64,
 	k::Int64,
@@ -16,6 +16,8 @@ function detection_and_saves(
 
 
 	flushprintln("=========== INIT =============")
+	all_files = nothing
+	threshold = nothing
 
 	@assert isdir(folder) "$folder not an existing folder"
 	proj_folder = joinpath(folder,project_name)
@@ -24,7 +26,19 @@ function detection_and_saves(
 		mkdir(proj_folder)
 	end
 
-	PC = FileManager.las2pointcloud(source)
+	cloud_metadata = CloudMetadata(source)
+
+	if lod == -1
+		trie = potree2trie(source)
+		max_level = FileManager.max_depth(trie)
+		all_files = FileManager.get_files_in_potree_folder(source,max_level)
+		threshold = 2*cloud_metadata.spacing/2^max_level
+	else
+		all_files = FileManager.get_files_in_potree_folder(source,lod)
+		threshold = 2*cloud_metadata.spacing/2^lod
+	end
+
+	PC = FileManager.las2pointcloud(all_files...)
 
 	if lines
 		INPUT_PC = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),PC.coordinates)[1:2,:], PC.rgbs)
