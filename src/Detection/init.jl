@@ -6,7 +6,7 @@ function detection_and_saves(
 	project_name::String,
 	source::String,
 	par::Float64,
-	threshold::Float64,
+	lod::Int64,
 	failed::Int64,
 	N::Int64,
 	k::Int64,
@@ -24,7 +24,19 @@ function detection_and_saves(
 		mkdir(proj_folder)
 	end
 
-	PC = FileManager.las2pointcloud(source)
+	#TODO leggi tutti i punti dai file del potree
+	cloud_metadata = CloudMetadata(source)
+	trie = FileManager.potree2trie(source)
+
+	if lod == -1
+		max_depth = 1
+		threshold = 2*cloud_metadata.spacing/2^max_depth
+	else
+		threshold = 2*cloud_metadata.spacing/2^lod
+	end
+
+	allfiles = []
+	PC = FileManager.las2pointcloud(allfiles)
 
 	if lines
 		INPUT_PC = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),PC.coordinates)[1:2,:], PC.rgbs)
