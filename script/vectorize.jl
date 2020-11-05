@@ -134,7 +134,6 @@ function main()
 	Detection.flushprintln("Affine matrix =>  $affine_matrix")
 
 	PC = source2pc(source::String, plane::Detection.Plane, thickness::Float64)
-	#che trheshold gli passo?? glielo chiedo all'utente??
 	Detection.pc2vectorize(output_folder, project_name, PC, par, threshold, failed, N, k, affine_matrix)
 end
 
