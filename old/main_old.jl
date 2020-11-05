@@ -1,10 +1,10 @@
 """
 Main
 """
-function pc2vectorize(
+function detection_and_saves(
 	folder::String,
 	project_name::String,
-	PC::PointCloud,
+	source::String,
 	par::Float64,
 	lod::Int64,
 	failed::Int64,
@@ -20,6 +20,8 @@ function pc2vectorize(
 	threshold = nothing
 
 	proj_folder = FileManager.mkdir_project(folder,project_name)
+
+	PC = source2pc(source)
 
 	if lines
 		INPUT_PC = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),PC.coordinates)[1:2,:], PC.rgbs)
@@ -41,8 +43,8 @@ function pc2vectorize(
 	# 3. salvo tutto
 	flushprintln()
 	flushprintln("=========== SAVES =============")
-
 	name = joinpath(proj_folder,project_name)
+
 	saves_data(PC, params, hyperplanes, affine_matrix, name)
 
 	return hyperplanes,params
@@ -82,4 +84,22 @@ function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperp
 		FileManager.save_points_rgbs_txt(path2name*"_outliers_points.txt", PC_outliers)
 		flushprintln("Outliers points: done...")
 	end
+end
+
+
+function source2pc(source)
+	cloud_metadata = CloudMetadata(source)
+
+	if lod == -1
+		trie = potree2trie(source)
+		max_level = FileManager.max_depth(trie)
+		all_files = FileManager.truncate_trie(trie, max_level, String[])
+		threshold = 2*cloud_metadata.spacing/2^max_level
+	else
+		all_files = FileManager.get_files_in_potree_folder(source,lod)
+		threshold = 2*cloud_metadata.spacing/2^lod
+	end
+
+	PC = FileManager.las2pointcloud(all_files...)
+	return PC
 end

@@ -48,34 +48,51 @@ GL.VIEW([ Visualization.mesh_lines(hyperplanes)...])
 #   			GL.GLGrid(V,EV,GL.COLORS[1],1.0)
 # 		])
 #
-function filtro(hyperplanes)
-	tokeep = Hyperplane[]
-	for hyperplane in hyperplanes
-		pc_on_hyperplane = hyperplane.points
-		#########################
-		if pc_on_hyperplane.n_points > 20
-			density, AVG = Common.relative_density_points(pc_on_hyperplane,collect(1:pc_on_hyperplane.n_points),5)
-			mean = Statistics.mean(density)
-			@show mean
-			if mean > 20
-				push!(tokeep,hyperplane)
-			end
-		end
-		####################
-		# E,_ = Common.DrawLine(hyperplane, 0.0)
-		# dist = Lar.norm(E[:,1]-E[:,2])
-		# rho = pc_on_hyperplane.n_points/dist
-		# if rho > 20
-		# 	push!(tokeep,hyperplane)
-		# end
-	end
-	return tokeep
-end
 
-tokeep = filtro(hyperplanes)
-GL.VIEW([ Visualization.mesh_lines(tokeep)...])
-V,EV = Common.DrawLines(tokeep,0.0)
-GL.VIEW([  	GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,:]'),GL.COLORS[2]) ,
-			#GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,da_tenere]'),GL.COLORS[12]),
-  			GL.GLGrid(V,EV,GL.COLORS[1],1.0)
-		])
+
+
+function source2pc(source::String, plane::Detection.Plane, thickness::Float64)
+
+	if isdir(source) # se source è un potree
+		Detection.flushprintln("Potree struct")
+		cloud_metadata = CloudMetadata(source)
+		bbin = cloud_metadata.tightBoundingBox
+		model = OrthographicProjection.Common.plane2model(plane,thickness,bbin)
+		aabb = Detection.Common.boundingbox(model[1])
+		mainHeader = Detection.FileManager.newHeader(aabb,"EXTRACTION",SIZE_DATARECORD)
+
+		params = OrthographicProjection.ParametersExtraction("slice.las",
+															[source],
+															Matrix{Float64}(Detection.Lar.I,3,3),
+															model,
+															-Inf,
+															Inf,
+															mainHeader
+															)
+
+		OrthographicProjection.segment_and_save(params)
+
+		return Detection.FileManager.las2pointcloud(params.outputfile)
+
+	elseif isfile(source) # se source è un file
+		Detection.flushprintln("Single file")
+		bbin = Detection.FileManager.las2aabb(source)
+		model = OrthographicProjection.Common.plane2model(plane,thickness,bbin)
+		PC = Detection.FileManager.las2pointcloud(params.outputfile)
+
+		if Common.modelsdetection(params.model, metadata.tightBoundingBox) == 2 # full model
+			Detection.flushprintln("full model")
+			return PC
+		else
+			Detection.flushprintln("slice")
+			tokeep = Detection.Common.inmodel(model).([PC.coordinate[:,i] for i in 1:PC.n_points])
+			return PointCloud(PC.coordinates[:,tokeep],PC.rgbs[:,tokeep])
+		end
+
+	end
+
+end
+source = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
+plane = Detection.Plane(0,0,1,6.50)
+thickness = 0.10
+PC = source2pc(source,plane,thickness)
