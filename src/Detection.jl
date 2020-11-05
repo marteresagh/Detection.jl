@@ -9,5 +9,5 @@ module Detection
     include("Detection/main.jl")
     include("Detection/util.jl")
 
-    export Initializer
+    export Initializer, Common, FileManager
 end # module

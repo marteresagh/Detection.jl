@@ -49,50 +49,10 @@ GL.VIEW([ Visualization.mesh_lines(hyperplanes)...])
 # 		])
 #
 
-
-
-function source2pc(source::String, plane::Detection.Plane, thickness::Float64)
-
-	if isdir(source) # se source è un potree
-		Detection.flushprintln("Potree struct")
-		cloud_metadata = CloudMetadata(source)
-		bbin = cloud_metadata.tightBoundingBox
-		model = OrthographicProjection.Common.plane2model(plane,thickness,bbin)
-		aabb = Detection.Common.boundingbox(model[1])
-		mainHeader = Detection.FileManager.newHeader(aabb,"EXTRACTION",SIZE_DATARECORD)
-
-		params = OrthographicProjection.ParametersExtraction("slice.las",
-															[source],
-															Matrix{Float64}(Detection.Lar.I,3,3),
-															model,
-															-Inf,
-															Inf,
-															mainHeader
-															)
-
-		OrthographicProjection.segment_and_save(params)
-
-		return Detection.FileManager.las2pointcloud(params.outputfile)
-
-	elseif isfile(source) # se source è un file
-		Detection.flushprintln("Single file")
-		bbin = Detection.FileManager.las2aabb(source)
-		model = OrthographicProjection.Common.plane2model(plane,thickness,bbin)
-		PC = Detection.FileManager.las2pointcloud(params.outputfile)
-
-		if Common.modelsdetection(params.model, metadata.tightBoundingBox) == 2 # full model
-			Detection.flushprintln("full model")
-			return PC
-		else
-			Detection.flushprintln("slice")
-			tokeep = Detection.Common.inmodel(model).([PC.coordinate[:,i] for i in 1:PC.n_points])
-			return PointCloud(PC.coordinates[:,tokeep],PC.rgbs[:,tokeep])
-		end
-
-	end
-
-end
-source = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
+source = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\LACONTEA"
+Detection.FileManager.las2pointcloud(source)
 plane = Detection.Plane(0,0,1,6.50)
 thickness = 0.10
 PC = source2pc(source,plane,thickness)
+bbin = Detection.FileManager.las2aabb(source)
+model = OrthographicProjection.Common.plane2model(plane,thickness,bbin)

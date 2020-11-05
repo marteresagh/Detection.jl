@@ -6,15 +6,18 @@ using OrthographicProjection
 
 println("packages OK")
 
+"""
+generate input point cloud
+"""
 function source2pc(source::String, plane::Detection.Plane, thickness::Float64)
 
 	if isdir(source) # se source è un potree
 		Detection.flushprintln("Potree struct")
-		cloud_metadata = CloudMetadata(source)
+		cloud_metadata = Detection.CloudMetadata(source)
 		bbin = cloud_metadata.tightBoundingBox
-		model = OrthographicProjection.plane2model(plane,thickness,bbin)
+		model = OrthographicProjection.Common.plane2model(plane,thickness,bbin)
 		aabb = Detection.Common.boundingbox(model[1])
-		mainHeader = Detection.FileManager.newHeader(aabb,"EXTRACTION",SIZE_DATARECORD)
+		mainHeader = Detection.FileManager.newHeader(aabb,"EXTRACTION",Detection.SIZE_DATARECORD)
 
 		params = OrthographicProjection.ParametersExtraction("slice.las",
 															[source],
@@ -30,23 +33,23 @@ function source2pc(source::String, plane::Detection.Plane, thickness::Float64)
 		return Detection.FileManager.las2pointcloud(params.outputfile)
 
 	elseif isfile(source) # se source è un file
-		Detection.flushprintln("Single file")
+		#Detection.flushprintln("Single file")
 		bbin = Detection.FileManager.las2aabb(source)
-		model = OrthographicProjection.plane2model(plane,thickness,bbin)
-		PC = Detection.FileManager.las2pointcloud(params.outputfile)
-
-		if Common.modelsdetection(params.model, metadata.tightBoundingBox) == 2 # full model
+		model = OrthographicProjection.Common.plane2model(plane,thickness,bbin)
+		PC = Detection.FileManager.las2pointcloud(source)
+		if Detection.Common.modelsdetection(model, bbin) == 2 # full model
 			Detection.flushprintln("full model")
 			return PC
 		else
 			Detection.flushprintln("slice")
-			tokeep = Detection.Common.inmodel(model).([PC.coordinate[:,i] for i in 1:PC.n_points])
-			return PointCloud(PC.coordinates[:,tokeep],PC.rgbs[:,tokeep])
+			tokeep = Detection.Common.inmodel(model).([PC.coordinates[:,i] for i in 1:PC.n_points])
+			return Detection.PointCloud(PC.coordinates[:,tokeep],PC.rgbs[:,tokeep])
 		end
 
 	end
 
 end
+
 
 
 function parse_commandline()
@@ -66,9 +69,9 @@ function parse_commandline()
 		help = "Parameter"
 		arg_type = Float64
 		required = true
-	"--lod"
+	"--threshold"
 		help = "Level of detail. If -1, all points are taken"
-		arg_type = Int64
+		arg_type = Float64
 		required = true
 	"--failed"
 		help = "number of failed before exit"
@@ -110,7 +113,7 @@ function main()
 	failed = args["failed"]
 	N = args["validity"]
 	k = args["k"]
-	lod = args["lod"]
+	threshold = args["threshold"]
 	plane = args["plane"]
 	thickness = args["thickness"]
 
@@ -123,14 +126,16 @@ function main()
 	Detection.flushprintln("Source  =>  $source")
 	Detection.flushprintln("Output folder  =>  $output_folder")
 	Detection.flushprintln("Project name  =>  $project_name")
-	Detection.flushprintln("LOD =>  $lod")
+	Detection.flushprintln("Threshold =>  $threshold")
 	Detection.flushprintln("Parameter  =>  $par")
 	Detection.flushprintln("N. of failed  =>  $failed")
 	Detection.flushprintln("N. of points on line  =>  $N")
 	Detection.flushprintln("N. of k-nn  =>  $k")
 	Detection.flushprintln("Affine matrix =>  $affine_matrix")
 
-	Detection.detection_and_saves(output_folder, project_name, source, par, lod, failed, N, k, affine_matrix)
+	PC = source2pc(source::String, plane::Detection.Plane, thickness::Float64)
+	#che trheshold gli passo?? glielo chiedo all'utente??
+	Detection.pc2vectorize(output_folder, project_name, PC, par, threshold, failed, N, k, affine_matrix)
 end
 
 @time main()

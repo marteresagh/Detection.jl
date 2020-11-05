@@ -6,7 +6,7 @@ function pc2vectorize(
 	project_name::String,
 	PC::PointCloud,
 	par::Float64,
-	lod::Int64,
+	threshold::Float64,
 	failed::Int64,
 	N::Int64,
 	k::Int64,
