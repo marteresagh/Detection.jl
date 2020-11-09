@@ -1,10 +1,10 @@
-using Detection
+#using Detection
 using FileManager
 using Common
 using Visualization
 
-fname = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\TEST_LINES\\prova\\SEZIONE_250LACONTEA\\SEZIONE_250LACONTEA_vectorized_1D.txt"
-source = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\Sezione_z250.las"
+fname = "C:/Users/marte/Documents/GEOWEB/TEST/PROVA_SCRIPT/PROVA_SCRIPT_vectorized_1D.txt"
+source = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z250.las"
 V,EV = FileManager.load_segment(fname)
 PC = FileManager.las2pointcloud(source)
 
