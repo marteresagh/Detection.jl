@@ -29,8 +29,6 @@ hyperplanes,params = Detection.pc2vectorize(
 							affine_matrix
 							)
 
-# julia detection.jl "C:\Users\marte\Documents\GEOWEB\FilePotree\orthoCONTEA\Sezione_z650.las" -p "PLANE" -o "C:\Users\marte\Documents\GEOWEB\FilePotree\TEST_LINES\prova" --failed 10 --par 0.02 --thr 0.06 --plane "0 0 1 6.50"
-
 GL.VIEW([ Visualization.mesh_lines(hyperplanes)...])
 
 presi = setdiff!(collect(1:PC.n_points),params.current_inds)
@@ -52,6 +50,3 @@ GL.VIEW([  # GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,params.current_in
 
             GL.GLGrid(V,EV,GL.COLORS[1],1.0),
         ])
-
-# ============== DEBUG
-# julia detection.jl "C:\Users\marte\Documents\GEOWEB\FilePotree\TEST_LINES\Sezione_z39_10cm.las" -p "ALTRASEZ" -o "C:\Users\marte\Documents\GEOWEB\FilePotree\TEST_LINES\prova" --failed 10 --par 0.02 --thr 0.02 --plane "0 0 1 6.50"
