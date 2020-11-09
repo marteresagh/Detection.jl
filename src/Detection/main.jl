@@ -1,4 +1,3 @@
-
 """
 generate input point cloud
 """
