@@ -5,24 +5,22 @@ using FileManager
 
 
 # ============== DEBUG
-source = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthoCONTEA\\Sezione_z650.las"
+source = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
 
-folder = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\TEST_LINES\\prova"
-filename = "script"
+folder = "C:/Users/marte/Documents/GEOWEB/TEST"
+filename = "PROVA"
 PC = FileManager.las2pointcloud(source)
 par = 0.07
 threshold = 2*0.03
 failed = 10
-N = 100
+N = 10
 k = 10
 affine_matrix = Lar.t(0,0,6.50)
 
-# direction,centroid = Common.LinearFit(PC.coordinates)
-
-hyperplanes,params = Detection.detection_and_saves(
+hyperplanes,params = Detection.pc2vectorize(
 							folder,
 							filename,
-							source,
+							PC,
 	 						par,
 							threshold,
 							failed,

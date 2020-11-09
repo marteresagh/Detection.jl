@@ -47,9 +47,6 @@ function pc2vectorize(
 
 
 	flushprintln("=========== INIT =============")
-	all_files = nothing
-	threshold = nothing
-
 	proj_folder = FileManager.mkdir_project(folder,project_name)
 
 	if lines
