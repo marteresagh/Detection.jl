@@ -25,7 +25,7 @@ function parse_commandline()
 	"--lod"
 		help = "Level of detail. If -1, all points are taken"
 		arg_type = Int64
-		required = true
+		default = -1
 	"--failed"
 		help = "number of failed before exit"
 		arg_type = Int64

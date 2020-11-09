@@ -6,52 +6,6 @@ using OrthographicProjection
 
 println("packages OK")
 
-"""
-generate input point cloud
-"""
-function source2pc(source::String, plane::Detection.Plane, thickness::Float64)
-
-	if isdir(source) # se source è un potree
-		Detection.flushprintln("Potree struct")
-		cloud_metadata = Detection.CloudMetadata(source)
-		bbin = cloud_metadata.tightBoundingBox
-		model = OrthographicProjection.Common.plane2model(plane,thickness,bbin)
-		aabb = Detection.Common.boundingbox(model[1])
-		mainHeader = Detection.FileManager.newHeader(aabb,"EXTRACTION",Detection.SIZE_DATARECORD)
-
-		params = OrthographicProjection.ParametersExtraction("slice.las",
-															[source],
-															Matrix{Float64}(Detection.Lar.I,3,3),
-															model,
-															-Inf,
-															Inf,
-															mainHeader
-															)
-
-		OrthographicProjection.segment_and_save(params)
-
-		return Detection.FileManager.las2pointcloud(params.outputfile)
-
-	elseif isfile(source) # se source è un file
-		#Detection.flushprintln("Single file")
-		bbin = Detection.FileManager.las2aabb(source)
-		model = OrthographicProjection.Common.plane2model(plane,thickness,bbin)
-		PC = Detection.FileManager.las2pointcloud(source)
-		if Detection.Common.modelsdetection(model, bbin) == 2 # full model
-			Detection.flushprintln("full model")
-			return PC
-		else
-			Detection.flushprintln("slice")
-			tokeep = Detection.Common.inmodel(model).([PC.coordinates[:,i] for i in 1:PC.n_points])
-			return Detection.PointCloud(PC.coordinates[:,tokeep],PC.rgbs[:,tokeep])
-		end
-
-	end
-
-end
-
-
-
 function parse_commandline()
 	s = ArgParseSettings()
 
@@ -69,10 +23,10 @@ function parse_commandline()
 		help = "Parameter"
 		arg_type = Float64
 		required = true
-	"--threshold"
+	"--lod"
 		help = "Level of detail. If -1, all points are taken"
-		arg_type = Float64
-		required = true
+		arg_type = Int64
+		default = -1
 	"--failed"
 		help = "number of failed before exit"
 		arg_type = Int64
@@ -89,10 +43,10 @@ function parse_commandline()
 		help = "a, b, c, d parameters described the plane"
 		arg_type = String
 		required = true
-	"--thickness"
-		help = "Sections thickness"
-		arg_type = Float64
-		required = true
+	# "--thickness"
+	# 	help = "Sections thickness"
+	# 	arg_type = Float64
+	# 	required = true
 	end
 
 	return parse_args(s)
@@ -113,14 +67,16 @@ function main()
 	failed = args["failed"]
 	N = args["validity"]
 	k = args["k"]
-	threshold = args["threshold"]
+	lod = args["lod"]
 	plane = args["plane"]
-	thickness = args["thickness"]
+	#thickness = args["thickness"]
 
+	#preprocess
 	b = tryparse.(Float64,split(plane, " "))
 	@assert length(b) == 4 "$plane: Please described the plane in Hessian normal form"
 	plane = Detection.Plane(b[1],b[2],b[3],b[4])
 	affine_matrix = plane.matrix
+	PC, threshold = Detection.source2pc(source, lod)
 
 	Detection.flushprintln("== Parameters ==")
 	Detection.flushprintln("Source  =>  $source")
@@ -133,7 +89,7 @@ function main()
 	Detection.flushprintln("N. of k-nn  =>  $k")
 	Detection.flushprintln("Affine matrix =>  $affine_matrix")
 
-	PC = source2pc(source::String, plane::Detection.Plane, thickness::Float64)
+
 	Detection.pc2vectorize(output_folder, project_name, PC, par, threshold, failed, N, k, affine_matrix)
 end
 

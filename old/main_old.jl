@@ -4,9 +4,9 @@ Main
 function detection_and_saves(
 	folder::String,
 	project_name::String,
-	source::String,
+	PC::PointCloud,
 	par::Float64,
-	lod::Int64,
+	theshold::Int64,
 	failed::Int64,
 	N::Int64,
 	k::Int64,

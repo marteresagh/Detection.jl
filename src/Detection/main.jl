@@ -1,3 +1,35 @@
+
+"""
+generate input point cloud
+"""
+function source2pc(source::String, lod::Int64)
+
+	if isdir(source) # se source è un potree
+		Detection.flushprintln("Potree struct")
+		cloud_metadata = Detection.CloudMetadata(source)
+
+		if lod == -1
+			trie = potree2trie(source)
+			max_level = FileManager.max_depth(trie)
+			all_files = FileManager.get_files_in_potree_folder(source,max_level)
+			all_files = FileManager.truncate_trie(trie, max_level, String[])
+			PC = FileManager.las2pointcloud(all_files...)
+			threshold = 2*cloud_metadata.spacing/2^max_level
+			return PC, threshold
+		else
+			all_files = FileManager.get_files_in_potree_folder(source,lod)
+			PC = FileManager.las2pointcloud(all_files...)
+			threshold = 2*cloud_metadata.spacing/2^lod
+			return PC, threshold
+		end
+
+	elseif isfile(source) # se source è un file
+		PC = FileManager.las2pointcloud(source)
+		return PC, 0.1
+	end
+
+end
+
 """
 Main
 """
