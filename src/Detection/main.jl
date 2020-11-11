@@ -10,8 +10,7 @@ function source2pc(source::String, lod::Int64)
 		if lod == -1
 			trie = potree2trie(source)
 			max_level = FileManager.max_depth(trie)
-			all_files = FileManager.get_files_in_potree_folder(source,max_level)
-			all_files = FileManager.truncate_trie(trie, max_level, String[])
+			all_files = FileManager.get_all_values(trie)
 			PC = FileManager.las2pointcloud(all_files...)
 			threshold = 4*cloud_metadata.spacing/2^max_level
 			return PC, threshold
