@@ -37,32 +37,32 @@ GL.VIEW([  	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) 
   			GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]),
 		])
 
-
-using Plots
-
-for i in 1:5
-	hyperplane = hyperplanes[i]
-	V = hyperplane.inliers.coordinates
-	dir,cent = Common.LinearFit(V)
-	res = Common.residual(hyperplane).([V[:,i] for i in 1:size(V,2)])
-	@show	mu = Statistics.mean(res)
-	@show	rho = Statistics.std(res)
-	histogram(res)
-end
-
-hyperplane = hyperplanes[2]
-V = hyperplane.inliers.coordinates
-dir,cent = Common.LinearFit(V)
-res = Common.residual(hyperplane).([V[:,i] for i in 1:size(V,2)])
-@show	mu = Statistics.mean(res)
-@show	rho = Statistics.std(res)
-histogram(res)
-
-sum(res)/length(res)
-
-hyp = Hyperplane(PointCloud(V),dir,cent)
-GL.VIEW([  	GL.GLPoints(convert(Lar.Points,V'),GL.COLORS[1]) ,
-  			Visualization.mesh_lines([hyp])...,
-		])
-
-savefig("residui.png")
+#
+# using Plots
+#
+# for i in 1:5
+# 	hyperplane = hyperplanes[i]
+# 	V = hyperplane.inliers.coordinates
+# 	dir,cent = Common.LinearFit(V)
+# 	res = Common.residual(hyperplane).([V[:,i] for i in 1:size(V,2)])
+# 	@show	mu = Statistics.mean(res)
+# 	@show	rho = Statistics.std(res)
+# 	histogram(res)
+# end
+#
+# hyperplane = hyperplanes[2]
+# V = hyperplane.inliers.coordinates
+# dir,cent = Common.LinearFit(V)
+# res = Common.residual(hyperplane).([V[:,i] for i in 1:size(V,2)])
+# @show	mu = Statistics.mean(res)
+# @show	rho = Statistics.std(res)
+# histogram(res)
+#
+# sum(res)/length(res)
+#
+# hyp = Hyperplane(PointCloud(V),dir,cent)
+# GL.VIEW([  	GL.GLPoints(convert(Lar.Points,V'),GL.COLORS[1]) ,
+#   			Visualization.mesh_lines([hyp])...,
+# 		])
+#
+# savefig("residui.png")
