@@ -37,13 +37,13 @@ Assert the detected hyperplane is valid / interesting
 """
 function validity(hyperplane::Hyperplane, params::Initializer)
 	# VALIDITY
-	pc_on_hyperplane = hyperplane.points
+	pc_on_hyperplane = hyperplane.inliers
 	@assert  pc_on_hyperplane.n_points > params.N "not valid"
 end
 
 # function validity(hyperplane::Hyperplane, params::Initializer, cluster, all_visited)
 # 	# VALIDITY
-# 	pc_on_hyperplane = hyperplane.points
+# 	pc_on_hyperplane = hyperplane.inliers
 # 	#@show length(cluster)/length(all_visited)
 # 	#@assert  pc_on_hyperplane.n_points > params.N "not valid" #TODO da ottimizzare
 #
