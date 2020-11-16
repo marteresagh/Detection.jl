@@ -156,8 +156,6 @@ function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane
 		res = Common.residual(hyperplane).([points[:,i] for i in R])
 		todel = [ res[i] > par/2 for i in 1:length(res) ]
 		to_keep = R[.!todel]
-
-		res = Common.residual(hyperplane).([points[:,i] for i in to_keep])
 	end
 
 	to_del = R[todel]
