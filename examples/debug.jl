@@ -37,24 +37,3 @@ GL.VIEW([	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2
 GL.VIEW([  	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) ,
   			GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]),
 		])
-
-
-using Plots
-V = FileManager.load_points("punti_debug.txt")
-#V = hyperplanes[1].inliers.coordinates
-dir,cent = Common.LinearFit(V)
-hyperplane = Hyperplane(PointCloud(V),dir,cent)
-res = Common.residual(hyperplane).([V[:,i] for i in 1:size(V,2)])
-@show	mu = Statistics.mean(res)
-@show	rho = Statistics.std(res)
-histogram(res)
-
-Detection.optimize!(V, collect(1:size(V,2)), hyperplane::Hyperplane, 0.07)
-hyperplane=optimize(V)
-
-L,EL = Common.DrawLine(hyperplane,0.0)
-GL.VIEW([
-		GL.GLPoints(convert(Lar.Points,V'),GL.COLORS[2]),
-		#GL.GLGrid(L,EL,GL.COLORS[1],1.0)
-		Visualization.mesh_lines([hyperplane])...
-		])

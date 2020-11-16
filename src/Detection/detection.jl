@@ -141,7 +141,7 @@ function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane
 		mu = Statistics.mean(res)
 		rho = Statistics.std(res)
 
-		# remove points with large residue
+		# remove points with large residue # TODO prova con MODA
 		filter = [ res[i] < mu for i in 1:length(res)  ]
 		tokeep = to_keep[filter]
 
