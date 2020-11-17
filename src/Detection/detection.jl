@@ -127,66 +127,66 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 	return visitedverts
 end
 
-"""
-Optimize lines found.
-"""
-#TODO Da rivedere alcune cose
-function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
-	to_keep = copy(R)
-	todel = nothing
-	res = Common.residual(hyperplane).([points[:,i] for i in to_keep])
-
-	for i in 1:5
-		# mean and std
-		res = Common.residual(hyperplane).([points[:,i] for i in to_keep])
-		mu = Statistics.mean(res)
-		rho = Statistics.std(res)
-
-		# remove points with large residue # TODO prova con MODA
-		filter = [ res[i] < mu for i in 1:length(res)  ]
-		tokeep = to_keep[filter]
-
-		listPoint = points[:,tokeep]
-
-		# update fit parameters
-		direction, centroid = Common.LinearFit(listPoint)
-		hyperplane.direction = direction
-		hyperplane.centroid = centroid
-
-		#TODO da rivedere seconda parte: elimino i punti che sono troppo distanti.
-		res = Common.residual(hyperplane).([points[:,i] for i in R])
-		todel = [ res[i] > par/2 for i in 1:length(res) ]
-		to_keep = R[.!todel]
-	end
-
-	to_del = R[todel]
-	setdiff!(R,to_del)
-	return to_del
-end
-
-# TODO vecchia versione
+# """
+# Optimize lines found.
+# """
+# #TODO Da rivedere alcune cose
 # function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
-# 	# mean and std
-# 	res = Common.residual(hyperplane).([points[:,i] for i in R])
-# 	mu = Statistics.mean(res)
-# 	rho = Statistics.std(res)
+# 	to_keep = copy(R)
+# 	todel = nothing
+# 	res = Common.residual(hyperplane).([points[:,i] for i in to_keep])
 #
-# 	# remove points with large residue
-# 	filter = [ res[i] < mu+rho for i in 1:length(res)  ]
-# 	tokeep = R[filter]
+# 	for i in 1:5
+# 		# mean and std
+# 		res = Common.residual(hyperplane).([points[:,i] for i in to_keep])
+# 		mu = Statistics.mean(res)
+# 		rho = Statistics.std(res)
 #
-# 	listPoint = points[:,tokeep]
+# 		# remove points with large residue # TODO prova con MODA
+# 		filter = [ res[i] < mu for i in 1:length(res)  ]
+# 		tokeep = to_keep[filter]
 #
-# 	# update fit parameters
-# 	direction, centroid = Common.LinearFit(listPoint)
-# 	hyperplane.direction = direction
-# 	hyperplane.centroid = centroid
+# 		listPoint = points[:,tokeep]
 #
-# 	#TODO da rivedere seconda parte: elimino i punti che sono troppo distanti.
-# 	res = Common.residual(hyperplane).([points[:,i] for i in R])
-# 	todel = [ res[i] > par/2 for i in 1:length(res) ]
+# 		# update fit parameters
+# 		direction, centroid = Common.LinearFit(listPoint)
+# 		hyperplane.direction = direction
+# 		hyperplane.centroid = centroid
+#
+# 		#TODO da rivedere seconda parte: elimino i punti che sono troppo distanti.
+# 		res = Common.residual(hyperplane).([points[:,i] for i in R])
+# 		todel = [ res[i] > par/2 for i in 1:length(res) ]
+# 		to_keep = R[.!todel]
+# 	end
+#
 # 	to_del = R[todel]
 # 	setdiff!(R,to_del)
-#
 # 	return to_del
 # end
+
+# TODO vecchia versione
+function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
+	# mean and std
+	res = Common.residual(hyperplane).([points[:,i] for i in R])
+	mu = Statistics.mean(res)
+	rho = Statistics.std(res)
+
+	# remove points with large residue
+	filter = [ res[i] < mu+rho for i in 1:length(res)  ]
+	tokeep = R[filter]
+
+	listPoint = points[:,tokeep]
+
+	# update fit parameters
+	direction, centroid = Common.LinearFit(listPoint)
+	hyperplane.direction = direction
+	hyperplane.centroid = centroid
+
+	#TODO da rivedere seconda parte: elimino i punti che sono troppo distanti.
+	res = Common.residual(hyperplane).([points[:,i] for i in R])
+	todel = [ res[i] > par/2 for i in 1:length(res) ]
+	to_del = R[todel]
+	setdiff!(R,to_del)
+
+	return to_del
+end
