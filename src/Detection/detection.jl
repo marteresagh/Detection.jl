@@ -118,11 +118,12 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		hyperplane.centroid = centroid
 
 		# metodo OUT
-		todel = optimize!(points,R,hyperplane,params.par) #TODO da sistemare questa cosa
-		seeds = setdiff(tmp,todel)
-
+		 todel = optimize!(points,R,hyperplane,params.par) #TODO da sistemare questa cosa
+		 seeds = setdiff(tmp,todel)
+		#seeds = tmp #prova 2
 	end
-
+	# metodo OUT
+	# todel = optimize!(points,R,hyperplane,params.par) #prova 2
 	return visitedverts
 end
 
@@ -135,7 +136,7 @@ function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane
 	todel = nothing
 	res = Common.residual(hyperplane).([points[:,i] for i in to_keep])
 
-	for i in 1:10
+	for i in 1:5
 		# mean and std
 		res = Common.residual(hyperplane).([points[:,i] for i in to_keep])
 		mu = Statistics.mean(res)
