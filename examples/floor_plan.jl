@@ -50,27 +50,10 @@ hyperplanes2 = Detection.iterate_random_detection(params,debug = true)
 
 V,EV = Common.DrawLines(hyperplanes2,0.0)
 T,ET = Common.DrawLine(hyperplanes[2],0.0)
+
 GL.VIEW([	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2]),
 			# GL.GLGrid(V,EV,GL.COLORS[1],1.0),
 			# GL.GLGrid(T,ET,GL.COLORS[12],1.0),
-				Visualization.mesh_lines([hyperplanes[2]])...,
+			Visualization.mesh_lines([hyperplanes[2]])...,
 			Visualization.mesh_lines(hyperplanes2)...,
-
-
-			])
-
-points2 = hyperplanes2[1].inliers.coordinates
-points1 = hyperplanes[2].inliers.coordinates
-
-dir2,cent2 = Common.LinearFit(points2)
-hyp2 = Hyperplane(PointCloud(points2),dir2,cent2)
-dir1,cent1 = Common.LinearFit(points1)
-hyp1 = Hyperplane(PointCloud(points1),dir1,cent1)
-
-V,EV = Common.DrawLine(hyp1,0.0)
-T,ET = Common.DrawLine(hyp2,0.0)
-GL.VIEW([	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2]),
-			GL.GLGrid(V,EV,GL.COLORS[1],1.0),
-			GL.GLGrid(T,ET,GL.COLORS[12],1.0),
-
 ])
