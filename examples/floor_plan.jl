@@ -9,7 +9,7 @@ fname = "examples/las/polyline.las"
 fname = "examples/las/full.las"
 fname = "examples/las/square.las"
 # fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
-# fname = "C:/Users/marte/Documents/GEOWEB/FilePotree/AMPHI/sezione_AMPHI_z39_5cm.las"
+# fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
 
 PC = FileManager.las2pointcloud(fname)
 par = 0.07
