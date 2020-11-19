@@ -17,6 +17,8 @@ source = "C:/Users/marte/Downloads/TEST_LINES_FITTING_ON_PROFILE/LA_CONTEA_PROFI
 fname = "C:/Users/marte/Documents/GEOWEB/TEST/PROFILE_Z650_XZ/PROFILE_Z650_XZ_vectorized_1D.txt"
 source = "C:/Users/marte/Downloads/TEST_LINES_FITTING_ON_PROFILE/LA_CONTEA_PROFILE_DXF_Z_650_XZ/pointcloud_XZ_PLANE_SLICE_AT_QUOTE_15.4525_WITH_THICKNESS_0.05.las"
 
+fname = "C:/Users/marte/Documents/GEOWEB/TEST/PROVA_2D/2D/PROVA_2D_vectorized_1D.txt"
+source = "C:/Users/marte/Documents/GEOWEB/TEST/PROVA_2D//2D/PROVA_2D_fitted_points.las"
 
 V,EV = FileManager.load_segment(fname)
 PC = FileManager.las2pointcloud(source)
