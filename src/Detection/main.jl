@@ -90,7 +90,7 @@ function saves_3D_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyp
 
 	flushprintln("Lines: saving...")
 	flushprintln("Detect $(length(hyperplanes)) lines")
-	FileManager.save_lines_txt(path2name*"_vectorized_1D.txt", hyperplanes, affine_matrix)
+	FileManager.save_3D_lines_txt(path2name*"_vectorized_1D.txt", hyperplanes, affine_matrix)
 	flushprintln("Lines: done...")
 
 	flushprintln("Fitted points: saving...")
@@ -121,12 +121,12 @@ function saves_3D_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyp
 end
 
 
-function saves_2D_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperplane,1},affine_matrix::Matrix, path2name::String)
-	PC_fitted = PointCloud(PC.coordinates[:,params.fitted],PC.rgbs[:,params.fitted])
+function saves_2D_data(PC::PointCloud, params::Initializer, hyperplanes::Array{Hyperplane,1}, path2name::String)
+	PC_fitted = PointCloud(PC.coordinates[:,params.fitted], PC.rgbs[:,params.fitted])
 
 	flushprintln("Lines: saving...")
 	flushprintln("Detect $(length(hyperplanes)) lines")
-	FileManager.save_lines_txt(path2name*"_vectorized_1D.txt", hyperplanes, affine_matrix)
+	FileManager.save_2D_lines_txt(path2name*"_vectorized_1D.txt", hyperplanes)
 	flushprintln("Lines: done...")
 
 	flushprintln("Fitted points: saving...")
