@@ -46,10 +46,11 @@ function pc2vectorize(
 
 
 	flushprintln("=========== INIT =============")
-	proj_folder3D = FileManager.mkdir_project(folder,joinpath(project_name,"3D"))
+	proj_folder = FileManager.mkdir_project(folder,project_name)
 
+	proj_folder3D = FileManager.mkdir_project(proj_folder,"3D")
 	if lines
-		proj_folder2D = FileManager.mkdir_project(folder,joinpath(project_name,"2D"))
+		proj_folder2D = FileManager.mkdir_project(proj_folder,"2D")
 	end
 
 	if lines
