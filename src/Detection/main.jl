@@ -79,7 +79,7 @@ function pc2vectorize(
 
 	if lines
 		name2D = joinpath(proj_folder2D,project_name)
-		saves_2D_data(INPUT_PC, params, hyperplanes, affine_matrix, name2D)
+		saves_2D_data(INPUT_PC, params, hyperplanes, name2D)
 	end
 
 	return hyperplanes,params
