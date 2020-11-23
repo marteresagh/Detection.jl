@@ -1,7 +1,7 @@
 """
 generate input point cloud
 """
-function source2pc(source::String, lod::Int64)
+function source2pc(source::String, lod::Int64, threshold = nothing::Union{Nothing,Float64})
 
 	if isdir(source) # se source è un potree
 		Detection.flushprintln("Potree struct")
