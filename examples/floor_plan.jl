@@ -13,10 +13,10 @@ fname = "examples/las/square.las"
 
 PC = FileManager.las2pointcloud(fname)
 par = 0.07
-threshold = 2*0.03
+threshold = 0.06
 failed = 100
 N = 5
-INPUT_PC = PointCloud(PC.coordinates[1:2,:],PC.rgbs)
+INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 k = 10
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
@@ -25,8 +25,9 @@ hyperplanes = Detection.iterate_random_detection(params,debug = true)
 # hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
 
 V,EV = Common.DrawLines(hyperplanes,0.0)
-GL.VIEW([  	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2]) ,
-			#GL.GLPoints(convert(Lar.Points,PC2D.coordinates[:,da_tenere]'),GL.COLORS[12]),
+GL.VIEW([
+			GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[12]),
+			GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]) ,
   			GL.GLGrid(V,EV,GL.COLORS[1],1.0)
 		])
 

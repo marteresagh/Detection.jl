@@ -17,7 +17,7 @@ function iterate_random_detection(params::Initializer; debug = false)
 	while search
 
 		if isready(inputBuffer) && take!(inputBuffer) == 'q'
-			break
+			break # break main loop
 		end
 
 		found = false
@@ -52,7 +52,7 @@ function iterate_random_detection(params::Initializer; debug = false)
 
 	if debug # interrompe il task per la lettura da teastiera
 		try
-		    Base.throwto(task, InterruptException())
+			Base.throwto(task, InterruptException())
 		catch y
 			flushprintln("interrotto")
 		end
@@ -101,10 +101,10 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		N = Common.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k)
 		union!(visitedverts,N)
 
-
 		for i in N
 			p = points[:,i]
-			if Common.residual(hyperplane)(p) < params.par # metodo IN
+			# metodo IN
+			if Common.residual(hyperplane)(p) < params.par
 				push!(tmp,i)
 				push!(R,i)
 			end
@@ -112,21 +112,15 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 
 		listPoint = points[:,R]
 
-		# update fit parameters # SENZA QUESTO é MIGLIORATO PARECCHIO
-		# direction, centroid = Common.LinearFit(listPoint)
-		# hyperplane.direction = direction
-		# hyperplane.centroid = centroid
-
 		# metodo OUT
-		 todel = optimize!(points,R,hyperplane,params.par) #TODO da sistemare questa cosa
-		 seeds = setdiff(tmp,todel)
-		#seeds = tmp #prova 2
+		todel = optimize!(points,R,hyperplane,params.par)
+		seeds = setdiff(tmp,todel)
+		# optimize!(points,R,hyperplane,params.par)
+		# seeds = tmp
 	end
-	# metodo OUT
-	# todel = optimize!(points,R,hyperplane,params.par) #prova 2
+
 	return visitedverts
 end
-
 
 function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
 	# mean and std
@@ -145,7 +139,7 @@ function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane
 	hyperplane.direction = direction
 	hyperplane.centroid = centroid
 
-	#TODO da rivedere seconda parte: elimino i punti che sono troppo distanti.
+	# elimino i punti che sono troppo distanti.
 	res = Common.residual(hyperplane).([points[:,i] for i in R])
 	todel = [ res[i] > par/2 for i in 1:length(res) ]
 	to_del = R[todel]
