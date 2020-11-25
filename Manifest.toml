@@ -82,8 +82,8 @@ uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 version = "1.4.4"
 
 [[FileManager]]
-deps = ["Common", "DataStructures", "Dates", "JSON", "LasIO", "LazIO", "Printf"]
-git-tree-sha1 = "7c48ccbeb834d1a485b5a7140a4b3b70dfeb08df"
+deps = ["Common", "DataStructures", "Dates", "JSON", "LasIO", "LazIO", "PlyIO", "Printf"]
+git-tree-sha1 = "9b0ae45183626b2a8af1fb2fc91199f1d5f655ff"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/FileManager.jl"
 uuid = "0bd84659-c0f7-4690-a84b-0a06eabf7473"
@@ -199,6 +199,11 @@ version = "1.0.12"
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+
+[[PlyIO]]
+git-tree-sha1 = "8a3c809e929f255c46e8a0f9bca2174b8c51fbd2"
+uuid = "42171d58-473b-503a-8d5f-782019eb09ec"
+version = "1.1.0"
 
 [[Printf]]
 deps = ["Unicode"]
