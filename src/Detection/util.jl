@@ -39,6 +39,11 @@ function validity(hyperplane::Hyperplane, params::Initializer)
 	# VALIDITY
 	pc_on_hyperplane = hyperplane.inliers
 	@assert  pc_on_hyperplane.n_points > params.N "not valid"
+	# TODO forse è buono
+	# res = Common.residual(hyperplane).([pc_on_hyperplane.coordinates[:,i] for i in 1:pc_on_hyperplane.n_points])
+	# mu = Statistics.mean(res)
+	# rho = Statistics.std(res)
+	# @assert mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005 "not valid"
 end
 
 # function validity(hyperplane::Hyperplane, params::Initializer, cluster, all_visited)
