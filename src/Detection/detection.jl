@@ -122,9 +122,13 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 			# metodo IN
 			# if plane -> check normals
 			if size(points,1) == 3
+				########################### Questa parte serve per bloccare il region growing
+				# TODO : da modificare - aggiungere alla struct point cloud le normali, quindi calcolarle all'inizio o leggerla da file
+				# e qui usare direttamente quelle, attenzione a come me le porto dietro.
 				K = Common.neighborhood(kdtree,points,[i],Int[],2*params.threshold,2*params.k)
 				normal,_ = Common.LinearFit(points[:,K])
 				test_normals = Common.angle_between_vectors(hyperplane.direction,normal) <= pi/4
+				#############################
 				if Common.residual(hyperplane)(p) < params.par && test_normals
 					push!(tmp,i)
 					push!(R,i)
