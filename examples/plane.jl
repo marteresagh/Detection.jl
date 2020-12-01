@@ -46,7 +46,7 @@ k = 30
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 hyperplanes = Detection.iterate_random_detection(params,debug = true)
-hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
+# hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
 V,FV = DrawPlanes(hyperplanes, nothing, 0.0)
 GL.VIEW([
 			GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[12]),
