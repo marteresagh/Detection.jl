@@ -1,7 +1,19 @@
+"""
+iterate_random_detection(params::Initializer; debug = false)
+
+Return all found hyperplanes.
+
+Algorithm description:
+ - Search starts with initial parameters
+ - Detects a valid hyperplane
+  - If found, marks all verteces in cluster as visited
+  - If not found, repeats the detection
+ - Search terminates if the detection failed a number of times in a row
+"""
 function iterate_random_detection(params::Initializer; debug = false)
 	inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
 
-	# 1. - initialization
+	# 1. - Initialization
 	hyperplanes = Hyperplane[]
 
 	hyperplane = nothing
@@ -11,7 +23,7 @@ function iterate_random_detection(params::Initializer; debug = false)
 	f = 0 # number of failed
 	i = 0 # number of hyperplane found
 
-	# iterate
+	# 2. - Main loop
 	flushprintln("= Start search =")
 	search = true
 	while search
@@ -50,7 +62,7 @@ function iterate_random_detection(params::Initializer; debug = false)
 
 	end
 
-	if debug # interrompe il task per la lettura da teastiera
+	if debug # interrompe il task per la lettura da tastiera
 		try
 			Base.throwto(task, InterruptException())
 		catch y
@@ -62,7 +74,9 @@ function iterate_random_detection(params::Initializer; debug = false)
 end
 
 """
-find hyperplane randomly
+get_hyperplane_from_random_init_point(params::Initializer)
+
+Detect an hyperplane starting from initial random point.
 """
 function get_hyperplane_from_random_init_point(params::Initializer)
 
@@ -104,9 +118,20 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		for i in N
 			p = points[:,i]
 			# metodo IN
-			if Common.residual(hyperplane)(p) < params.par
-				push!(tmp,i)
-				push!(R,i)
+			# if plane -> check normals
+			if size(points,1) == 3
+				K = Common.neighborhood(kdtree,points,[i],Int[],params.threshold,params.k)
+				normal,_ = Common.LinearFit(points[:,K])
+				test_normals = angle_between_vectors(hyperplane.direction,normal) <= pi/4
+				if Common.residual(hyperplane)(p) < params.par && test_normals
+					push!(tmp,i)
+					push!(R,i)
+				end
+			else
+				if Common.residual(hyperplane)(p) < params.par
+					push!(tmp,i)
+					push!(R,i)
+				end
 			end
 		end
 
@@ -122,6 +147,9 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 	return visitedverts
 end
 
+"""
+
+"""
 function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
 	# mean and std
 	res = Common.residual(hyperplane).([points[:,i] for i in R])
