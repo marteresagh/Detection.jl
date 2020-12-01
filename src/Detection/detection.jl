@@ -1,5 +1,5 @@
 """
-iterate_random_detection(params::Initializer; debug = false)
+	iterate_random_detection(params::Initializer; debug = false)
 
 Return all found hyperplanes.
 
