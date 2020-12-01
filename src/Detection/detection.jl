@@ -122,7 +122,7 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 			if size(points,1) == 3
 				K = Common.neighborhood(kdtree,points,[i],Int[],params.threshold,params.k)
 				normal,_ = Common.LinearFit(points[:,K])
-				test_normals = angle_between_vectors(hyperplane.direction,normal) <= pi/4
+				test_normals = Common.angle_between_vectors(hyperplane.direction,normal) <= pi/4
 				if Common.residual(hyperplane)(p) < params.par && test_normals
 					push!(tmp,i)
 					push!(R,i)
