@@ -47,6 +47,7 @@ function pc2vectorize(
 	proj_folder = FileManager.mkdir_project(folder,project_name)
 
 	proj_folder3D = FileManager.mkdir_project(proj_folder,"3D")
+
 	if lines
 		proj_folder2D = FileManager.mkdir_project(proj_folder,"2D")
 	end
@@ -76,10 +77,9 @@ function pc2vectorize(
 	flushprintln()
 	flushprintln("=========== SAVES =============")
 
-	name3D = joinpath(proj_folder3D,project_name)
-	saves_3D_data(PC, params, hyperplanes, affine_matrix, name3D)
-
 	if lines
+		name3D = joinpath(proj_folder3D,project_name)
+		saves_3D_data(PC, params, hyperplanes, affine_matrix, name3D)
 		name2D = joinpath(proj_folder2D,project_name)
 		saves_2D_data(INPUT_PC, params, hyperplanes, name2D)
 	end
