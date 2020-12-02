@@ -6,8 +6,8 @@ Return all found hyperplanes.
 Algorithm description:
  - Search starts with initial parameters
  - Detects a valid hyperplane
-  - If found, marks all verteces in cluster as visited
-  - If not found, repeats the detection
+ - If found, marks all verteces in cluster as visited
+ - If not found, repeats the detection
  - Search terminates if the detection failed a number of times in a row
 """
 function iterate_random_detection(params::Initializer; debug = false)
