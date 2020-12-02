@@ -17,15 +17,16 @@ par = 0.07
 failed = 100
 N = 10
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
+k = 20
 
 # threshold estimation
-density, _ = Common.relative_density_points(INPUT_PC.coordinates, collect(1:INPUT_PC.n_points), 30)
+density, _ = Common.relative_density_points(INPUT_PC.coordinates, collect(1:INPUT_PC.n_points), 2*k)
 dist=map(x->1/x,density)
 mu = Statistics.mean(dist)
 rho = Statistics.std(dist)
 threshold = mu+rho
 
-k = 20
+
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 hyperplanes = Detection.iterate_random_detection(params,debug = true)
@@ -49,6 +50,8 @@ GL.VIEW([  	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) 
 		])
 
 
+
+################# test of validity
 new_hyp = Hyperplane[]
 for i in 1:length(hyperplanes)
 	hyperplane = hyperplanes[i]
@@ -62,7 +65,3 @@ end
 
 GL.VIEW([	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2]),
 			Visualization.mesh_lines(new_hyp)...])
-
-
-
-#################
