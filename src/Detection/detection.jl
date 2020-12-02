@@ -92,7 +92,7 @@ function get_hyperplane_from_random_init_point(params::Initializer)
 	R = findall(x->x==candidates[index], params.current_inds)
 
 	# 2. criterio di crescita
-	all_visited_verts = search_cluster(PC, R, hyperplane, params) #punti che non devono far parte dei mie seeds
+	all_visited_verts = search_cluster(params.PC, R, hyperplane, params) #punti che non devono far parte dei mie seeds
 	listPoint = params.PC.coordinates[:,params.current_inds[R]]
 	listRGB = params.PC.rgbs[:,params.current_inds[R]]
 	hyperplane.inliers = PointCloud(listPoint,listRGB)
