@@ -13,10 +13,18 @@ fname = "examples/las/square.las"
 
 PC = FileManager.las2pointcloud(fname)
 par = 0.07
-threshold = 0.06
+
 failed = 100
 N = 10
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
+
+# threshold estimation
+density, _ = Common.relative_density_points(INPUT_PC.coordinates, collect(1:INPUT_PC.n_points), 30)
+dist=map(x->1/x,density)
+mu = Statistics.mean(dist)
+rho = Statistics.std(dist)
+threshold = mu+rho
+
 k = 20
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
@@ -54,3 +62,7 @@ end
 
 GL.VIEW([	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2]),
 			Visualization.mesh_lines(new_hyp)...])
+
+
+
+#################

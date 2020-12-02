@@ -1,7 +1,7 @@
 """
 generate input point cloud
 """
-function source2pc(source::String, lod::Int64, threshold = nothing::Union{Nothing,Float64})
+function source2pc(source::String, lod::Int64)
 
 	if isdir(source) # se source è un potree
 		Detection.flushprintln("Potree struct")
@@ -12,18 +12,16 @@ function source2pc(source::String, lod::Int64, threshold = nothing::Union{Nothin
 			max_level = FileManager.max_depth(trie)
 			all_files = FileManager.get_all_values(trie)
 			PC = FileManager.las2pointcloud(all_files...)
-			threshold = 4*cloud_metadata.spacing/2^max_level
-			return PC, threshold
+			return PC
 		else
 			all_files = FileManager.get_files_in_potree_folder(source,lod)
 			PC = FileManager.las2pointcloud(all_files...)
-			threshold = 2*cloud_metadata.spacing/2^lod
-			return PC, threshold
+			return PC
 		end
 
 	elseif isfile(source) # se source è un file
 		PC = FileManager.las2pointcloud(source)
-		return PC, 0.1
+		return PC
 	end
 
 end
@@ -59,13 +57,21 @@ function pc2vectorize(
 		INPUT_PC = PC
 	end
 
-	# 1. ricerca degli outliers
+	# 1. Initialization
 	flushprintln("Search of possible outliers to remove: ")
 	outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 	flushprintln("$(length(outliers)) outliers")
 
 	flushprintln()
 	flushprintln("=========== PROCESSING =============")
+
+	# threashold estimation
+	density, _ = Common.relative_density_points(INPUT_PC.coordinates, collect(1:INPUT_PC.n_points), 2*k)
+	dist = map(x->1/x,density)
+	mu = Statistics.mean(dist)
+	rho = Statistics.std(dist)
+	threshold = mu + rho
+
 	# 2. faccio partire il processo
 	params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
 	hyperplanes = Detection.iterate_random_detection(params)

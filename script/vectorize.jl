@@ -76,7 +76,7 @@ function main()
 	@assert length(b) == 4 "$plane: Please described the plane in Hessian normal form"
 	plane = Detection.Plane(b[1],b[2],b[3],b[4])
 	affine_matrix = plane.matrix
-	PC, threshold = Detection.source2pc(source, lod)
+	PC = Detection.source2pc(source, lod)
 
 	Detection.flushprintln("== Parameters ==")
 	Detection.flushprintln("Source  =>  $source")
