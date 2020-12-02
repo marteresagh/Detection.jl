@@ -66,17 +66,13 @@ function pc2vectorize(
 	flushprintln("=========== PROCESSING =============")
 
 	# threashold estimation
-	density, _ = Common.relative_density_points(INPUT_PC.coordinates, collect(1:INPUT_PC.n_points), 2*k)
-	dist = map(x->1/x,density)
-	mu = Statistics.mean(dist)
-	rho = Statistics.std(dist)
-	threshold = mu + rho
+	threshold = estimate_threshold(INPUT_PC,k)
 
-	# 2. faccio partire il processo
+	# 2. Detection
 	params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
 	hyperplanes = Detection.iterate_random_detection(params)
 
-	# 3. salvo tutto
+	# 3. Saves
 	flushprintln()
 	flushprintln("=========== SAVES =============")
 

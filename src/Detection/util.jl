@@ -57,3 +57,12 @@ end
 # 	rho = pc_on_hyperplane.n_points/dist
 # 	@assert  rho > N "not valid"  #da automatizzare
 # end
+
+function estimate_threshold(PC::PointCloud, k::Int64)
+	density, _ = Common.relative_density_points(PC.coordinates, collect(1:PC.n_points), 2*k)
+	dist = map(x->1/x,density)
+	mu = Statistics.mean(dist)
+	rho = Statistics.std(dist)
+	threshold = mu + rho
+	return threshold
+end
