@@ -82,7 +82,6 @@ Detect an hyperplane starting from initial random point.
 """
 function get_hyperplane_from_random_init_point(params::Initializer)
 
-	points = params.PC.coordinates[:,params.current_inds]
 
 	# 1. ricerca del seed
 	candidates = setdiff(params.current_inds,params.visited)
@@ -93,7 +92,7 @@ function get_hyperplane_from_random_init_point(params::Initializer)
 	R = findall(x->x==candidates[index], params.current_inds)
 
 	# 2. criterio di crescita
-	all_visited_verts = search_cluster(points, R, hyperplane, params) #punti che non devono far parte dei mie seeds
+	all_visited_verts = search_cluster(PC, R, hyperplane, params) #punti che non devono far parte dei mie seeds
 	listPoint = params.PC.coordinates[:,params.current_inds[R]]
 	listRGB = params.PC.rgbs[:,params.current_inds[R]]
 	hyperplane.inliers = PointCloud(listPoint,listRGB)
@@ -105,7 +104,13 @@ end
 """
 Search of all points belonging to the cluster `R`.
 """
-function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, params::Initializer)
+function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplane, params::Initializer)
+
+	points = params.PC.coordinates[:,params.current_inds]
+	normals = nothing
+	if PC.dimension == 3
+		normals = params.PC.normals[:,params.current_inds]
+	end
 
 	kdtree = Common.KDTree(points)
 	seeds = copy(R)
@@ -121,13 +126,13 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 			p = points[:,i]
 			# metodo IN
 			# if plane -> check normals
-			if size(points,1) == 3
+			if PC.dimension == 3
 				########################### Questa parte serve per bloccare il region growing
 				# TODO : da modificare - aggiungere alla struct point cloud le normali, quindi calcolarle all'inizio o leggerla da file
 				# e qui usare direttamente quelle, attenzione a come me le porto dietro.
-				K = Common.neighborhood(kdtree,points,[i],Int[],2*params.threshold,2*params.k)
-				normal,_ = Common.LinearFit(points[:,K])
-				test_normals = Common.angle_between_vectors(hyperplane.direction,normal) <= pi/4
+				# K = Common.neighborhood(kdtree,points,[i],Int[],2*params.threshold,2*params.k)
+				# normal,_ = Common.LinearFit(points[:,K])
+				test_normals = Common.angle_between_vectors(hyperplane.direction,normals[:,i]) <= pi/4
 				#############################
 				if Common.residual(hyperplane)(p) < params.par && test_normals
 					push!(tmp,i)
@@ -146,8 +151,6 @@ function search_cluster(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyper
 		# metodo OUT
 		todel = optimize!(points,R,hyperplane,params.par)
 		seeds = setdiff(tmp,todel)
-		# optimize!(points,R,hyperplane,params.par)
-		# seeds = tmp
 	end
 
 	return visitedverts

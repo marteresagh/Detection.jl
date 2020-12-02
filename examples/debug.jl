@@ -5,9 +5,9 @@ using FileManager
 using Statistics
 
 fname = "examples/las/wall.las"
-fname = "examples/las/muriAngolo.las"
-fname = "examples/las/area.las"
-fname = "examples/las/colonna.las"
+fname = "examples/las/polyline.las"
+fname = "examples/las/full.las"
+fname = "examples/las/square.las"
 #fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
 #fname = "C:/Users/marte/Documents/GEOWEB/FilePotree/AMPHI/sezione_AMPHI_z39_5cm.las"
 
