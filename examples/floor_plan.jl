@@ -15,17 +15,12 @@ PC = FileManager.las2pointcloud(fname)
 par = 0.07
 
 failed = 100
-N = 10
+N = 100
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 k = 20
 
 # threshold estimation
-density, _ = Common.relative_density_points(INPUT_PC.coordinates, collect(1:INPUT_PC.n_points), 2*k)
-dist=map(x->1/x,density)
-mu = Statistics.mean(dist)
-rho = Statistics.std(dist)
-threshold = mu+rho
-
+threshold = Detection.estimate_threshold(INPUT_PC,k)
 
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
@@ -52,16 +47,36 @@ GL.VIEW([  	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) 
 
 
 ################# test of validity
+using Plots
 new_hyp = Hyperplane[]
 for i in 1:length(hyperplanes)
 	hyperplane = hyperplanes[i]
-	res = Common.residual(hyperplane).([hyperplane.inliers.coordinates[:,i] for i in 1:hyperplane.inliers.n_points])
-	mu = Statistics.mean(res)# prova moda
-	rho = Statistics.std(res)
-	if mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005
+	pc_on_hyperplane = hyperplane.inliers
+	_, local_density = Common.relative_density_points(pc_on_hyperplane.coordinates, collect(1:pc_on_hyperplane.n_points), Int(floor(pc_on_hyperplane.n_points/2)))
+	dist = map(x->1/x,local_density)
+	mu = Statistics.mean(dist)
+
+	if mu < 1.5
 		push!(new_hyp,hyperplane)
 	end
+	E,_ = Common.DrawLine(hyperplane, 0.0)
+	dist = Lar.norm(E[:,1]-E[:,2])
+	rho = pc_on_hyperplane.n_points/dist
+	@show rho
+	# questo è un ottimo metodo
+	# res = Common.residual(hyperplane).([hyperplane.inliers.coordinates[:,i] for i in 1:hyperplane.inliers.n_points])
+	# mu = Statistics.mean(res)# prova moda
+	# rho = Statistics.std(res)
+	# if mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005
+	# 	push!(new_hyp,hyperplane)
+	# end
 end
 
 GL.VIEW([	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2]),
 			Visualization.mesh_lines(new_hyp)...])
+
+for i in 1:length(hyperplanes)
+	@show i
+	GL.VIEW([	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2]),
+				Visualization.mesh_lines([hyperplanes[i]])...])
+end

@@ -39,24 +39,13 @@ function validity(hyperplane::Hyperplane, params::Initializer)
 	# VALIDITY
 	pc_on_hyperplane = hyperplane.inliers
 	@assert  pc_on_hyperplane.n_points > params.N "not valid"
-	# TODO forse è buono
-	# res = Common.residual(hyperplane).([pc_on_hyperplane.coordinates[:,i] for i in 1:pc_on_hyperplane.n_points])
-	# mu = Statistics.mean(res)
-	# rho = Statistics.std(res)
-	# @assert mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005 "not valid"
-end
 
-# function validity(hyperplane::Hyperplane, params::Initializer, cluster, all_visited)
-# 	# VALIDITY
-# 	pc_on_hyperplane = hyperplane.inliers
-# 	#@show length(cluster)/length(all_visited)
-# 	#@assert  pc_on_hyperplane.n_points > params.N "not valid" #TODO da ottimizzare
-#
-# 	E,_ = Common.DrawLine(hyperplane, 0.0)
-# 	dist = Lar.norm(E[:,1]-E[:,2])
-# 	rho = pc_on_hyperplane.n_points/dist
-# 	@assert  rho > N "not valid"  #da automatizzare
-# end
+	res = Common.residual(hyperplane).([pc_on_hyperplane.coordinates[:,i] for i in 1:pc_on_hyperplane.n_points])
+	mu = Statistics.mean(res)# prova moda
+	rho = Statistics.std(res)
+	@assert mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005 "not valid"  #0.005 che valore è?? come generalizzare??
+
+end
 
 function estimate_threshold(PC::PointCloud, k::Int64)
 	density, _ = Common.relative_density_points(PC.coordinates, collect(1:PC.n_points), 2*k)
