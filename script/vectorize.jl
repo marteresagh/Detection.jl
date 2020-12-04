@@ -90,7 +90,7 @@ function main()
 	Detection.flushprintln("Affine matrix =>  $affine_matrix")
 
 
-	Detection.pc2vectorize(output_folder, project_name, PC, par, threshold, failed, N, k, affine_matrix)
+	Detection.pc2vectorize(output_folder, project_name, PC, par, failed, N, k, affine_matrix)
 end
 
 @time main()

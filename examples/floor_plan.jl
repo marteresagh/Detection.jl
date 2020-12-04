@@ -8,17 +8,21 @@ fname = "examples/las/wall.las"
 fname = "examples/las/polyline.las"
 fname = "examples/las/full.las"
 fname = "examples/las/square.las"
-# fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
-# fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
+# fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z250.las"
+fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
 
 PC = FileManager.las2pointcloud(fname)
+INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
+
+# user - parameters
 par = 0.07
 failed = 100
-N = 5
-INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
+N = 50
 k = 20
+
 # threshold estimation
 threshold = Detection.estimate_threshold(INPUT_PC,k)
+
 # outliers
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)

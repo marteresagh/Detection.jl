@@ -54,6 +54,7 @@ function iterate_random_detection(params::Initializer; debug = false)
 			end
 			push!(hyperplanes,hyperplane)
 			union!(params.fitted,cluster)
+			#remove_points!(params.current_inds,cluster)
 			if params.PC.dimension==3
 				 remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
 			end

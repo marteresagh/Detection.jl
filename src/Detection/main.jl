@@ -1,7 +1,7 @@
 """
 generate input point cloud
 """
-function source2pc(source::String, lod::Int64)
+function source2pc(source::String, lod::Union{Nothing,Int64})
 
 	if isdir(source) # se source è un potree
 		Detection.flushprintln("Potree struct")
@@ -34,7 +34,6 @@ function pc2vectorize(
 	project_name::String,
 	PC::PointCloud,
 	par::Float64,
-	threshold::Float64,
 	failed::Int64,
 	N::Int64,
 	k::Int64,
