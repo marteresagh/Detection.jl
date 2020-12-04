@@ -9,7 +9,7 @@ fname = "examples/las/polyline.las"
 fname = "examples/las/full.las"
 fname = "examples/las/square.las"
 # fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z250.las"
-fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
+# fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
 
 PC = FileManager.las2pointcloud(fname)
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
@@ -25,6 +25,8 @@ threshold = Detection.estimate_threshold(INPUT_PC,k)
 
 # outliers
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
+
+# process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 hyperplanes = Detection.iterate_random_detection(params,debug = true)
 

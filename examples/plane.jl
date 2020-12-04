@@ -5,16 +5,28 @@ using FileManager
 using Statistics
 
 source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASALETTO"
-INPUT_PC,threshold = Detection.source2pc(source,2)
+INPUT_PC = Detection.source2pc(source,2)
+
+# user parameters
 par = 0.04
-#threshold = 2*0.03
 failed = 10
 N = 100
 k = 30
+
+# threshold estimation
+threshold = Detection.estimate_threshold(INPUT_PC,k)
+
+# normals
+normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
+INPUT_PC.normals = normals
+
+# outliers
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
+
+# process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 hyperplanes = Detection.iterate_random_detection(params;debug = true)
-#hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
+# hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
 centroid = Common.centroid(INPUT_PC.coordinates)
 V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
 

@@ -2,7 +2,6 @@ println("loading packages... ")
 
 using ArgParse
 using Detection
-using OrthographicProjection
 
 println("packages OK")
 
@@ -55,11 +54,6 @@ end
 function main()
 	args = parse_commandline()
 
-	# Detection.flushprintln("== params ==")
-	# for (arg,val) in args
-	#     Detection.flushprintln("$arg  =>  $val")
-	# end
-
 	source = args["source"]
 	project_name = args["projectname"]
 	output_folder = args["output"]
@@ -71,11 +65,12 @@ function main()
 	plane = args["plane"]
 	#thickness = args["thickness"]
 
-	#preprocess
+	# plane description
 	b = tryparse.(Float64,split(plane, " "))
 	@assert length(b) == 4 "$plane: Please described the plane in Hessian normal form"
 	plane = Detection.Plane(b[1],b[2],b[3],b[4])
-	affine_matrix = plane.matrix
+	affine_matrix = plane.matrix # rotation matrix
+
 	PC = Detection.source2pc(source, lod)
 
 	Detection.flushprintln("== Parameters ==")
@@ -88,7 +83,6 @@ function main()
 	Detection.flushprintln("N. of points on line  =>  $N")
 	Detection.flushprintln("N. of k-nn  =>  $k")
 	Detection.flushprintln("Affine matrix =>  $affine_matrix")
-
 
 	Detection.pc2vectorize(output_folder, project_name, PC, par, failed, N, k, affine_matrix)
 end
