@@ -46,12 +46,3 @@ function validity(hyperplane::Hyperplane, params::Initializer)
 	@assert mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005 "not valid"  #0.005 che valore è?? come generalizzare??
 
 end
-
-function estimate_threshold(PC::PointCloud, k::Int64)
-	density, _ = Common.relative_density_points(PC.coordinates, collect(1:PC.n_points), 2*k)
-	dist = map(x->1/x,density)
-	mu = Statistics.mean(dist)
-	rho = Statistics.std(dist)
-	threshold = mu + rho
-	return threshold
-end

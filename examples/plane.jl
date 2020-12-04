@@ -5,16 +5,16 @@ using FileManager
 using Statistics
 
 source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASALETTO"
-INPUT_PC = Detection.source2pc(source,2)
+INPUT_PC = Detection.source2pc(source,3)
 
 # user parameters
-par = 0.04
-failed = 10
+par = 0.07
+failed = 100
 N = 100
 k = 30
 
 # threshold estimation
-threshold = Detection.estimate_threshold(INPUT_PC,k)
+threshold = Common.estimate_threshold(INPUT_PC,k)
 
 # normals
 normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
@@ -25,8 +25,8 @@ outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 
 # process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
-hyperplanes = Detection.iterate_random_detection(params;debug = true)
-# hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
+@time hyperplanes = Detection.iterate_random_detection(params;debug = true)
+#hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
 centroid = Common.centroid(INPUT_PC.coordinates)
 V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
 
@@ -37,10 +37,29 @@ GL.VIEW([
 		])
 
 
+
 GL.VIEW([	#GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2]),
-			mesh_planes(hyperplanes)...,GL.GLGrid(V,FV,GL.COLORS[1],1.0)])
+			mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+			#GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],1.0)
+			])
 
 
 GL.VIEW([  	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) ,
   			GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]),
-		])
+])
+
+function mesh_planes(PLANES::Array{Hyperplane,1}, affine_matrix = Matrix(Lar.I,4,4))
+
+	mesh = []
+	for plane in PLANES
+		pc = plane.inliers
+		bb = Common.boundingbox(pc.coordinates)#.+([-u,-u,-u],[u,u,u])
+		V = Common.intersectAABBplane(bb,plane.direction,plane.centroid)
+		FV = Common.delaunay_triangulation(V[1:2,:])
+		col = GL.COLORS[rand(1:12)]
+		push!(mesh,GL.GLGrid(Common.apply_matrix(affine_matrix,V),FV,col));
+		push!(mesh,	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(affine_matrix,pc.coordinates)'),col));
+	end
+
+	return mesh
+end

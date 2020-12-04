@@ -66,7 +66,7 @@ function pc2vectorize(
 	flushprintln("=========== PROCESSING =============")
 
 	# threashold estimation
-	threshold = estimate_threshold(INPUT_PC,k)
+	threshold = Common.estimate_threshold(INPUT_PC,k)
 
 	# 2. Detection
 	params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)

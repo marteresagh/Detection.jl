@@ -21,7 +21,7 @@ N = 50
 k = 20
 
 # threshold estimation
-threshold = Detection.estimate_threshold(INPUT_PC,k)
+threshold = Common.estimate_threshold(INPUT_PC,k)
 
 # outliers
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
