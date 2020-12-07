@@ -4,14 +4,14 @@ using Common
 using FileManager
 using Statistics
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASALETTO"
-INPUT_PC = Detection.source2pc(source,3)
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/PAVIMENTO"
+INPUT_PC = Detection.source2pc(source,2)
 
 # user parameters
-par = 0.07
+par = 0.2
 failed = 100
 N = 100
-k = 30
+k = 60
 
 # threshold estimation
 threshold = Common.estimate_threshold(INPUT_PC,k)
@@ -26,7 +26,7 @@ outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 # process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 @time hyperplanes = Detection.iterate_random_detection(params;debug = true)
-#hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
+hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
 centroid = Common.centroid(INPUT_PC.coordinates)
 V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
 
@@ -39,7 +39,7 @@ GL.VIEW([
 
 
 GL.VIEW([	#GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2]),
-			mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+			Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
 			#GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],1.0)
 			])
 

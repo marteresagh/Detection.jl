@@ -130,6 +130,7 @@ function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplan
 			if PC.dimension == 3
 				# change direction change surface
 				test_dist = Common.residual(hyperplane)(p) < params.par
+				# @show hyperplane.direction,normals[:,i]
 				test_normals = Common.angle_between_vectors(hyperplane.direction,normals[:,i]) <= pi/4
 				if test_dist && test_normals
 					push!(tmp,i)
