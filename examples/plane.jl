@@ -8,7 +8,7 @@ source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/PAVIMENTO"
 INPUT_PC = Detection.source2pc(source,2)
 
 # user parameters
-par = 0.2
+par = 0.7
 failed = 100
 N = 100
 k = 60
@@ -38,8 +38,9 @@ GL.VIEW([
 
 
 
-GL.VIEW([	#GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2]),
+GL.VIEW([	
 			Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates)'),GL.COLORS[2]),
 			#GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],1.0)
 			])
 
@@ -48,18 +49,9 @@ GL.VIEW([  	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) 
   			GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]),
 ])
 
-function mesh_planes(PLANES::Array{Hyperplane,1}, affine_matrix = Matrix(Lar.I,4,4))
 
-	mesh = []
-	for plane in PLANES
-		pc = plane.inliers
-		bb = Common.boundingbox(pc.coordinates)#.+([-u,-u,-u],[u,u,u])
-		V = Common.intersectAABBplane(bb,plane.direction,plane.centroid)
-		FV = Common.delaunay_triangulation(V[1:2,:])
-		col = GL.COLORS[rand(1:12)]
-		push!(mesh,GL.GLGrid(Common.apply_matrix(affine_matrix,V),FV,col));
-		push!(mesh,	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(affine_matrix,pc.coordinates)'),col));
-	end
-
-	return mesh
+for hyperplane in hyperplanes
+	res = Common.residual(hyperplane).([hyperplane.inliers.coordinates[:, i] for i in 1:hyperplane.inliers.n_points])
+	max = maximum(res)
+	@show max
 end
