@@ -4,14 +4,14 @@ using Common
 using FileManager
 using Statistics
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/PAVIMENTO"
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/LACONTEA"
 INPUT_PC = Detection.source2pc(source,2)
 
 # user parameters
 par = 0.7
 failed = 100
 N = 100
-k = 60
+k = 30
 
 # threshold estimation
 threshold = Common.estimate_threshold(INPUT_PC,k)
@@ -25,20 +25,21 @@ outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 
 # process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
-@time hyperplanes = Detection.iterate_random_detection(params;debug = true)
-hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
+@time planes = Detection.iterate_random_detection(params;debug = true)
+# hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
 centroid = Common.centroid(INPUT_PC.coordinates)
-V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
+V,FV = Common.DrawPlanes(planes, nothing, 0.0)
 
 GL.VIEW([
-			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates)'),GL.COLORS[12]),
+			#Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+			#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates)'),GL.COLORS[12]),
 			# GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]) ,
-  			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],1.0)
+  			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8)
 		])
 
 
 
-GL.VIEW([	
+GL.VIEW([
 			Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
 			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates)'),GL.COLORS[2]),
 			#GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],1.0)

@@ -8,8 +8,8 @@ fname = "examples/las/wall.las"
 fname = "examples/las/polyline.las"
 fname = "examples/las/full.las"
 fname = "examples/las/square.las"
-# fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z250.las"
-# fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
+fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
+fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
 
 PC = FileManager.las2pointcloud(fname)
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
@@ -17,7 +17,7 @@ INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 # user - parameters
 par = 0.07
 failed = 100
-N = 50
+N = 10
 k = 20
 
 # threshold estimation
@@ -34,8 +34,9 @@ hyperplanes = Detection.iterate_random_detection(params,debug = true)
 
 V,EV = Common.DrawLines(hyperplanes,0.0)
 GL.VIEW([
+
 			GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[12]),
-			GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]) ,
+		#	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]) ,
   			GL.GLGrid(V,EV,GL.COLORS[1],1.0)
 		])
 
