@@ -2,6 +2,7 @@ println("loading packages... ")
 
 using ArgParse
 using Detection
+using Common
 using AlphaStructures
 
 println("packages OK")
@@ -72,7 +73,15 @@ function main()
 	hyperplanes, params = Detection.pc2vectorize(output_folder, project_name, PC, par, failed, N, k, affine_matrix, false)
 
 	for hyperplane in hyperplanes
+		# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
+		plane = Plane(hyperplane.direction..., Lar.dot(hyperplane.direction,hyperplane.centroid))
+		V = Common.apply_matrix(Lar.inv(plane.matrix),hyperplane.inliers.coordinates)[1:2,:]
 
+		# 2. applica alpha shape con alpha = threshold
+		
+		# 3. estrai bordo
+
+		# 4. salva i segmenti del bordo
 	end
 
 end
