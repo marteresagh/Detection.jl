@@ -4,7 +4,7 @@ using Common
 using FileManager
 using Statistics
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/LACONTEA"
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/AMPHI"
 INPUT_PC = Detection.source2pc(source,2)
 
 # user parameters
