@@ -1,6 +1,7 @@
 using Detection
 using Visualization
 using Common
+using AlphaStructures
 using FileManager
 using Statistics
 
@@ -51,8 +52,25 @@ GL.VIEW([  	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) 
 ])
 
 
+filename = "EV_boundary.txt"
+io = open(filename,"w")
 for hyperplane in hyperplanes
-	res = Common.residual(hyperplane).([hyperplane.inliers.coordinates[:, i] for i in 1:hyperplane.inliers.n_points])
-	max = maximum(res)
-	@show max
+	# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
+	points = hyperplane.inliers.coordinates
+	plane = Plane(hyperplane.direction..., Lar.dot(hyperplane.direction,hyperplane.centroid))
+	V = Common.apply_matrix(Lar.inv(plane.matrix),points)[1:2,:]
+
+	# 2. applica alpha shape con alpha = threshold
+	filtration = AlphaStructures.alphaFilter(V);
+	_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
+
+	# 3. estrai bordo
+	EV_boundary = Common.get_boundary_edges(V,FV)
+
+	# 4. salva i segmenti del bordo in 3D
+	for ev in EV_boundary
+		write(io, "$(V[1,ev[1]]) $(V[2,ev[1]]) $(V[3,ev[1]]) $(V[1,ev[2]]) $(V[2,ev[2]]) $(V[3,ev[2]])\n")
+	end
+
 end
+close(io)
