@@ -6,7 +6,7 @@ using FileManager
 using Statistics
 
 source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/COLONNA"
-INPUT_PC = Detection.source2pc(source,0)
+INPUT_PC = Detection.source2pc(source,1)
 
 # user parameters
 par = 0.07
@@ -54,7 +54,11 @@ GL.VIEW([  	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) 
 
 filename = "EV_boundary.txt"
 io = open(filename,"w")
-for hyperplane in hyperplanes
+for i in 1:length(planes)
+	@show i
+
+	hyperplane = planes[i]
+
 	# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
 	points = hyperplane.inliers.coordinates
 	plane = Plane(hyperplane.direction..., Lar.dot(hyperplane.direction,hyperplane.centroid))
@@ -69,8 +73,18 @@ for hyperplane in hyperplanes
 
 	# 4. salva i segmenti del bordo in 3D
 	for ev in EV_boundary
-		write(io, "$(V[1,ev[1]]) $(V[2,ev[1]]) $(V[3,ev[1]]) $(V[1,ev[2]]) $(V[2,ev[2]]) $(V[3,ev[2]])\n")
+		write(io, "$(points[1,ev[1]]) $(points[2,ev[1]]) $(points[3,ev[1]]) $(points[1,ev[2]]) $(points[2,ev[2]]) $(points[3,ev[2]])\n")
 	end
 
 end
 close(io)
+
+
+V,EV = FileManager.load_segment(filename)
+
+GL.VIEW(
+    [
+    GL.GLGrid(V,EV,GL.COLORS[1],1.0),
+    #GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) ,
+    ]
+)

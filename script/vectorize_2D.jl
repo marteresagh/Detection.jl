@@ -72,7 +72,8 @@ function main()
 
 	hyperplanes, params = Detection.pc2vectorize(output_folder, project_name, PC, par, failed, N, k, affine_matrix, false)
 
-	# apro file
+	filename = "EV_boundary.txt"
+	io = open(filename,"w")
 	for hyperplane in hyperplanes
 		# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
 		points = hyperplane.inliers.coordinates
@@ -87,9 +88,12 @@ function main()
 		EV_boundary = Common.get_boundary_edges(V,FV)
 
 		# 4. salva i segmenti del bordo in 3D
-		# salvo nel file
+		for ev in EV_boundary
+			write(io, "$(points[1,ev[1]]) $(points[2,ev[1]]) $(points[3,ev[1]]) $(points[1,ev[2]]) $(points[2,ev[2]]) $(points[3,ev[2]])\n")
+		end
+
 	end
-	# chiudo file
+	close(io)
 end
 
 @time main()
