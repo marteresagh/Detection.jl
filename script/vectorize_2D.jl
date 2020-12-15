@@ -72,18 +72,24 @@ function main()
 
 	hyperplanes, params = Detection.pc2vectorize(output_folder, project_name, PC, par, failed, N, k, affine_matrix, false)
 
+	# apro file
 	for hyperplane in hyperplanes
 		# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
+		points = hyperplane.inliers.coordinates
 		plane = Plane(hyperplane.direction..., Lar.dot(hyperplane.direction,hyperplane.centroid))
-		V = Common.apply_matrix(Lar.inv(plane.matrix),hyperplane.inliers.coordinates)[1:2,:]
+		V = Common.apply_matrix(Lar.inv(plane.matrix),points)[1:2,:]
 
 		# 2. applica alpha shape con alpha = threshold
-		
+		filtration = AlphaStructures.alphaFilter(V);
+		VV, EV, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
+
 		# 3. estrai bordo
+		EV_boundary = Common.get_boundary_edges(V,FV)
 
-		# 4. salva i segmenti del bordo
+		# 4. salva i segmenti del bordo in 3D
+		# salvo nel file
 	end
-
+	# chiudo file
 end
 
 @time main()
