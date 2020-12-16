@@ -6,7 +6,7 @@ using FileManager
 using Statistics
 
 source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASALETTO"
-INPUT_PC = Detection.source2pc(source,3)
+INPUT_PC = Detection.FileManager.source2pc(source,3)
 
 # user parameters
 par = 0.04

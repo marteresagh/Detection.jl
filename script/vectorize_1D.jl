@@ -71,7 +71,7 @@ function main()
 	plane = Detection.Plane(b[1],b[2],b[3],b[4])
 	affine_matrix = plane.matrix # rotation matrix
 
-	PC = Detection.source2pc(source, lod)
+	PC = Detection.FileManager.source2pc(source, lod)
 
 	Detection.flushprintln("== Parameters ==")
 	Detection.flushprintln("Source  =>  $source")

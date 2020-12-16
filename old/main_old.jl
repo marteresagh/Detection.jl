@@ -21,7 +21,7 @@ function detection_and_saves(
 
 	proj_folder = FileManager.mkdir_project(folder,project_name)
 
-	PC = source2pc(source)
+	PC = FileManager.source2pc(source)
 
 	if lines
 		INPUT_PC = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),PC.coordinates)[1:2,:], PC.rgbs)
@@ -87,7 +87,7 @@ function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperp
 end
 
 
-function source2pc(source)
+function FileManager.source2pc(source)
 	cloud_metadata = CloudMetadata(source)
 
 	if lod == -1

@@ -26,16 +26,22 @@ struct VectDirs
 
 	function VectDirs(folder::String, project_name::String)
 		output_folder = FileManager.mkdir_project(folder,project_name)
+
 		POINTCLOUDS = joinpath(output_folder,"POINTCLOUDS")
-		mkdir(POINTCLOUDS)
+		FileManager.mkdir_if(POINTCLOUDS)
+
 		FULL =  joinpath(POINTCLOUDS,"FULL")
-		mkdir(FULL)
+		FileManager.mkdir_if(FULL)
+
 		PARTITIONS = joinpath(POINTCLOUDS,"PARTITIONS")
-		mkdir(PARTITIONS)
+		FileManager.mkdir_if(PARTITIONS)
+
 		DXF = joinpath(output_folder,"DXF")
-		mkdir(DXF)
+		FileManager.mkdir_if(DXF)
+
 		RAW = joinpath(DXF,"RAW")
-		mkdir(RAW)
+		FileManager.mkdir_if(RAW)
+		
 		new(output_folder,POINTCLOUDS,FULL,PARTITIONS,DXF,RAW)
 	end
 end

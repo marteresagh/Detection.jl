@@ -57,7 +57,7 @@ function main()
 	k = args["k"]
 	lod = args["lod"]
 
-	PC = Detection.source2pc(source, lod)
+	PC = Detection.FileManager.source2pc(source, lod)
 
 	Detection.flushprintln("== Parameters ==")
 	Detection.flushprintln("Source  =>  $source")
@@ -72,27 +72,40 @@ function main()
 
 	hyperplanes, params = Detection.pc2vectorize(output_folder, project_name, PC, par, failed, N, k, affine_matrix, false)
 
-	filename = "EV_boundary.txt"
+	Detection.flushprintln(" ")
+	Detection.flushprintln("=== Extraction of plane shape ===")
+
+	proj_folder = FileManager.mkdir_project(output_folder, project_name)
+	filename = joinpath(proj_folder,"$(project_name)_vectorize_2D.txt")
+
 	io = open(filename,"w")
-	for hyperplane in hyperplanes
+	for i in 1:length(hyperplanes)
+
+		hyperplane = hyperplanes[i]
+
 		# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
 		points = hyperplane.inliers.coordinates
 		plane = Plane(hyperplane.direction..., Lar.dot(hyperplane.direction,hyperplane.centroid))
-		V = Common.apply_matrix(Lar.inv(plane.matrix),points)[1:2,:]
+		T = Common.apply_matrix(Lar.inv(plane.matrix),points)[1:2,:]
 
 		# 2. applica alpha shape con alpha = threshold
-		filtration = AlphaStructures.alphaFilter(V);
-		VV, EV, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
+		filtration = AlphaStructures.alphaFilter(T);
+		_, _, FV = AlphaStructures.alphaSimplex(T, filtration, threshold)
 
 		# 3. estrai bordo
-		EV_boundary = Common.get_boundary_edges(V,FV)
+		EV_boundary = Common.get_boundary_edges(T,FV)
 
 		# 4. salva i segmenti del bordo in 3D
+		T = Common.points_projection_on_plane(points, hyperplane)
 		for ev in EV_boundary
-			write(io, "$(points[1,ev[1]]) $(points[2,ev[1]]) $(points[3,ev[1]]) $(points[1,ev[2]]) $(points[2,ev[2]]) $(points[3,ev[2]])\n")
+			write(io, "$(T[1,ev[1]]) $(T[2,ev[1]]) $(T[3,ev[1]]) $(T[1,ev[2]]) $(T[2,ev[2]]) $(T[3,ev[2]])/n")
 		end
 
+		if i%10 == 0
+			Detection.flushprintln("$i planes processed")
+		end
 	end
+
 	close(io)
 end
 

@@ -1,32 +1,4 @@
 """
-generate input point cloud
-"""
-function source2pc(source::String, lod::Union{Nothing,Int64})
-
-	if isdir(source) # se source è un potree
-		Detection.flushprintln("Potree struct")
-		cloud_metadata = Detection.CloudMetadata(source)
-
-		if lod == -1
-			trie = potree2trie(source)
-			max_level = FileManager.max_depth(trie)
-			all_files = FileManager.get_all_values(trie)
-			PC = FileManager.las2pointcloud(all_files...)
-			return PC
-		else
-			all_files = FileManager.get_files_in_potree_folder(source,lod)
-			PC = FileManager.las2pointcloud(all_files...)
-			return PC
-		end
-
-	elseif isfile(source) # se source è un file
-		PC = FileManager.las2pointcloud(source)
-		return PC
-	end
-
-end
-
-"""
 Main
 """
 function pc2vectorize(
@@ -75,7 +47,7 @@ function pc2vectorize(
 	if lines
 		saves_data(PC, params, hyperplanes, affine_matrix, dirs)
 	end
-	
+
 	return hyperplanes,params
 end
 

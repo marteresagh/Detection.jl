@@ -42,7 +42,7 @@ for (root,dirs,files) in walkdir("C:/Users/marte/Documents/GEOWEB/TEST/LACONTEA_
         project_name = "Section_$n_section"
         plane = planes[n_section+1]
     	affine_matrix = plane.matrix
-    	PC, threshold = Detection.source2pc(source, -1)
+    	PC, threshold = Detection.FileManager.source2pc(source, -1)
         threshold = 0.06
         N = 5
         k = 10
