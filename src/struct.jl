@@ -1,3 +1,6 @@
+"""
+
+"""
 mutable struct Initializer
 	PC::PointCloud
 	par::Float64
@@ -16,6 +19,9 @@ mutable struct Initializer
 end
 
 
+"""
+
+"""
 struct VectDirs
 	output_folder::String
 	POINTCLOUDS::String
@@ -41,7 +47,7 @@ struct VectDirs
 
 		RAW = joinpath(DXF,"RAW")
 		FileManager.mkdir_if(RAW)
-		
+
 		new(output_folder,POINTCLOUDS,FULL,PARTITIONS,DXF,RAW)
 	end
 end

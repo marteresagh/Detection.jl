@@ -57,6 +57,7 @@ function main()
 	k = args["k"]
 	lod = args["lod"]
 
+	# input point cloud
 	PC = Detection.FileManager.source2pc(source, lod)
 
 	Detection.flushprintln("== Parameters ==")
@@ -70,43 +71,22 @@ function main()
 	Detection.flushprintln("N. of k-nn  =>  $k")
 	Detection.flushprintln("Affine matrix =>  $affine_matrix")
 
-	hyperplanes, params = Detection.pc2vectorize(output_folder, project_name, PC, par, failed, N, k, affine_matrix, false)
-
+	# detection
 	Detection.flushprintln(" ")
-	Detection.flushprintln("=== Extraction of plane shape ===")
+	Detection.flushprintln("=== Planes detection ===")
 
-	proj_folder = FileManager.mkdir_project(output_folder, project_name)
-	filename = joinpath(proj_folder,"$(project_name)_vectorize_2D.txt")
+	hyperplanes, params, dirs = Detection.pc2vectorize(output_folder, project_name, PC, par, failed, N, k, affine_matrix, false)
 
-	io = open(filename,"w")
-	for i in 1:length(hyperplanes)
+	# vectorized
+	Detection.flushprintln(" ")
+	Detection.flushprintln("=== Get boundary shapes ===")
 
-		hyperplane = hyperplanes[i]
+	filename = joinpath(dirs.output_folder,"$(project_name)_vectorize_2D.txt")
+	V,EV = Detection.get_boundary_shapes(filename::String, hyperplanes::Array{Hyperplanes,1})
 
-		# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
-		points = hyperplane.inliers.coordinates
-		plane = Plane(hyperplane.direction..., Lar.dot(hyperplane.direction,hyperplane.centroid))
-		T = Common.apply_matrix(Lar.inv(plane.matrix),points)[1:2,:]
+	# process boundary edges
+	Detection.linearization(V,EV)
 
-		# 2. applica alpha shape con alpha = threshold
-		filtration = AlphaStructures.alphaFilter(T);
-		_, _, FV = AlphaStructures.alphaSimplex(T, filtration, threshold)
-
-		# 3. estrai bordo
-		EV_boundary = Common.get_boundary_edges(T,FV)
-
-		# 4. salva i segmenti del bordo in 3D
-		T = Common.points_projection_on_plane(points, hyperplane)
-		for ev in EV_boundary
-			write(io, "$(T[1,ev[1]]) $(T[2,ev[1]]) $(T[3,ev[1]]) $(T[1,ev[2]]) $(T[2,ev[2]]) $(T[3,ev[2]])/n")
-		end
-
-		if i%10 == 0
-			Detection.flushprintln("$i planes processed")
-		end
-	end
-
-	close(io)
 end
 
 @time main()

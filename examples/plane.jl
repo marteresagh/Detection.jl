@@ -5,7 +5,7 @@ using AlphaStructures
 using FileManager
 using Statistics
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASALETTO"
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
 INPUT_PC = Detection.FileManager.source2pc(source,3)
 
 # user parameters
@@ -71,7 +71,7 @@ function pointsproj(V::Lar.Points,params)
 end
 
 
-filename = "C:/Users/marte/Documents/GEOWEB/TEST/VECT_2D/EV_boundary_CASALETTO_LOD3.txt"
+filename = "C:/Users/marte/Documents/GEOWEB/TEST/VECT_2D/EV_boundary_MURI_LOD3.txt"
 io = open(filename,"w")
 for i in 1:length(planes)
 	@show i
