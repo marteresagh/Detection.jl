@@ -45,6 +45,42 @@ function parse_commandline()
 	return parse_args(s)
 end
 
+
+function get_boundary_shapes(filename::String, hyperplanes::Array{Hyperplane,1})
+
+	io = open(filename,"w")
+	for i in 1:length(hyperplanes)
+
+		hyperplane = hyperplanes[i]
+
+		# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
+		points = hyperplane.inliers.coordinates
+		plane = Plane(hyperplane.direction..., Lar.dot(hyperplane.direction,hyperplane.centroid))
+		T = Common.apply_matrix(Lar.inv(plane.matrix),points)[1:2,:]
+
+		# 2. applica alpha shape con alpha = threshold
+		filtration = AlphaStructures.alphaFilter(T);
+		_, _, FV = AlphaStructures.alphaSimplex(T, filtration, threshold)
+
+		# 3. estrai bordo
+		EV_boundary = Common.get_boundary_edges(T,FV)
+
+		# 4. salva i segmenti del bordo in 3D
+		T = Common.points_projection_on_plane(points, hyperplane)
+		for ev in EV_boundary
+			write(io, "$(T[1,ev[1]]) $(T[2,ev[1]]) $(T[3,ev[1]]) $(T[1,ev[2]]) $(T[2,ev[2]]) $(T[3,ev[2]])\n")
+		end
+
+		if i%10 == 0
+			Detection.flushprintln("$i planes processed")
+		end
+	end
+
+	close(io)
+	return FileManager.load_segment(filename) # V,EV
+end
+
+
 function main()
 	args = parse_commandline()
 
@@ -82,7 +118,7 @@ function main()
 	Detection.flushprintln("=== Get boundary shapes ===")
 
 	filename = joinpath(dirs.output_folder,"$(project_name)_vectorize_2D.txt")
-	V,EV = Detection.get_boundary_shapes(filename::String, hyperplanes::Array{Hyperplanes,1})
+	V,EV = get_boundary_shapes(filename::String, hyperplanes::Array{Hyperplanes,1})
 
 	# process boundary edges
 	Detection.linearization(V,EV)
