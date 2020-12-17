@@ -51,7 +51,7 @@ function pc2vectorize(
 	return hyperplanes, params, dirs
 end
 
-function get_boundary_shapes(filename::String, hyperplanes::Array{Hyperplanes,1})
+function get_boundary_shapes(filename::String, hyperplanes::Array{Hyperplane,1})
 
 	io = open(filename,"w")
 	for i in 1:length(hyperplanes)
