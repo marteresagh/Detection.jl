@@ -28,34 +28,22 @@ function get_boundary_shapes(filename::String, hyperplanes::Array{Hyperplane,1})
 
 		# 3. estrai bordo
 		EV_boundary = Common.get_boundary_edges(V,FV)
-		T = Common.points_projection_on_plane(points, hyperplane)
-		W,EW = Lar.simplifyCells(T,EV_boundary)
+		W,EW = Lar.simplifyCells(V,EV_boundary)
+		return W,EW
+		# 4. linearizzo quando sono sul 2D
 
-		# 4. linearizzo
-
-		# 5. salvo il modello
-		push!(models,(W,EW))
+		# 5. salvo il modello 3D finale
+		# T = Common.points_projection_on_plane(points, hyperplane)
+		# W,EW = Lar.simplifyCells(T,EV_boundary)
+		# push!(models,(W,EW))
 	end
 
-	return models
+	# return models
 end
 
 function get_edges(V::Lar.Points,EV::Lar.Cells)
 	# generare grafo
-	graph = SimpleGraph(size(V,2))
-	for ev in EV
-		add_edge!(graph,ev...)
-	end
 
-	# estrarre componenti connesse
-	conn_comps = connected_components(graph)
-
-	# linearizzare se possibile
-	return conn_comps
-
-	for comp in conn_comps
-		linearization(V,comp)
-	end
 
 	# intersecare segmenti adiacenti
 
@@ -65,26 +53,49 @@ function get_edges(V::Lar.Points,EV::Lar.Cells)
 end
 
 
-function linearization(V,EV,comp)
-	EV_current = Array{Int,1}[]
+function linearization(V,EV)
+	graph = SimpleGraph(size(V,2))
 	for ev in EV
-		if ev[1] in comp && ev[2] in comp
-			push!(EV_current,ev)
-		end
+		add_edge!(graph,ev...)
 	end
-	return EV_current
 
+	# estrarre componenti connesse
+	conn_comps = connected_components(graph)
 
+	for comp in conn_comps
+
+	end
 end
 
+
 filename = "C:/Users/marte/Documents/GEOWEB/TEST/VECT_2D/EV_boundary_MURI_LOD1.txt"
-#V,EV = get_boundary_shapes(filename, hyperplanes)
+W,EW = get_boundary_shapes(filename, hyperplanes)
 
-V,EV = FileManager.load_segment(filename)
-GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],1.0)])
+# V,EV = FileManager.load_segment(filename)
+# GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],1.0)])
 
-W,EW = Lar.simplifyCells(V,EV)
-conn_comps = get_edges(W,EW)
 GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW,GL.COLORS[1],1.0)])
 
-GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),T),ET,GL.COLORS[1],1.0)])
+EV_current = linearization(W,EW,conn_comps[1])
+GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EV_current,GL.COLORS[1],1.0)])
+
+graph = SimpleGraph(size(V,2))
+for ev in EV_current
+	add_edge!(graph,ev...)
+end
+
+
+
+#  per salvare e leggere STRUTTURE IN UN FILE JLD
+#using JLD
+#
+# for i in 1:length(hyperplanes)
+# 	filename = "HYPERPLANES\\hyperplanes$i.jld"
+# 	jldopen(filename, "w") do file
+# 		write(file, "hyperplane", hyperplanes[1])
+# 	end
+# end
+#
+# obj2 = jldopen(filename) do file
+#     read(file, "hyperplane")
+# end
