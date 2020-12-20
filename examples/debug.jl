@@ -44,10 +44,7 @@ function get_boundary_shapes(filename::String, hyperplanes, threshold)
 		# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
 		points = hyperplane.inliers.coordinates
 		plane = Plane(hyperplane.direction..., Lar.dot(hyperplane.direction,hyperplane.centroid))
-		@show plane.matrix
-		V = Common.apply_matrix(Lar.inv(plane.matrix),points)[1:2,:]
-		@show V[:,1]
-		return nothing
+		V = Common.apply_matrix(plane.matrix,points)[1:2,:]
 
 		# 2. applica alpha shape con alpha = threshold
 		filtration = AlphaStructures.alphaFilter(V);
@@ -59,7 +56,7 @@ function get_boundary_shapes(filename::String, hyperplanes, threshold)
 		models = process(W,EW)
 
 		for model in models
-			vertices = Common.apply_matrix(plane.matrix, vcat(model[1],zeros(size(model[1],2))'))
+			vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(model[1],zeros(size(model[1],2))'))
 			out = push!(out, Lar.Struct([(vertices, model[2])]))
 		end
 
@@ -137,7 +134,7 @@ function get_line(graph,V,comp_current)
 	return hyperplane, index_visited
 end
 
-# filename = "C:/Users/marte/Documents/GEOWEB/TEST/VECT_2D/EV_boundary_MURI_LOD1.txt"
+filename = "C:/Users/marte/Documents/GEOWEB/TEST/VECT_2D/EV_boundary_MURI_LOD1.txt"
 #
 # filename = "HYPERPLANES\\hyperplanes1.jld"
 # hyperplane = jldopen(filename) do file

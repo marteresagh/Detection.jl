@@ -19,7 +19,7 @@ function pc2vectorize(
 	dirs = VectDirs(folder, project_name)
 
 	if lines
-		INPUT_PC = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),PC.coordinates)[1:2,:], PC.rgbs)
+		INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
 	else
 		INPUT_PC = PC
 	end
@@ -45,7 +45,7 @@ function pc2vectorize(
 	flushprintln("=========== SAVES =============")
 
 	if lines
-		saves_data(PC, params, hyperplanes, affine_matrix, dirs)
+		saves_data(PC, params, hyperplanes, Lar.inv(affine_matrix), dirs)
 	end
 
 	return hyperplanes, params, dirs
