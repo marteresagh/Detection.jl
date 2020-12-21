@@ -7,6 +7,8 @@ using AlphaStructures
 
 println("packages OK")
 
+# function boundary_shape
+
 function parse_commandline()
 	s = ArgParseSettings()
 

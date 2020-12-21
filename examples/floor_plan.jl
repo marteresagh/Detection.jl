@@ -10,6 +10,7 @@ fname = "examples/las/full.las"
 fname = "examples/las/square.las"
 fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
 fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
+fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/casaletto_planimetria.las"
 
 PC = FileManager.las2pointcloud(fname)
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
@@ -18,7 +19,7 @@ INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 par = 0.07
 failed = 100
 N = 10
-k = 20
+k = 30
 
 # threshold estimation
 threshold = Common.estimate_threshold(INPUT_PC,k)
@@ -35,13 +36,13 @@ hyperplanes = Detection.iterate_random_detection(params,debug = true)
 V,EV = Common.DrawLines(hyperplanes,0.0)
 GL.VIEW([
 
-			GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[12]),
+			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[12]),
 		#	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]) ,
-  			GL.GLGrid(V,EV,GL.COLORS[1],1.0)
+  			GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),V),EV,GL.COLORS[1],1.0)
 		])
 
 
-GL.VIEW([	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,:]'),GL.COLORS[2]),
+GL.VIEW([	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[2]),
 			Visualization.mesh_lines(hyperplanes)...])
 
 

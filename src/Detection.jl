@@ -11,6 +11,7 @@ module Detection
     include("Detection/main.jl")
     include("Detection/util.jl")
     include("Detection/saves.jl")
+    include("Shape/boundary.jl")
 
     export Initializer, Common, FileManager
 end # module
