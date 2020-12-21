@@ -3,14 +3,54 @@ using Visualization
 using Common
 using AlphaStructures
 using FileManager
-using LightGraphs
 using JLD
+
+using AlphaStructures
+
+function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::Lar.LAR
+	out = Array{Lar.Struct,1}()
+	for i in 1:length(hyperplanes)
+
+		if i%10 == 0
+			Detection.flushprintln("$i planes processed")
+		end
+
+		hyperplane = hyperplanes[i]
+
+		# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
+		points = hyperplane.inliers.coordinates
+		plane = Plane(hyperplane.direction, hyperplane.centroid)
+		V = Common.apply_matrix(plane.matrix,points)[1:2,:]
+
+		# 2. applica alpha shape con alpha = threshold
+		filtration = AlphaStructures.alphaFilter(V);
+		_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
+
+		# 3. estrai bordo
+		EV_boundary = Common.get_boundary_edges(V,FV)
+		input_model = Lar.simplifyCells(V,EV_boundary)
+		models = Detection.get_boundary_models(input_model)
+
+		for model in models
+			vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(model[1],zeros(size(model[1],2))'))
+			out = push!(out, Lar.Struct([(vertices, model[2])]))
+		end
+
+	end
+	out = Lar.Struct(out)
+	V,EV = Lar.struct2lar(out)
+
+	# 5. salvo il modello come??
+
+	return V,EV
+end
+
 ################################################################################ 3D
 source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
-INPUT_PC = FileManager.source2pc(source,1)
+INPUT_PC = FileManager.source2pc(source,2)
 
 # user parameters
-par = 0.04
+par = 0.05
 failed = 100
 N = 10
 k = 30
@@ -31,7 +71,7 @@ params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 
 ############################################# ESTRAZIONE BORDO + linearizzazione
 
-filename = "C:/Users/marte/Documents/GEOWEB/TEST/VECT_2D/EV_boundary_MURI_LOD1.txt"
+# filename = "C:/Users/marte/Documents/GEOWEB/TEST/VECT_2D/EV_boundary_MURI_LOD1.txt"
 #
 # filename = "HYPERPLANES\\hyperplanes1.jld"
 # hyperplane = jldopen(filename) do file
@@ -40,7 +80,7 @@ filename = "C:/Users/marte/Documents/GEOWEB/TEST/VECT_2D/EV_boundary_MURI_LOD1.t
 #
 # hyperplanes = [hyperplane]
 
-V,EV = get_boundary_shapes(filename, hyperplanes, threshold)
+V,EV = boundary_shapes(hyperplanes, threshold)
 
 GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],1.0)])
 

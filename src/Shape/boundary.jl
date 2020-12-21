@@ -38,7 +38,8 @@
 # 	return V,EV
 # end
 
-function get_boundary_models(model::Lar.LAR)::Array{Lar.LAR,1}
+function get_boundary_models(input_model::Lar.LAR)::Array{Lar.LAR,1}
+	V,EV = input_model
 	models = Lar.LAR[]
 	graph = SimpleGraph(size(V,2))
 	for ev in EV
