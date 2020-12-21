@@ -2,6 +2,7 @@ module Detection
 
     using Common
     using FileManager
+    using LightGraphs
 
     # struct
     include("struct.jl")
@@ -13,5 +14,5 @@ module Detection
     include("Detection/saves.jl")
     include("Shape/boundary.jl")
 
-    export Initializer, Common, FileManager
+    export Initializer, Common, FileManager, LightGraphs
 end # module
