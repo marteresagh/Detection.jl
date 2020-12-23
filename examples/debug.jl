@@ -3,7 +3,6 @@ using Visualization
 using Common
 using AlphaStructures
 using FileManager
-using AlphaStructures
 
 function get_boundary_alpha_shape(hyperplane::Hyperplane,plane::Plane)
 	# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
@@ -16,7 +15,7 @@ function get_boundary_alpha_shape(hyperplane::Hyperplane,plane::Plane)
 
 	# 3. estrai bordo
 	EV_boundary = Common.get_boundary_edges(V,FV)
-	return V,EV_boundary
+	return Lar.simplifyCells(V,EV_boundary)
 end
 
 function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::Lar.LAR
@@ -30,9 +29,7 @@ function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::
 		hyperplane = hyperplanes[i]
 		plane = Plane(hyperplane.direction, hyperplane.centroid)
 
-		V,EV_boundary = get_boundary_alpha_shape(hyperplane,plane)
-
-		input_model = Lar.simplifyCells(V,EV_boundary)
+		input_model = get_boundary_alpha_shape(hyperplane,plane)
 		models = Detection.get_linerized_models(input_model)
 
 		for model in models
@@ -54,7 +51,7 @@ source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
 INPUT_PC = FileManager.source2pc(source,1)
 
 # user parameters
-par = 0.05
+par = 0.04
 failed = 100
 N = 10
 k = 30
@@ -74,22 +71,21 @@ params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 @time hyperplanes = Detection.iterate_random_detection(params;debug = true)
 
 ############################################# ESTRAZIONE BORDO + linearizzazione
-hyperplane = hyperplanes[4]
-points = hyperplane.inliers.coordinates
+for i in 1:length(hyperplanes)
+	@show i
+	hyperplane = hyperplanes[i]
+	plane = Plane(hyperplane.direction, hyperplane.centroid)
+	V,EV = get_boundary_alpha_shape(hyperplane,plane)
+
+end
+# V,EV = boundary_shapes(hyperplanes, threshold)
+
+hyperplane = hyperplanes[5]
 plane = Plane(hyperplane.direction, hyperplane.centroid)
-V = Common.apply_matrix(plane.matrix,points)[1:2,:]
+V,EV = get_boundary_alpha_shape(hyperplane,plane)
 
-# 2. applica alpha shape con alpha = threshold
-filtration = AlphaStructures.alphaFilter(V);
-_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
-
-# 3. estrai bordo
-EV = Common.get_boundary_edges(V,FV)
-
-V,EV = boundary_shapes(hyperplanes, threshold)
-
-GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV_boundary,GL.COLORS[1],1.0)])
-
+# FileManager.save_points_txt("point.txt",V)
+# FileManager.save_cells_txt("edges.txt",EV)
 
 ####################################################################
 # V,EV = FileManager.load_segment(filename)
