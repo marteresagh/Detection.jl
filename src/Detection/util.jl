@@ -1,6 +1,32 @@
 """
 Find first seed randomly.
 """
+function new_seedpoint(points::Lar.Points, params::Initializer)
+
+	"""
+	Return index of point in points with minor residual.
+	"""
+	function minresidual(points::Lar.Points, hyperplane::Hyperplane)
+		res = Common.residual(hyperplane).([points[:,c] for c in 1:size(points,2)])
+		return findmin(res)[2]
+	end
+
+	kdtree = Common.KDTree(points)
+	randindex = rand(1:size(points,2))
+	idxseeds = NearestNeighbors.inrange(kdtree, points[:,randindex], 3*params.threshold)
+	seeds = points[:,idxseeds]
+	direction, centroid = Common.LinearFit(seeds)
+
+	hyperplane = Hyperplane(direction,centroid)
+	#TODO forse va usato come marcatore di punti da non considerare come seed
+	@assert  max(Common.residual(hyperplane).([seeds[:,c] for c in 1:size(seeds,2)])...) < params.par "no seed"
+	min_index = minresidual(seeds,hyperplane)
+	seed = idxseeds[min_index]
+
+	return seed, hyperplane
+end
+
+
 function seedpoint(points::Lar.Points, params::Initializer)
 
 	"""

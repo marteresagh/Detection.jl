@@ -22,9 +22,7 @@ function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::
 	out = Array{Lar.Struct,1}()
 	for i in 1:length(hyperplanes)
 
-		if i%10 == 0
-			Detection.flushprintln("$i planes processed")
-		end
+		Detection.flushprintln("$i planes processed")
 
 		hyperplane = hyperplanes[i]
 		plane = Plane(hyperplane.direction, hyperplane.centroid)

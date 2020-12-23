@@ -1,3 +1,10 @@
+# TODO:
+# bisogna definire i parametri in base ai dati
+# bisogna aggiungere i controlli sulle direzioni
+# grafo sugli spigoli e non sui punti
+# spigoli non clusterizzati non buttare ma mantenere
+#
+
 # using AlphaStructures
 #
 # function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::Lar.LAR
@@ -89,6 +96,7 @@ function get_line(graph,V,comp_current)
 		direction, centroid = Common.LinearFit(points)
 		hyperplane = Hyperplane(PointCloud(points), direction, centroid)
 		max_res = max(Common.residual(hyperplane).([V[:,near] for near in N])...)
+		@show max_res
 		if max_res < 0.02
 			found = true
 		end

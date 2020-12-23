@@ -17,7 +17,7 @@ INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 
 # user - parameters
 par = 0.07
-failed = 100
+failed = 1000
 N = 10
 k = 30
 
@@ -29,6 +29,7 @@ outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 
 # process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
+
 hyperplanes = Detection.iterate_random_detection(params,debug = true)
 
 # hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
