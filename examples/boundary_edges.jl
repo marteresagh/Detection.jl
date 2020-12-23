@@ -3,7 +3,7 @@ using Visualization
 using Common
 using AlphaStructures
 using FileManager
-
+using LightGraphs
 
 function get_boundary_alpha_shape(hyperplane::Hyperplane,plane::Plane)
 	# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
@@ -48,6 +48,110 @@ function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::
 	return V,EV
 end
 
+
+function get_linerized_models(input_model::Lar.LAR)
+	V,EV = input_model
+	models = Lar.LAR[]
+	hyperplanes = Hyperplane[]
+	graph = SimpleGraph(size(V,2))
+	for ev in EV
+		add_edge!(graph,ev...)
+	end
+
+	# estrarre componenti connesse
+	conn_comps = connected_components(graph)
+	for comp in conn_comps
+		clusters,model = linearization(graph,V,comp)
+		if !isnothing(model)
+			union!(hyperplanes,clusters)
+			push!(models,model)
+		end
+	end
+
+	return hyperplanes, models
+end
+
+function linearization(graph,V,comp)
+	clusters = Hyperplane[]
+	comp_current = comp
+	while length(comp_current) > 1
+		cluster_hyperplane,index_visited = get_line(graph,V,comp_current)
+		if cluster_hyperplane.inliers.n_points > 5
+			comp_current = setdiff(comp_current,index_visited)
+			push!(clusters,cluster_hyperplane)
+		end
+	end
+
+	if !isempty(clusters)
+		return clusters,Common.DrawLines(clusters,0.0)
+	end
+	return nothing,nothing
+end
+
+function get_line(graph,V,comp_current)
+	found = false
+	hyperplane = nothing
+	points = nothing
+	N = nothing
+	while !found
+		first = rand(comp_current)
+		N = neighborhood(graph,first,2)
+		points = V[:,N]
+		direction, centroid = Common.LinearFit(points)
+		hyperplane = Hyperplane(PointCloud(points), direction, centroid)
+		max_res = max(Common.residual(hyperplane).([V[:,near] for near in N])...)
+		if max_res < 0.02
+			found = true
+		end
+	end
+
+	seeds = N
+	index_visited = N
+	while !isempty(seeds)
+		for i in seeds
+			N = neighborhood(graph,i,1)
+			setdiff!(N,index_visited)
+			tmp = Int[]
+			for near in N
+				if Common.residual(hyperplane)(V[:,near]) < 0.1
+					points = hcat(points,V[:,near])
+					push!(tmp, near)
+					push!(index_visited,near)
+				end
+				direction, centroid = Common.LinearFit(points)
+			   	hyperplane = Hyperplane(PointCloud(points), direction, centroid)
+			end
+			seeds = tmp
+		end
+	end
+	return hyperplane, index_visited
+end
+
+#########################################################################################
 W = FileManager.load_points("point.txt")
 EW = FileManager.load_cells("edges.txt")
+input_model = (W,EW)
+
 GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW,GL.COLORS[1],1.0)])
+
+hyperplanes, models = get_linerized_models(input_model)
+
+out = Array{Lar.Struct,1}()
+for model in models
+	global out
+	out = push!(out, Lar.Struct([(model[1], model[2])]))
+end
+out = Lar.Struct(out)
+V,EV = Lar.struct2lar(out)
+
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(V)...),W)'),GL.COLORS[12]),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],1.0)])
+
+GL.VIEW([Visualization.mesh_lines(hyperplanes)...])
+
+for i in 1:length(hyperplanes)
+	hyperplane = hyperplanes[i]
+	max_res = max(Common.residual(hyperplane).([hyperplane.inliers.coordinates[:,c] for c in 1:hyperplane.inliers.n_points])...)
+	@show max_res
+end

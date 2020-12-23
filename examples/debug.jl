@@ -71,21 +71,8 @@ params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 @time hyperplanes = Detection.iterate_random_detection(params;debug = true)
 
 ############################################# ESTRAZIONE BORDO + linearizzazione
-for i in 1:length(hyperplanes)
-	@show i
-	hyperplane = hyperplanes[i]
-	plane = Plane(hyperplane.direction, hyperplane.centroid)
-	V,EV = get_boundary_alpha_shape(hyperplane,plane)
-
-end
-# V,EV = boundary_shapes(hyperplanes, threshold)
-
-hyperplane = hyperplanes[5]
-plane = Plane(hyperplane.direction, hyperplane.centroid)
-V,EV = get_boundary_alpha_shape(hyperplane,plane)
-
-# FileManager.save_points_txt("point.txt",V)
-# FileManager.save_cells_txt("edges.txt",EV)
+V,EV = boundary_shapes(hyperplanes, threshold)
+GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],1.0)])
 
 ####################################################################
 # V,EV = FileManager.load_segment(filename)

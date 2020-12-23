@@ -38,9 +38,10 @@
 # 	return V,EV
 # end
 
-function get_linerized_models(input_model::Lar.LAR)::Array{Lar.LAR,1}
+function get_linerized_models(input_model::Lar.LAR)
 	V,EV = input_model
 	models = Lar.LAR[]
+	hyperplanes = Hyperplane[]
 	graph = SimpleGraph(size(V,2))
 	for ev in EV
 		add_edge!(graph,ev...)
@@ -49,13 +50,14 @@ function get_linerized_models(input_model::Lar.LAR)::Array{Lar.LAR,1}
 	# estrarre componenti connesse
 	conn_comps = connected_components(graph)
 	for comp in conn_comps
-		model = linearization(graph,V,comp)
+		clusters,model = linearization(graph,V,comp)
 		if !isnothing(model)
+			union!(hyperplanes,clusters)
 			push!(models,model)
 		end
 	end
 
-	return models
+	return hyperplanes, models
 end
 
 function linearization(graph,V,comp)
@@ -63,22 +65,35 @@ function linearization(graph,V,comp)
 	comp_current = comp
 	while length(comp_current) > 1
 		cluster_hyperplane,index_visited = get_line(graph,V,comp_current)
-		comp_current = setdiff(comp_current,index_visited)
-		push!(clusters,cluster_hyperplane)
+		if cluster_hyperplane.inliers.n_points > 5
+			comp_current = setdiff(comp_current,index_visited)
+			push!(clusters,cluster_hyperplane)
+		end
 	end
 
 	if !isempty(clusters)
-		return Common.DrawLines(clusters,0.0)
+		return clusters,Common.DrawLines(clusters,0.0)
 	end
-	return nothing
+	return nothing,nothing
 end
 
 function get_line(graph,V,comp_current)
-	first = rand(comp_current)
-	N = neighborhood(graph,first,1)
-	points = V[:,N]
-	direction, centroid = Common.LinearFit(points)
-	hyperplane = Hyperplane(PointCloud(points), direction, centroid)
+	found = false
+	hyperplane = nothing
+	points = nothing
+	N = nothing
+	while !found
+		first = rand(comp_current)
+		N = neighborhood(graph,first,2)
+		points = V[:,N]
+		direction, centroid = Common.LinearFit(points)
+		hyperplane = Hyperplane(PointCloud(points), direction, centroid)
+		max_res = max(Common.residual(hyperplane).([V[:,near] for near in N])...)
+		if max_res < 0.02
+			found = true
+		end
+	end
+
 	seeds = N
 	index_visited = N
 	while !isempty(seeds)
