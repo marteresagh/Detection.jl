@@ -72,3 +72,35 @@ function validity(hyperplane::Hyperplane, params::Initializer)
 	@assert mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005 "not valid"  #0.005 che valore è?? come generalizzare??
 
 end
+
+"""
+Corners detection
+"""
+function corners_detection(INPUT_PC::PointCloud, par::Float64)
+	points = INPUT_PC.coordinates
+	corners = fill(false,INPUT_PC.n_points)
+	curvs = fill(0.,INPUT_PC.n_points)
+	balltree = BallTree(points)
+	for i in 1:INPUT_PC.n_points
+		# TODO verificare che i vicini ci siano e che il valore della curvatura non sia NaN
+		N = inrange(balltree, points[:,i], par, true) # usare un parametro abbastanza grande
+		centroid = Common.centroid(points[:,N])
+		C = zeros(2,2)
+		for j in N
+			diff = points[:,j] - centroid
+			C += diff*diff'
+		end
+
+		eigval = Lar.eigvals(C)
+		curvature = eigval[1]/sum(eigval)
+		curvs[i] = curvature
+	end
+
+	for i in 1:INPUT_PC.n_points
+		if  curvs[i] > 0.1 # TODO parametro da stimare in funzione dei dati.
+			corners[i] = true
+		end
+	end
+
+	return collect(1:INPUT_PC.n_points)[corners], curvs
+end

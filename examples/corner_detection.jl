@@ -38,6 +38,7 @@ function corners_detection(INPUT_PC::PointCloud, par::Float64)
 	balltree = BallTree(points)
 	for i in 1:INPUT_PC.n_points
 		N = inrange(balltree, points[:,i], par, true)
+		@show length(N)
 		centroid = Common.centroid(points[:,N])
 		C = zeros(2,2)
 		for j in N
@@ -47,7 +48,11 @@ function corners_detection(INPUT_PC::PointCloud, par::Float64)
 
 		eigval = Lar.eigvals(C)
 		curvature = eigval[1]/sum(eigval)
-		if  curvature > 0.1
+		curvs[i] = curvature
+	end
+
+	for i in 1:INPUT_PC.n_points
+		if  curvs[i] > 0.1
 			corners[i] = true
 		end
 	end
@@ -55,7 +60,7 @@ function corners_detection(INPUT_PC::PointCloud, par::Float64)
 	return collect(1:INPUT_PC.n_points)[corners], curvs
 end
 
-corner,curvs = corners_detection(INPUT_PC::PointCloud, par::Float64)
+corner,curvs = corners_detection(INPUT_PC::PointCloud, 3*par)
 GL.VIEW([
 			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[12]),
 			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,corner])'),GL.COLORS[2]),
