@@ -76,7 +76,7 @@ end
 """
 Corners detection
 """
-function corners_detection(INPUT_PC::PointCloud, par::Float64)
+function corners_detection(INPUT_PC::PointCloud, par::Float64) # TODO usare KNN o i vicini in un certo range?
 	points = INPUT_PC.coordinates
 	corners = fill(false,INPUT_PC.n_points)
 	curvs = fill(0.,INPUT_PC.n_points)

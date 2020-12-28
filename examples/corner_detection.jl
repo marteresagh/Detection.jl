@@ -28,47 +28,14 @@ threshold = Common.estimate_threshold(INPUT_PC,k)
 # outliers
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 
-# process
-# params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
-
-function corners_detection(INPUT_PC::PointCloud, par::Float64)
-	points = INPUT_PC.coordinates
-	corners = fill(false,INPUT_PC.n_points)
-	curvs = fill(0.,INPUT_PC.n_points)
-	balltree = BallTree(points)
-	for i in 1:INPUT_PC.n_points
-		N = inrange(balltree, points[:,i], par, true)
-		@show length(N)
-		centroid = Common.centroid(points[:,N])
-		C = zeros(2,2)
-		for j in N
-			diff = points[:,j] - centroid
-			C += diff*diff'
-		end
-
-		eigval = Lar.eigvals(C)
-		curvature = eigval[1]/sum(eigval)
-		curvs[i] = curvature
-	end
-
-	for i in 1:INPUT_PC.n_points
-		if  curvs[i] > 0.1
-			corners[i] = true
-		end
-	end
-
-	return collect(1:INPUT_PC.n_points)[corners], curvs
-end
-
-corner,curvs = corners_detection(INPUT_PC::PointCloud, 3*par)
+# points on corners
+corner,curvs = corners_detection(INPUT_PC::PointCloud, 0.2)
 GL.VIEW([
 			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[12]),
 			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,corner])'),GL.COLORS[2]),
 		])
 
-using Plots
-histogram(curvs)
-
+# process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,union(outliers,corner))
 hyperplanes = Detection.iterate_random_detection(params,debug = true)
 
