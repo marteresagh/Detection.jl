@@ -131,6 +131,7 @@ end
 W = FileManager.load_points("point.txt")
 EW = FileManager.load_cells("edges.txt")
 input_model = (W,EW)
+graph = Common.graph_edge2edge(W,EW)
 
 GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW,GL.COLORS[1],1.0)])
 
