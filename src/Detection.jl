@@ -3,6 +3,7 @@ module Detection
     using Common
     using FileManager
     using LightGraphs
+    using StatsBase
 
     # struct
     include("struct.jl")

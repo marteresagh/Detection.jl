@@ -29,10 +29,11 @@ threshold = Common.estimate_threshold(INPUT_PC,k)
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 
 # points on corners
-corner,curvs = corners_detection(INPUT_PC::PointCloud, 0.2)
+corner,curvs = Detection.corners_detection(INPUT_PC, par, setdiff(collect(1:INPUT_PC.n_points),outliers))
 GL.VIEW([
 			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[12]),
 			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,corner])'),GL.COLORS[2]),
+			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,outliers])'),GL.COLORS[3]),
 		])
 
 # process
