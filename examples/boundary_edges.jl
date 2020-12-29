@@ -132,12 +132,6 @@ W = FileManager.load_points("point.txt")
 EW = FileManager.load_cells("edges.txt")
 input_model = (W,EW)
 graph = Common.graph_edge2edge(W,EW)
-INPUT_PC = PointCloud(W)
-corner,curvs = Detection.corners_detection(INPUT_PC, 0.3, 0.01)
-GL.VIEW([
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW,GL.COLORS[1],1.0),
-	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,corner])'),GL.COLORS[2])
-])
 
 hyperplanes, models = get_linerized_models(input_model)
 
@@ -154,9 +148,3 @@ GL.VIEW([
 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],1.0)])
 
 GL.VIEW([Visualization.mesh_lines(hyperplanes)...])
-
-for i in 1:length(hyperplanes)
-	hyperplane = hyperplanes[i]
-	max_res = max(Common.residual(hyperplane).([hyperplane.inliers.coordinates[:,c] for c in 1:hyperplane.inliers.n_points])...)
-	@show max_res
-end

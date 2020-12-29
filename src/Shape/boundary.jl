@@ -1,10 +1,3 @@
-# TODO:
-# bisogna definire i parametri in base ai dati
-# bisogna aggiungere i controlli sulle direzioni
-# grafo sugli spigoli e non sui punti
-# spigoli non clusterizzati non buttare ma mantenere
-#
-
 # using AlphaStructures
 #
 # function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::Lar.LAR

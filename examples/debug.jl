@@ -24,11 +24,13 @@ function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::
 
 		Detection.flushprintln("$i planes processed")
 
+
 		hyperplane = hyperplanes[i]
 		plane = Plane(hyperplane.direction, hyperplane.centroid)
 
 		input_model = get_boundary_alpha_shape(hyperplane,plane)
-		models = Detection.get_linerized_models(input_model)
+
+		_, models = Detection.get_linerized_models(input_model)
 
 		for model in models
 			vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(model[1],zeros(size(model[1],2))'))
@@ -43,7 +45,6 @@ function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::
 
 	return V,EV
 end
-
 ################################################################################ 3D
 source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
 INPUT_PC = FileManager.source2pc(source,1)
@@ -73,13 +74,24 @@ V,EV = boundary_shapes(hyperplanes, threshold)
 GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],1.0)])
 
 ####################################################################
-# V,EV = FileManager.load_segment(filename)
-# GL.VIEW([GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],1.0)])
 
-#  per salvare e leggere STRUTTURE IN UN FILE JLD
-# for i in 1:length(hyperplanes)
-# 	filename = "HYPERPLANES\\hyperplanes$i.jld"
-# 	jldopen(filename, "w") do file
-# 		write(file, "hyperplane", hyperplanes[1])
-# 	end
-# end
+out = Array{Lar.Struct,1}()
+i = 1
+hyperplane = hyperplanes[i]
+plane = Plane(hyperplane.direction, hyperplane.centroid)
+
+input_model = get_boundary_alpha_shape(hyperplane,plane)
+
+_, models = Detection.get_linerized_models(input_model)
+
+for model in models
+	vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(model[1],zeros(size(model[1],2))'))
+	out = push!(out, Lar.Struct([(vertices, model[2])]))
+end
+
+out = Lar.Struct(out)
+V,EV = Lar.struct2lar(out)
+
+# 5. salvo il modello come??
+
+return V,EV
