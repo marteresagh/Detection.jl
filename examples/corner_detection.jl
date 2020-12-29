@@ -29,7 +29,10 @@ threshold = Common.estimate_threshold(INPUT_PC,k)
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 
 # points on corners
-corner,curvs = Detection.corners_detection(INPUT_PC, threshold, k, setdiff(collect(1:INPUT_PC.n_points),outliers))
+corner,curvs = Detection.corners_detection(INPUT_PC, par, 0.2, setdiff(collect(1:INPUT_PC.n_points),outliers))
+using Plots
+histogram(curvs)
+
 GL.VIEW([
 			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[12]),
 			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,corner])'),GL.COLORS[2]),
