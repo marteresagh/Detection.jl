@@ -72,7 +72,7 @@ function corners_detection(INPUT_PC::PointCloud, threshold::Float64, k=30::Int64
 		curvature = eigval[1]/sum(eigval)
 		curvs[i] = curvature
 	end
-	mu = StatsBase.mode(curvs)
+	mu = mode(curvs)
 	for i in 1:npoints
 		if  curvs[i] > mu # TODO parametro da stimare in funzione dei dati.
 			corners[i] = true
