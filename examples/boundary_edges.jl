@@ -131,20 +131,14 @@ end
 W = FileManager.load_points("point.txt")
 EW = FileManager.load_cells("edges.txt")
 input_model = (W,EW)
-graph = Common.graph_edge2edge(W,EW)
-
-hyperplanes, models = get_linerized_models(input_model)
-
-out = Array{Lar.Struct,1}()
-for model in models
-	global out
-	out = push!(out, Lar.Struct([(model[1], model[2])]))
-end
-out = Lar.Struct(out)
-V,EV = Lar.struct2lar(out)
+graph = graph_edge2edge(W,EW)
+conn_comps = connected_components(graph)
+comp = conn_comps[2] # indice degli spigoli nella componente
+subgraph = induced_subgraph(graph, comp)
+R = clustering_edge(V,EV,subgraph)
 
 GL.VIEW([
-	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(V)...),W)'),GL.COLORS[12]),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],1.0)])
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[12]),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EV[R],GL.COLORS[1],1.0)])
 
 GL.VIEW([Visualization.mesh_lines(hyperplanes)...])
