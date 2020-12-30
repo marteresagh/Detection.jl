@@ -131,14 +131,23 @@ end
 W = FileManager.load_points("point.txt")
 EW = FileManager.load_cells("edges.txt")
 input_model = (W,EW)
-graph = graph_edge2edge(W,EW)
+graph = Common.graph_edge2edge(W,EW)
 conn_comps = connected_components(graph)
 comp = conn_comps[2] # indice degli spigoli nella componente
 subgraph = induced_subgraph(graph, comp)
-R = clustering_edge(V,EV,subgraph)
+
+init,R = clustering_edge(W,EW,subgraph)
 
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[12]),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EV[R],GL.COLORS[1],1.0)])
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW[R],GL.COLORS[1],1.0),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW[init],GL.COLORS[2],1.0)
+])
 
-GL.VIEW([Visualization.mesh_lines(hyperplanes)...])
+GL.VIEW([GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(V)...),V)'),GL.COLORS[12]),
+	GL.GLFrame2])
+
+angle_between_vectors(a,b) = begin
+	ag = Lar.acos(Lar.dot(a,b)/(Lar.norm(a)*Lar.norm(b)))
+	return min(ag, pi-ag)
+end

@@ -22,7 +22,7 @@ function linearization(V::Lar.Points,EV::Lar.Cells)
 
 	for comp in conn_comps # indice degli spigoli nella componente
 		subgraph = induced_subgraph(graph, comp)
-		clusters = clusters(V,EV, subgraph) #TODO subgraph si riduce alle componenti linearizzate
+		clusters = clusters(V,EV, subgraph)
 		pol = polyline(V, EV, subgraph, clusters) #TODO
 		out = push!(out, Lar.Struct([pol]))
 	end
@@ -31,14 +31,29 @@ function linearization(V::Lar.Points,EV::Lar.Cells)
 	return Lar.struct2lar(out)
 end
 
+# TODO da finire la riduzione del grafo 
 function clusters(V,EV,subgraph)
+	grph, vmap = subgraph
+	clusters = Array{Int64,1}[]
 
+	ITER = 0
+	while ITER < 100
+		cluster = clustering_edge(V, EV, grph, vmap)
+		if valid(cluster)
+			push!(clusters,cluster)
+			for v in cluster
+				rem_vertex!(grph, findall(x-> x == v,vmap))
+			end
+		end
+		ITER = ITER + 1
+	end
+
+	return clusters
 end
 
-function clustering_edge(V,EV,subgraph)
-	grph, vmap = subgraph
+function clustering_edge(V, EV, grph, vmap)
 	e1 = rand(1:nv(grph))
-	e2 = rand(setdiff(neighborhood(grph,e1,2),e1))
+	e2 = rand(setdiff(neighborhood(grph,e1,3),e1))
 
 	R = union(e1,e2)
 	init = vmap[R]
@@ -68,7 +83,9 @@ function clustering_edge(V,EV,subgraph)
 						candidate = true
 					end
 				end
-				if candidate && Common.angle_between_vectors(direction)
+				extrema = EV[vmap[neighbor]]
+				edge_dir = V[:,extrema[1]]-V[:,extrema[2]]
+				if candidate && Common.angle_between_vectors(edge_dir,direction) < pi/5
 					push!(R,neighbor)
 					push!(tmp,neighbor)
 				end
@@ -77,7 +94,7 @@ function clustering_edge(V,EV,subgraph)
 
 		seeds = tmp
 	end
-	return init, vmap[R]
+	return init,vmap[R]
 end
 
 function polyline(V, EV, subgraph, clusters)
