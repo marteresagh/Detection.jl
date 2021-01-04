@@ -3,7 +3,6 @@ using Visualization
 using Common
 using AlphaStructures
 using FileManager
-using LightGraphs
 
 function get_boundary_alpha_shape(hyperplane::Hyperplane,plane::Plane)
 	# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
@@ -135,12 +134,20 @@ graph = Common.graph_edge2edge(W,EW)
 conn_comps = connected_components(graph)
 comp = conn_comps[2] # indice degli spigoli nella componente
 subgraph = induced_subgraph(graph, comp)
+grph, vmap = subgraph
+# init,R = clustering_edge(W,EW,grph, vmap, 0.05)
+clus = clusters(W,EW,subgraph, 0.1)
 
-init,R = clustering_edge(W,EW,subgraph)
+graph_adjacency_clusters(W,EW, subgraph, clus)
 
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[12]),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW[R],GL.COLORS[1],1.0),
+	[GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW[clus[i]],GL.COLORS[rand(1:12)],1.0) for i in 1:length(clus)]...,
+])
+
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[12]),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW[clus[2]],GL.COLORS[1],1.0),
 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW[init],GL.COLORS[2],1.0)
 ])
 

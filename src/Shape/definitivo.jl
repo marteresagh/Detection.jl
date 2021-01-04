@@ -14,6 +14,8 @@
 # end
 
 ## INPUT = V,EV del bordo
+using LightGraphs
+using DataStructures
 
 function linearization(V::Lar.Points,EV::Lar.Cells)
 	out = Array{Lar.Struct,1}()
@@ -22,8 +24,9 @@ function linearization(V::Lar.Points,EV::Lar.Cells)
 
 	for comp in conn_comps # indice degli spigoli nella componente
 		subgraph = induced_subgraph(graph, comp)
-		clusters = clusters(V,EV, subgraph)
-		pol = polyline(V, EV, subgraph, clusters) #TODO
+		clusters = clusters(V,EV, copy(subgraph))
+		dict_clusters, graph_cluadj = graph_adjacency_clusters(V, EV, subgraph, clusters)
+		pol = polyline(V, EV, dict_clusters, graph_cluadj) #TODO
 		out = push!(out, Lar.Struct([pol]))
 	end
 
@@ -31,27 +34,72 @@ function linearization(V::Lar.Points,EV::Lar.Cells)
 	return Lar.struct2lar(out)
 end
 
-# TODO da finire la riduzione del grafo 
-function clusters(V,EV,subgraph)
+function graph_adjacency_clusters(V, EV, subgraph, clusters)
+	n_cluss = length(clusters)
+	dict_clusters = DataStructures.OrderedDict([i=>clusters[i] for i in 1:n_cluss]...)
+	graph_cluadj = SimpleGraph(n_cluss)
+
+	for i in 1:n_cluss
+		N = adj_cluster(V, EV, subgraph, dict_clusters, i)
+		for n in N
+			add_edge!(g,i,n)
+		end
+	end
+
+	return dict_clusters, graph_cluadj
+end
+
+function adj_cluster(V, EV, subgraph, dict_clusters, i)
+	N = In64[]
+	cluster_current = dict_clusters[i]
+
+
+	return N
+end
+
+function valid(cluster)
+	return length(cluster)>5
+end
+
+# TODO costruire grafo adiacenza cluster
+function clusters(V, EV, subgraph, par)
 	grph, vmap = subgraph
-	clusters = Array{Int64,1}[]
+
+	linear_clusters = Array{Int64,1}[]
 
 	ITER = 0
 	while ITER < 100
-		cluster = clustering_edge(V, EV, grph, vmap)
-		if valid(cluster)
-			push!(clusters,cluster)
-			for v in cluster
-				rem_vertex!(grph, findall(x-> x == v,vmap))
+
+		try
+			R, linear_cluster = clustering_edge(V, EV, grph, vmap, par)
+			if valid(linear_cluster)
+				@show "found"
+				push!(linear_clusters, linear_cluster)
+				a = rem_vertices!(grph, R, keep_order=true);
+				vmap = vmap[a]
 			end
+		catch y
 		end
+
 		ITER = ITER + 1
 	end
 
-	return clusters
+	conn_comps = connected_components(grph)
+	for comp in conn_comps
+		if length(comp) == 1
+			edge = vmap[comp[1]]
+			dist = Lar.norm(V[:,EV[edge][1]]-V[:,EV[edge][2]])
+			@show dist
+			if dist > 1.
+				push!(linear_clusters, [edge])
+			end
+		end
+	end
+
+	return linear_clusters
 end
 
-function clustering_edge(V, EV, grph, vmap)
+function clustering_edge(V, EV, grph, vmap, par)
 	e1 = rand(1:nv(grph))
 	e2 = rand(setdiff(neighborhood(grph,e1,3),e1))
 
@@ -74,7 +122,7 @@ function clustering_edge(V, EV, grph, vmap)
 				inds = EV[vmap[neighbor]]
 				for ind in inds
 					point = V[:,ind]
-					if Common.residual(line)(point) < 0.1
+					if Common.residual(line)(point) < par
 						inliers = hcat(inliers, point)
 						direction,centroid = Common.LinearFit(inliers)
 						line.inliers = PointCloud(inliers)
@@ -94,7 +142,7 @@ function clustering_edge(V, EV, grph, vmap)
 
 		seeds = tmp
 	end
-	return init,vmap[R]
+	return R,vmap[R]
 end
 
 function polyline(V, EV, subgraph, clusters)
