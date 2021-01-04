@@ -34,10 +34,19 @@ function linearization(V::Lar.Points,EV::Lar.Cells)
 	return Lar.struct2lar(out)
 end
 
+
+#TODO da finire questo grafo delle adiacenze
 function graph_adjacency_clusters(V, EV, subgraph, clusters)
 	n_cluss = length(clusters)
 	dict_clusters = DataStructures.OrderedDict([i=>clusters[i] for i in 1:n_cluss]...)
-	graph_cluadj = SimpleGraph(n_cluss)
+	graph_cluadj = copy(subgraph[1])
+	vmap = copy(subgraph[2])
+
+	for i in 1:n_cluss
+		cluster_current = dict_clusters[i]
+		map_cluster = [findall(x-> x == i,vmap)[1] for i in cluster_current]
+		a = merge_vertices!(graph_cluadj,map_cluster)
+	end
 
 	for i in 1:n_cluss
 		N = adj_cluster(V, EV, subgraph, dict_clusters, i)
@@ -51,9 +60,11 @@ end
 
 function adj_cluster(V, EV, subgraph, dict_clusters, i)
 	N = In64[]
+	graph_cluadj = copy(subgraph[1])
+	vmap = copy(subgraph[2])
 	cluster_current = dict_clusters[i]
-
-
+	a = merge_vertices!(graph_cluadj,[findall(x-> x == i,vmap)[1] for i in cluster_current])
+	#vmap = vmap[a]
 	return N
 end
 

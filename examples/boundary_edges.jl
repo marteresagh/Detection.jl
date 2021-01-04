@@ -138,7 +138,7 @@ grph, vmap = subgraph
 # init,R = clustering_edge(W,EW,grph, vmap, 0.05)
 clus = clusters(W,EW,subgraph, 0.1)
 
-graph_adjacency_clusters(W,EW, subgraph, clus)
+dict_clusters = graph_adjacency_clusters(W,EW, subgraph, clus)
 
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[12]),
