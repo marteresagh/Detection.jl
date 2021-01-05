@@ -132,18 +132,12 @@ EW = FileManager.load_cells("edges.txt")
 input_model = (W,EW)
 graph = Common.graph_edge2edge(W,EW)
 conn_comps = connected_components(graph)
-comp = conn_comps[3] # indice degli spigoli nella componente
+comp = conn_comps[2] # indice degli spigoli nella componente
 subgraph = induced_subgraph(graph, comp)
 grph, vmap = subgraph
 # init,R = clustering_edge(W,EW,grph, vmap, 0.05)
 clus = clusters(W,EW,subgraph, 0.1)
 L,EL = polyline(W,EW, clus, subgraph)
-L,EL = linearization(W,EW)
-GL.VIEW([
-	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[2]),
-	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),L)'),GL.COLORS[12]),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),L),EL,GL.COLORS[rand(1:12)],1.0),
-])
 
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[12]),
@@ -152,14 +146,17 @@ GL.VIEW([
 
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[12]),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW[clus[2]],GL.COLORS[1],1.0),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW[init],GL.COLORS[2],1.0)
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW[clus[8]],GL.COLORS[rand(1:12)],1.0),
 ])
 
 GL.VIEW([GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(V)...),V)'),GL.COLORS[12]),
-	GL.GLFrame2])
+	GL.GLFrame2
+])
 
-angle_between_vectors(a,b) = begin
-	ag = Lar.acos(Lar.dot(a,b)/(Lar.norm(a)*Lar.norm(b)))
-	return min(ag, pi-ag)
-end
+L,EL = linearization(W,EW)
+
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[2]),
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),L)'),GL.COLORS[12]),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),L),EL,GL.COLORS[rand(1:12)],1.0),
+])

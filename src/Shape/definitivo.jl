@@ -100,7 +100,6 @@ function clusters(V, EV, subgraph, par)
 		if length(comp) == 1
 			edge = vmap[comp[1]]
 			dist = Lar.norm(V[:,EV[edge][1]]-V[:,EV[edge][2]])
-			@show dist
 			if dist > 1.
 				push!(linear_clusters, [edge])
 			end
@@ -156,8 +155,26 @@ function clustering_edge(V, EV, grph, vmap, par)
 	return R,vmap[R]
 end
 
-function polyline(V, EV, clusters, subgraph)
-	grph, vmap = subgraph
+function polyline(V, EV, clusters)
+	#grafo
+	n_cluss = length(clusters)
+	dict_clusters = DataStructures.OrderedDict([i => clusters[i] for i in 1:n_cluss]...)
+	graph = SimpleGraph(n_cluss)
+
+	for (k,v) in dict_clusters
+		M_1 = Common.K(EW[v])
+		∂_1 = M_1'
+		S1 = sum(∂_1,dims=2)
+		outers = [k for k=1:length(S1) if S1[k]==1]
+		for (kn,vn) in dict_clusters
+			if in(outers[1],union(EW[vn]...)) || in(outers[2],union(EW[vn]...))
+				if k!=kn
+					add_edge!(graph,k,kn)
+				end
+			end
+		end
+	end
+
 	out = Array{Lar.Struct,1}()
 	for cluster in clusters
 		M_1 = Common.K(EV[cluster])
@@ -165,16 +182,9 @@ function polyline(V, EV, clusters, subgraph)
 		S1 = sum(∂_1,dims=2)
 		outer = [k for k=1:length(S1) if S1[k]==1]
 		inds = union(EV[cluster]...)
-		setdiff!(inds,outer)
-		points = V[:,inds]
-		direction, centroid = Common.Fit_Line(points)
-		line = Hyperplane(PointCloud(points),direction,centroid)
-
-
-		points = V[:,inds]
-		direction, centroid = Common.Fit_Line(points)
-		line.direction = direction
-		line.centroid = centroid
+		inliers = setdiff(inds,outer)
+		direction, centroid = Common.Fit_Line(V[:,inliers])
+		line = Hyperplane(PointCloud(V[:,inds]),direction,centroid)
 		L,EL = Common.DrawLine(line, 0.0)
 		out = push!(out, Lar.Struct([(L,EL)]))
 	end
@@ -182,7 +192,23 @@ function polyline(V, EV, clusters, subgraph)
 	return Lar.struct2lar(out)
 end
 
-M_1 = Common.K(EW[clus[1]])
-∂_1 = M_1'
-S1 = sum(∂_1,dims=2)
-outer = [k for k=1:length(S1) if S1[k]==1]
+n_cluss = length(clus)
+dict_clusters = DataStructures.OrderedDict([i => clus[i] for i in 1:n_cluss]...)
+graph = SimpleGraph(n_cluss)
+
+for (k,v) in dict_clusters
+	@show v
+	M_1 = Common.K(EW[v])
+	∂_1 = M_1'
+	S1 = sum(∂_1,dims=2)
+	outers = [k for k=1:length(S1) if S1[k]==1]
+	@show outer
+	for (kn,vn) in dict_clusters
+		#invece di questo cerco i due cluster vicini 
+		if in(outers[1],union(EW[vn]...)) || in(outers[2],union(EW[vn]...))
+			if k!=kn
+				add_edge!(graph,k,kn)
+			end
+		end
+	end
+end
