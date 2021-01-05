@@ -19,14 +19,14 @@ using DataStructures
 
 function linearization(V::Lar.Points,EV::Lar.Cells)
 	out = Array{Lar.Struct,1}()
-	graph = graph_edge2edge(V,EV)
+	graph = Common.graph_edge2edge(V,EV)
 	conn_comps = connected_components(graph)
 
 	for comp in conn_comps # indice degli spigoli nella componente
 		subgraph = induced_subgraph(graph, comp)
-		clusters = clusters(V,EV, copy(subgraph))
-		dict_clusters, graph_cluadj = graph_adjacency_clusters(V, EV, subgraph, clusters)
-		pol = polyline(V, EV, dict_clusters, graph_cluadj) #TODO
+		clus = clusters(V,EV, deepcopy(subgraph), 0.1)
+		#dict_clusters, graph_cluadj = graph_adjacency_clusters(V, EV, subgraph, clusters)
+		pol = polyline(V, EV, clus, subgraph)
 		out = push!(out, Lar.Struct([pol]))
 	end
 
@@ -38,13 +38,13 @@ end
 #TODO da finire questo grafo delle adiacenze
 function graph_adjacency_clusters(V, EV, subgraph, clusters)
 	n_cluss = length(clusters)
-	dict_clusters = DataStructures.OrderedDict([i=>clusters[i] for i in 1:n_cluss]...)
+	dict_clusters = DataStructures.OrderedDict([i => clusters[i] for i in 1:n_cluss]...)
 	graph_cluadj = copy(subgraph[1])
 	vmap = copy(subgraph[2])
 
 	for i in 1:n_cluss
 		cluster_current = dict_clusters[i]
-		map_cluster = [findall(x-> x == i,vmap)[1] for i in cluster_current]
+		map_cluster = [findall(x -> x == i, vmap)[1] for i in cluster_current]
 		a = merge_vertices!(graph_cluadj,map_cluster)
 	end
 
@@ -156,6 +156,33 @@ function clustering_edge(V, EV, grph, vmap, par)
 	return R,vmap[R]
 end
 
-function polyline(V, EV, subgraph, clusters)
+function polyline(V, EV, clusters, subgraph)
+	grph, vmap = subgraph
+	out = Array{Lar.Struct,1}()
+	for cluster in clusters
+		M_1 = Common.K(EV[cluster])
+		∂_1 = M_1'
+		S1 = sum(∂_1,dims=2)
+		outer = [k for k=1:length(S1) if S1[k]==1]
+		inds = union(EV[cluster]...)
+		setdiff!(inds,outer)
+		points = V[:,inds]
+		direction, centroid = Common.Fit_Line(points)
+		line = Hyperplane(PointCloud(points),direction,centroid)
 
+
+		points = V[:,inds]
+		direction, centroid = Common.Fit_Line(points)
+		line.direction = direction
+		line.centroid = centroid
+		L,EL = Common.DrawLine(line, 0.0)
+		out = push!(out, Lar.Struct([(L,EL)]))
+	end
+	out = Lar.Struct(out)
+	return Lar.struct2lar(out)
 end
+
+M_1 = Common.K(EW[clus[1]])
+∂_1 = M_1'
+S1 = sum(∂_1,dims=2)
+outer = [k for k=1:length(S1) if S1[k]==1]

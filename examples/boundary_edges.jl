@@ -132,13 +132,18 @@ EW = FileManager.load_cells("edges.txt")
 input_model = (W,EW)
 graph = Common.graph_edge2edge(W,EW)
 conn_comps = connected_components(graph)
-comp = conn_comps[2] # indice degli spigoli nella componente
+comp = conn_comps[3] # indice degli spigoli nella componente
 subgraph = induced_subgraph(graph, comp)
 grph, vmap = subgraph
 # init,R = clustering_edge(W,EW,grph, vmap, 0.05)
 clus = clusters(W,EW,subgraph, 0.1)
-
-dict_clusters = graph_adjacency_clusters(W,EW, subgraph, clus)
+L,EL = polyline(W,EW, clus, subgraph)
+L,EL = linearization(W,EW)
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[2]),
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),L)'),GL.COLORS[12]),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),L),EL,GL.COLORS[rand(1:12)],1.0),
+])
 
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[12]),
