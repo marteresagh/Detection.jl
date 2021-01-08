@@ -77,12 +77,11 @@ function iterate_random_detection(params::Initializer; debug = false)
 end
 
 """
-get_hyperplane_from_random_init_point(params::Initializer)
+	get_hyperplane_from_random_init_point(params::Initializer)
 
 Detect an hyperplane starting from initial random point.
 """
 function get_hyperplane_from_random_init_point(params::Initializer)
-
 
 	# 1. ricerca del seed
 	candidates = setdiff(params.current_inds,params.visited)
@@ -103,6 +102,8 @@ function get_hyperplane_from_random_init_point(params::Initializer)
 end
 
 """
+	search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplane, params::Initializer)
+
 Search of all points belonging to the cluster `R`.
 """
 function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplane, params::Initializer)
@@ -154,6 +155,8 @@ function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplan
 end
 
 """
+	optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
+
 
 """
 function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)

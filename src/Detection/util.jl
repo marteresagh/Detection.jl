@@ -50,7 +50,7 @@ end
 """
 Corners detection
 """
-function corners_detection(INPUT_PC::PointCloud, par::Float64, threshold::Float64, current_inds = collect(1:INPUT_PC.n_points)::Array{Int64,1}) # TODO usare KNN o i vicini in un certo range?
+function corners_detection(INPUT_PC::PointCloud, par::Float64, threshold::Float64, current_inds = collect(1:INPUT_PC.n_points)::Array{Int64,1})
 	points = INPUT_PC.coordinates[:, current_inds]
 	npoints = size(points,2)
 	corners = fill(false,npoints)

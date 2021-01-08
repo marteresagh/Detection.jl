@@ -1,5 +1,18 @@
 """
-Main
+	pc2vectorize(
+		folder::String,
+		project_name::String,
+		PC::PointCloud,
+		par::Float64,
+		failed::Int64,
+		N::Int64,
+		k::Int64,
+		affine_matrix::Matrix,
+		lines = true::Bool
+		)
+
+Main program.
+Detect hyperplanes in point cloud. In 2D space results are saved in different files.
 """
 function pc2vectorize(
 	folder::String,
@@ -25,9 +38,14 @@ function pc2vectorize(
 	end
 
 	# 1. Initialization
-	flushprintln("Search of possible outliers to remove: ")
+	flushprintln("= Remove points from possible seeds =")
+	flushprintln("Search of possible outliers: ")
 	outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 	flushprintln("$(length(outliers)) outliers")
+
+	# flushprintln("Search of points with high curvature")
+	# corners = Detection.corners_detection(INPUT_PC, par, threshold)
+	# flushprintln("$(length(corners)) points on corners")
 
 	flushprintln()
 	flushprintln("=========== PROCESSING =============")
@@ -41,10 +59,10 @@ function pc2vectorize(
 	hyperplanes = Detection.iterate_random_detection(params)
 
 	# 3. Saves
-	flushprintln()
-	flushprintln("=========== SAVES =============")
-
 	if lines
+		flushprintln()
+		flushprintln("=========== SAVES =============")
+
 		saves_data(PC, params, hyperplanes, Lar.inv(affine_matrix), dirs)
 	end
 
