@@ -137,7 +137,7 @@ subgraph = induced_subgraph(graph, comp)
 grph, vmap = subgraph
 # init,R = clustering_edge(W,EW,grph, vmap, 0.05)
 clus = clusters(W,EW,subgraph, 0.1)
-L,EL = polyline(W,EW, clus, subgraph)
+graph = polyline(W,EW, clus)
 
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[12]),

@@ -26,7 +26,7 @@ function linearization(V::Lar.Points,EV::Lar.Cells)
 		subgraph = induced_subgraph(graph, comp)
 		clus = clusters(V,EV, deepcopy(subgraph), 0.1)
 		#dict_clusters, graph_cluadj = graph_adjacency_clusters(V, EV, subgraph, clusters)
-		pol = polyline(V, EV, clus, subgraph)
+		pol = polyline(V, EV, clus)
 		out = push!(out, Lar.Struct([pol]))
 	end
 
@@ -35,38 +35,36 @@ function linearization(V::Lar.Points,EV::Lar.Cells)
 end
 
 
-#TODO da finire questo grafo delle adiacenze
-function graph_adjacency_clusters(V, EV, subgraph, clusters)
+function graph_adjacency_clusters(V, EV, clusters)
+	graph_verts = SimpleGraph(size(V,2))
+	for ev in EV
+		add_edge!(graph_verts, ev[1],ev[2])
+	end
+
 	n_cluss = length(clusters)
 	dict_clusters = DataStructures.OrderedDict([i => clusters[i] for i in 1:n_cluss]...)
-	graph_cluadj = copy(subgraph[1])
-	vmap = copy(subgraph[2])
+	graph = SimpleGraph(n_cluss)
 
-	for i in 1:n_cluss
-		cluster_current = dict_clusters[i]
-		map_cluster = [findall(x -> x == i, vmap)[1] for i in cluster_current]
-		a = merge_vertices!(graph_cluadj,map_cluster)
-	end
+	for (k,v) in dict_clusters
+		M_1 = Common.K(EW[v])
+		∂_1 = M_1'
+		S1 = sum(∂_1,dims=2)
+		outers = [k for k=1:length(S1) if S1[k]==1]
+		N = union([neighbors(graph_verts, outer) for outer in outers]...)
 
-	for i in 1:n_cluss
-		N = adj_cluster(V, EV, subgraph, dict_clusters, i)
 		for n in N
-			add_edge!(g,i,n)
+			for (kn,vn) in dict_clusters
+				if in(n,union(EW[vn]...))
+					if k!=kn
+						add_edge!(graph,k,kn)
+					end
+				end
+			end
 		end
 	end
-
-	return dict_clusters, graph_cluadj
+	return dict_clusters, graph
 end
 
-function adj_cluster(V, EV, subgraph, dict_clusters, i)
-	N = In64[]
-	graph_cluadj = copy(subgraph[1])
-	vmap = copy(subgraph[2])
-	cluster_current = dict_clusters[i]
-	a = merge_vertices!(graph_cluadj,[findall(x-> x == i,vmap)[1] for i in cluster_current])
-	#vmap = vmap[a]
-	return N
-end
 
 function valid(cluster)
 	return length(cluster)>5
@@ -157,23 +155,7 @@ end
 
 function polyline(V, EV, clusters)
 	#grafo
-	n_cluss = length(clusters)
-	dict_clusters = DataStructures.OrderedDict([i => clusters[i] for i in 1:n_cluss]...)
-	graph = SimpleGraph(n_cluss)
-
-	for (k,v) in dict_clusters
-		M_1 = Common.K(EW[v])
-		∂_1 = M_1'
-		S1 = sum(∂_1,dims=2)
-		outers = [k for k=1:length(S1) if S1[k]==1]
-		for (kn,vn) in dict_clusters
-			if in(outers[1],union(EW[vn]...)) || in(outers[2],union(EW[vn]...))
-				if k!=kn
-					add_edge!(graph,k,kn)
-				end
-			end
-		end
-	end
+	dict_clusters, graph_clus = graph_adjacency_clusters(V, EV, clusters)
 
 	out = Array{Lar.Struct,1}()
 	for cluster in clusters
@@ -188,27 +170,7 @@ function polyline(V, EV, clusters)
 		L,EL = Common.DrawLine(line, 0.0)
 		out = push!(out, Lar.Struct([(L,EL)]))
 	end
+
 	out = Lar.Struct(out)
 	return Lar.struct2lar(out)
-end
-
-n_cluss = length(clus)
-dict_clusters = DataStructures.OrderedDict([i => clus[i] for i in 1:n_cluss]...)
-graph = SimpleGraph(n_cluss)
-
-for (k,v) in dict_clusters
-	@show v
-	M_1 = Common.K(EW[v])
-	∂_1 = M_1'
-	S1 = sum(∂_1,dims=2)
-	outers = [k for k=1:length(S1) if S1[k]==1]
-	@show outer
-	for (kn,vn) in dict_clusters
-		#invece di questo cerco i due cluster vicini 
-		if in(outers[1],union(EW[vn]...)) || in(outers[2],union(EW[vn]...))
-			if k!=kn
-				add_edge!(graph,k,kn)
-			end
-		end
-	end
 end
