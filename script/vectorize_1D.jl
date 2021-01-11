@@ -10,7 +10,7 @@ function parse_commandline()
 
 	@add_arg_table! s begin
 	"source"
-		help = "Input Potree"
+		help = "Potree directory"
 		required = true
 	"--projectname", "-p"
 		help = "Project name"
@@ -19,7 +19,7 @@ function parse_commandline()
 		help = "Output folder"
 		required = true
 	"--par"
-		help = "Parameter"
+		help = "Distance to line"
 		arg_type = Float64
 		required = true
 	"--lod"
@@ -27,15 +27,15 @@ function parse_commandline()
 		arg_type = Int64
 		default = -1
 	"--failed"
-		help = "number of failed before exit"
+		help = "Number of failed before exit"
 		arg_type = Int64
 		default = 100
 	"--validity"
-		help = "number of points in a line"
+		help = "Number of points in a line"
 		arg_type = Int64
 		default = 5
 	"--k"
-		help = "number of neighbors"
+		help = "Number of neighbors"
 		arg_type = Int64
 		default = 10
 	"--plane"

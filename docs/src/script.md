@@ -8,7 +8,7 @@ Detect lines in a flat point cloud, i.e. points that lies on an arbitrary plane 
 An useful parameters is the description of plane `π` since during the process it is necessary to convert 3D points to 2D coordinates.
 The resulting segments and relative fitted points are stored as shown below.
 
-![data storage](../docs/src/images/directory.jpeg)
+![data storage](./images/directory.jpeg)
 
 ```
 $ julia vectorize_1D.jl -h
