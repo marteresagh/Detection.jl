@@ -6,7 +6,7 @@ Return all found hyperplanes.
 Algorithm description:
  - Search starts with initial parameters
  - Detects a valid hyperplane
- - If found, marks all verteces in cluster as visited
+ - If found, marks all vertices in cluster as visited
  - If not found, repeats the detection
  - Search terminates if the detection failed a number of times in a row
 """

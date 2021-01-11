@@ -1,6 +1,7 @@
 # Detection
 
-`Detection.jl` is a [Julia](http://julialang.org) library
+`Detection.jl` is a [Julia](http://julialang.org) library for shape detection.
+
 # Getting started
 
 ## Installation

@@ -4,12 +4,10 @@
 
 Lines detection.
 
-Detect lines in a flat point cloud, i.e. points that lies on an arbitrary plane `π` (such as floor plan), in the 3D space.
+Detect lines in a 3D flat point cloud, i.e. points that lies on an arbitrary plane `π` (such as floor plan), in the 3D space.
 An useful parameters is the description of plane `π` since during the process it is necessary to convert 3D points to 2D coordinates.
-The resulting segments and relative fitted points are stored as shown below.
 
-![data storage](../docs/src/images/directory.jpeg)
-
+Input parameters:
 ```
 $ julia vectorize_1D.jl -h
 
@@ -30,6 +28,25 @@ optional arguments:
   --k K                 Number of neighbors (type: Int64, default: 10)
   --plane PLANE         a, b, c, d parameters described the plane
   -h, --help            show this help message and exit
+```
+
+The resulting files are organized like this:
+```
+name_of_project
+|--POINTCLOUDS
+    |--FULL
+        |--slice.las
+    |--PARTITIONS
+        |--fitted.las
+        |--unfitted.las
+|--DXF
+    |--RAW
+        |--segment3D.ext
+        |--fitted3D.pnt
+        |--unfitted3D.pnt
+        |--segment2D.ext
+        |--fitted2D.pnt
+        |--unfitted2D.pnt
 ```
 
 Examples:
