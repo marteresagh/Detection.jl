@@ -122,8 +122,9 @@ function main()
 	filename = joinpath(dirs.output_folder,"$(project_name)_vectorize_2D.txt")
 	V,EV = get_boundary_shapes(filename::String, hyperplanes::Array{Hyperplanes,1})
 
-	# process boundary edges
-	Detection.linearization(V,EV)
+	#TODO: da concludere process boundary edges
+	#modello_finale = Detection.linearization(V,EV)
+	#TODO: salvataggio
 
 end
 

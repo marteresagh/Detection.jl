@@ -5,14 +5,14 @@ using AlphaStructures
 using FileManager
 using LightGraphs
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
-INPUT_PC = FileManager.source2pc(source,1)
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/FUSION"
+INPUT_PC = FileManager.source2pc(source,-1)
 
 # user parameters
-par = 0.04
+par = 0.06
 failed = 100
-N = 10
-k = 30
+N = 1000
+k = 60
 
 # threshold estimation
 threshold = Common.estimate_threshold(INPUT_PC,k)
@@ -32,8 +32,8 @@ centroid = Common.centroid(INPUT_PC.coordinates)
 V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
 
 GL.VIEW([
-			#Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
-			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates)'),GL.COLORS[12]),
+			Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+			#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates)'),GL.COLORS[12]),
 			#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates[:,outliers])'),GL.COLORS[2]) ,
   			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8)
 		])

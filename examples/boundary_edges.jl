@@ -139,9 +139,10 @@ grph, vmap = subgraph
 clus = clusters(W,EW,subgraph, 0.1)
 graph = polyline(W,EW, clus)
 
+W,EW =  boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[12]),
-	[GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW[clus[i]],GL.COLORS[rand(1:12)],1.0) for i in 1:length(clus)]...,
+	[GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW,GL.COLORS[rand(1:12)],1.0) for i in 1:length(clus)]...,
 ])
 
 GL.VIEW([
