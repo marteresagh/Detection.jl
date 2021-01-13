@@ -53,7 +53,7 @@ optional arguments:
                         (type: Int64, default: -1)
   --failed FAILED       Number of failed before exit (type: Int64,
                         default: 100)
-  --validity VALIDITY   Number of points in a line (type: Int64,
+  --validity VALIDITY   Minimum number of inliers (type: Int64,
                         default: 5)
   --k K                 Number of neighbors (type: Int64, default: 10)
   --plane PLANE         a, b, c, d parameters described the plane
