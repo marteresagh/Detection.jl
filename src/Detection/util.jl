@@ -7,7 +7,7 @@ function seedpoint(points::Lar.Points, params::Initializer)
 	Return index of point in points with minor residual.
 	"""
 	function minresidual(points::Lar.Points, hyperplane::Hyperplane)
-		res = Common.residual(hyperplane).([points[:,c] for c in 1:size(points,2)])
+		res = Common.residual(hyperplane).( [c[:] for c in eachcol(points)])
 		return findmin(res)[2]
 	end
 
@@ -40,7 +40,7 @@ function validity(hyperplane::Hyperplane, params::Initializer)
 	pc_on_hyperplane = hyperplane.inliers
 	@assert  pc_on_hyperplane.n_points > params.N "not valid"
 
-	res = Common.residual(hyperplane).([pc_on_hyperplane.coordinates[:,i] for i in 1:pc_on_hyperplane.n_points])
+	res = Common.residual(hyperplane).([c[:] for c in eachcol(pc_on_hyperplane.coordinates)])
 	mu = Statistics.mean(res)# prova moda
 	rho = Statistics.std(res)
 	@assert mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005 "not valid"  #0.005 che valore è?? come generalizzare??
