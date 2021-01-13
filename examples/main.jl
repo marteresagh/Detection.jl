@@ -8,14 +8,14 @@ using FileManager
 source = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
 
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
-filename = "PRIMO_TEST"
+filename = "TEST_MAIN"
 PC = FileManager.las2pointcloud(source)
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 
 par = 0.07
 failed = 10
 N = 10
-k = 10
+k = 60
 affine_matrix = Lar.t(0,0,6.50)
 
 hyperplanes,params = Detection.pc2vectorize(

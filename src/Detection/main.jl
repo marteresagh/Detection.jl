@@ -7,7 +7,8 @@
 		failed::Int64,
 		N::Int64,
 		k::Int64,
-		affine_matrix::Matrix,
+		affine_matrix::Matrix;
+		masterseeds = nothing::Union{String,Nothing},
 		lines = true::Bool
 		)
 
@@ -34,10 +35,32 @@ function pc2vectorize(
 
 	if lines
 		INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
+		if !isnothing(masterseeds) # if seeds are provided
+			# seeds indices
+			given_seeds = FileManager.load_points(masterseeds)
+			given_seeds_2D = Common.apply_matrix(affine_matrix,given_seeds)[1:2,:]
+			seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds_2D)])
+		end
 	else
 		INPUT_PC = PC
+		if !isnothing(masterseeds) # if seeds are provided
+			# seeds indices
+			given_seeds = FileManager.load_points(masterseeds)
+			seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
+		end
 	end
 
+	# 1. Initialization
+	flushprintln()
+	flushprintln("=========== PROCESSING =============")
+
+	# threashold estimation
+	threshold = Common.estimate_threshold(INPUT_PC,k)
+
+	# normals
+	if !lines
+		INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
+	end
 
 	if isnothing(masterseeds) # if seeds are not provided
 		# 1. Initialization
@@ -50,33 +73,15 @@ function pc2vectorize(
 		# corners = Detection.corners_detection(INPUT_PC, par, threshold)
 		# flushprintln("$(length(corners)) points on corners")
 
-		flushprintln()
-		flushprintln("=========== PROCESSING =============")
-
-		# threashold estimation
-		threshold = Common.estimate_threshold(INPUT_PC,k)
-
 		params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
-
 		# 2. Detection
 		hyperplanes = Detection.iterate_random_detection(params)
+
 	else # if seeds are provided
-		# 1. Initialization
-		flushprintln()
-		flushprintln("=========== PROCESSING =============")
 
-		# threashold estimation
-		threshold = Common.estimate_threshold(INPUT_PC,k)
-
-		# seeds indices
-		given_seeds = FileManager.load_points(masterseeds)
-		seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
-
-		params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
-
+		params = Initializer(INPUT_PC, par, threshold, failed, N, k)
 		# 2. Detection
 		hyperplanes = Detection.iterate_seeds_detection(params,seeds)
-
 	end
 
 	# 3. Saves
