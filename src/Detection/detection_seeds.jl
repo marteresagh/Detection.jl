@@ -19,18 +19,16 @@ function iterate_seeds_detection(params::Initializer, seeds::Array{Int64,1}; deb
 			break # break main loop
 		end
 
-		try
+		# try
 			hyperplane, cluster, all_visited_verts = get_hyperplane_from_seed(params,seed)
 			validity(hyperplane, params) # test of validity
 			found = true
-		catch y
-		end
+		# catch y
+		# end
 
 		if found
 			i = i+1
-			if i%10 == 0
-				flushprintln("$i shapes found")
-			end
+			flushprintln("$i shapes found of $(length(seeds))")
 			push!(hyperplanes,hyperplane)
 			union!(params.fitted,cluster)
 			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed
@@ -55,11 +53,12 @@ function get_hyperplane_from_seed(params::Initializer, given_seed::Int64)
 			res = Common.residual(hyperplane).( [c[:] for c in eachcol(points)])
 			return findmin(res)[2]
 		end
+
 		points = params.PC.coordinates[:,params.current_inds]
 		init_seed = findall(x->x == given_seed, params.current_inds)
 		kdtree = Common.KDTree(points)
 
-		idxseeds = Common.neighborhood(kdtree,points,[init_seed],Int64[],params.threshold,params.k)
+		idxseeds = Common.neighborhood(kdtree,points,init_seed,Int64[],params.threshold,params.k)
 		seeds = points[:,idxseeds]
 		direction, centroid = Common.LinearFit(seeds)
 
