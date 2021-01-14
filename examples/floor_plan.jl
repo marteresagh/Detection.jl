@@ -32,7 +32,7 @@ params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 
 hyperplanes = Detection.iterate_random_detection(params,debug = true)
 
-# hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
+hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
 
 V,EV = Common.DrawLines(hyperplanes,0.0)
 GL.VIEW([

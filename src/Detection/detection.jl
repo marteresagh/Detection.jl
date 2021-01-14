@@ -35,7 +35,8 @@ function iterate_random_detection(params::Initializer; debug = false)
 		found = false
 		while !found && f < params.failed
 			try
-				hyperplane, cluster, all_visited_verts = get_hyperplane_from_random_init_point(params)
+				hyperplane, cluster, all_visited_verts = get_hyperplane(params)
+				# hyperplane, cluster, all_visited_verts = get_hyperplane_from_random_init_point(params)
 				validity(hyperplane, params) # test of validity
 				found = true
 			catch y
@@ -75,31 +76,31 @@ function iterate_random_detection(params::Initializer; debug = false)
 
 	return hyperplanes
 end
-
-"""
-	get_hyperplane_from_random_init_point(params::Initializer)
-
-Detect an hyperplane starting from initial random point.
-"""
-function get_hyperplane_from_random_init_point(params::Initializer)
-
-	# 1. ricerca del seed
-	candidates = setdiff(params.current_inds,params.visited)
-	possible_seeds = params.PC.coordinates[:,candidates] 	# qui gli indici sono relativi ai candidati
-	index, hyperplane = seedpoint(possible_seeds, params)
-
-	# da qui in poi indici relativi ai punti correnti
-	R = findall(x->x==candidates[index], params.current_inds)
-
-	# 2. criterio di crescita
-	all_visited_verts = search_cluster(params.PC, R, hyperplane, params) #punti che non devono far parte dei mie seeds
-	listPoint = params.PC.coordinates[:,params.current_inds[R]]
-	listRGB = params.PC.rgbs[:,params.current_inds[R]]
-	hyperplane.inliers = PointCloud(listPoint,listRGB)
-
-	# gli indici tornano relativi ai punti totali
-	return hyperplane, params.current_inds[R], params.current_inds[all_visited_verts]
-end
+#
+# """
+# 	get_hyperplane_from_random_init_point(params::Initializer)
+#
+# Detect an hyperplane starting from initial random point.
+# """
+# function get_hyperplane_from_random_init_point(params::Initializer)
+#
+# 	# 1. ricerca del seed
+# 	candidates = setdiff(params.current_inds,params.visited)
+# 	possible_seeds = params.PC.coordinates[:,candidates] 	# qui gli indici sono relativi ai candidati
+# 	index, hyperplane = seedpoint(possible_seeds, params)
+#
+# 	# da qui in poi indici relativi ai punti correnti
+# 	R = findall(x->x==candidates[index], params.current_inds)
+#
+# 	# 2. criterio di crescita
+# 	all_visited_verts = search_cluster(params.PC, R, hyperplane, params) #punti che non devono far parte dei mie seeds
+# 	listPoint = params.PC.coordinates[:,params.current_inds[R]]
+# 	listRGB = params.PC.rgbs[:,params.current_inds[R]]
+# 	hyperplane.inliers = PointCloud(listPoint,listRGB)
+#
+# 	# gli indici tornano relativi ai punti totali
+# 	return hyperplane, params.current_inds[R], params.current_inds[all_visited_verts]
+# end
 
 """
 	search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplane, params::Initializer)

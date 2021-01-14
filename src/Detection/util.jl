@@ -22,8 +22,6 @@
 First seed.
 """
 # init_seed = findall(x->x == given_seed, params.current_inds)[1] # se dato
-# randindex = rand(1:size(points,2)) # se random
-
 function seedpoint(points::Lar.Points, params::Initializer; given_seed = rand(1:size(points,2))::Int64)
 
 	kdtree = Common.KDTree(points)
@@ -33,7 +31,7 @@ function seedpoint(points::Lar.Points, params::Initializer; given_seed = rand(1:
 
 	hyperplane = Hyperplane(direction,centroid)
 	min_index = Common.minresidual(seeds,hyperplane)
-	index = idxseeds[min_index]
+	seed = idxseeds[min_index]
 
 	return seed, hyperplane
 end
