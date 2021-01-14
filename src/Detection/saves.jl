@@ -1,4 +1,5 @@
 """
+	saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperplane,1},affine_matrix::Matrix, dirs::VectDirs)
 """
 function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperplane,1},affine_matrix::Matrix, dirs::VectDirs)
 	if !isempty(hyperplanes)

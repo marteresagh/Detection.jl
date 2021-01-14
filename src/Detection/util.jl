@@ -1,26 +1,39 @@
-"""
-Find first seed randomly.
-"""
-function seedpoint(points::Lar.Points, params::Initializer)
+# """
+# Find first seed randomly.
+# """
+# function seedpoint(points::Lar.Points, params::Initializer)
+#
+# 	randindex = rand(1:size(points,2))
+#
+# 	kdtree = Common.KDTree(points)
+# 	idxseeds = Common.neighborhood(kdtree,points,[randindex],Int64[],params.threshold,params.k)
+# 	seeds = points[:,idxseeds]
+# 	direction, centroid = Common.LinearFit(seeds)
+#
+# 	hyperplane = Hyperplane(direction,centroid)
+# 	min_index = Common.minresidual(seeds,hyperplane)
+# 	seed = idxseeds[min_index]
+#
+# 	return seed, hyperplane
+# end
+#
 
-	"""
-	Return index of point in points with minor residual.
-	"""
-	function minresidual(points::Lar.Points, hyperplane::Hyperplane)
-		res = Common.residual(hyperplane).( [c[:] for c in eachcol(points)])
-		return findmin(res)[2]
-	end
+"""
+First seed.
+"""
+# init_seed = findall(x->x == given_seed, params.current_inds)[1] # se dato
+# randindex = rand(1:size(points,2)) # se random
+
+function seedpoint(points::Lar.Points, params::Initializer; given_seed = rand(1:size(points,2))::Int64)
 
 	kdtree = Common.KDTree(points)
-	randindex = rand(1:size(points,2))
-
-	idxseeds = Common.neighborhood(kdtree,points,[randindex],Int64[],params.threshold,params.k)
+	idxseeds = Common.neighborhood(kdtree,points,[given_seed],Int64[],params.threshold,params.k)
 	seeds = points[:,idxseeds]
 	direction, centroid = Common.LinearFit(seeds)
 
 	hyperplane = Hyperplane(direction,centroid)
-	min_index = minresidual(seeds,hyperplane)
-	seed = idxseeds[min_index]
+	min_index = Common.minresidual(seeds,hyperplane)
+	index = idxseeds[min_index]
 
 	return seed, hyperplane
 end

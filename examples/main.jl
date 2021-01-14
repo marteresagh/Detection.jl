@@ -11,7 +11,7 @@ folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 filename = "TEST_MAIN"
 PC = FileManager.las2pointcloud(source)
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
-
+seeds = ""
 par = 0.07
 failed = 10
 N = 10

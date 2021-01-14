@@ -17,7 +17,7 @@ INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 
 # user - parameters
 par = 0.07
-failed = 1000
+failed = 100
 N = 10
 k = 30
 
