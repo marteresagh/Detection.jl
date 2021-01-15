@@ -9,7 +9,7 @@ module Detection
 
     # code
     include("Detection/detection.jl")
-    include("Detection/detection_seeds.jl")
+    include("Detection/cluster.jl")
     include("Detection/main.jl")
     include("Detection/util.jl")
     include("Detection/saves.jl")

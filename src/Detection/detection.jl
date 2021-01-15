@@ -1,7 +1,7 @@
 """
 	iterate_random_detection(params::Initializer; debug = false)
 
-Return all found hyperplanes.
+Return hyperplanes in point cloud.
 
 Algorithm description:
  - Search starts with initial parameters
@@ -36,7 +36,6 @@ function iterate_random_detection(params::Initializer; debug = false)
 		while !found && f < params.failed
 			try
 				hyperplane, cluster, all_visited_verts = get_hyperplane(params)
-				# hyperplane, cluster, all_visited_verts = get_hyperplane_from_random_init_point(params)
 				validity(hyperplane, params) # test of validity
 				found = true
 			catch y
@@ -77,115 +76,60 @@ function iterate_random_detection(params::Initializer; debug = false)
 	return hyperplanes
 end
 
-"""
-"""
-function get_hyperplane(params::Initializer; given_seed=nothing::Union{Nothing,Int64})
-
-	if isnothing(given_seed) # se non è dato
-		# 1. ricerca del seed random
-		candidates = setdiff(params.current_inds,params.visited)
-		possible_seeds = params.PC.coordinates[:,candidates] 	# qui gli indici sono relativi ai candidati
-		seed, hyperplane = seedpoint(possible_seeds, params)
-		# da qui in poi indici relativi ai punti correnti
-		R = findall(x->x==candidates[seed], params.current_inds)
-	else
-		# 1. ricerca del seed partendo da uno dato
-		points = params.PC.coordinates[:,params.current_inds]
-		init_seed = findall(x->x == given_seed, params.current_inds)[1]
-		seed, hyperplane = seedpoint(points, params, given_seed)
-		R = findall(x->x==params.current_inds[seed], params.current_inds)
-	end
-
-	# 2. criterio di crescita
-	all_visited_verts = search_cluster(params.PC, R, hyperplane, params) #punti che non devono far parte dei mie seeds
-	listPoint = params.PC.coordinates[:,params.current_inds[R]]
-	listRGB = params.PC.rgbs[:,params.current_inds[R]]
-	hyperplane.inliers = PointCloud(listPoint,listRGB)
-
-	# gli indici tornano relativi ai punti totali
-	return hyperplane, params.current_inds[R], params.current_inds[all_visited_verts]
-end
 
 """
-	search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplane, params::Initializer)
+	iterate_seeds_detection(params::Initializer, seeds::Array{Int64,1}; debug = false)
 
-Search of all points belonging to the cluster `R`.
+Return hyperplanes in point cloud.
+
+Algorithm description:
+ - Search starts with initial parameters and given seeds
+ - For seed in seeds detect hyperplane
 """
-function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplane, params::Initializer)
+function iterate_seeds_detection(params::Initializer, seeds::Array{Int64,1}; debug = false)
+	inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
 
-	points = params.PC.coordinates[:,params.current_inds]
-	normals = nothing
-	if PC.dimension == 3
-		normals = params.PC.normals[:,params.current_inds]
-	end
+	# 1. - Initialization
+	hyperplanes = Hyperplane[]
 
-	kdtree = Common.KDTree(points)
-	seeds = copy(R)
-	visitedverts = copy(R)
-	listPoint = nothing
+	hyperplane = nothing
+	cluster = nothing
+	all_visited_verts = nothing
 
-	while !isempty(seeds)
-		tmp = Int[] # new seeds
-		N = Common.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k)
-		union!(visitedverts,N)
+	i = 0 # number of hyperplane found
 
-		for i in N
-			p = points[:,i]
-			# metodo IN
-			# if plane -> check normals
-			if PC.dimension == 3
-				# change direction change surface
-				test_dist = Common.residual(hyperplane)(p) < params.par
-				test_normals = Common.angle_between_vectors(hyperplane.direction,normals[:,i]) <= pi/4
-				if test_dist && test_normals
-					push!(tmp,i)
-					push!(R,i)
-				end
-			else
-				if Common.residual(hyperplane)(p) < params.par
-					push!(tmp,i)
-					push!(R,i)
-				end
-			end
+	# 2. - Main loop
+	flushprintln("= Start search =")
+	for seed in seeds
+		found = false
+
+		if isready(inputBuffer) && take!(inputBuffer) == 'q'
+			break # break main loop
 		end
 
-		listPoint = points[:,R]
+		try
+			hyperplane, cluster, all_visited_verts = get_hyperplane(params,seed)
+			found = true
+		catch y
+		end
 
-		# metodo OUT
-		todel = optimize!(points,R,hyperplane,params.par)
-		seeds = setdiff(tmp,todel)
+		if found
+			i = i+1
+			flushprintln("$i shapes found of $(length(seeds))")
+			push!(hyperplanes,hyperplane)
+			union!(params.fitted,cluster)
+			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed
+		end
+
 	end
 
-	return visitedverts
-end
+	if debug # interrompe il task per la lettura da tastiera
+		try
+			Base.throwto(task, InterruptException())
+		catch y
+			flushprintln("interrotto")
+		end
+	end
 
-"""
-	optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
-
-
-"""
-function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
-	# mean and std
-	res = Common.residual(hyperplane).([points[:,i] for i in R])
-	mu = Statistics.mean(res)
-	rho = Statistics.std(res)
-
-	# remove points with large residue
-	filter = [ res[i] < mu for i in 1:length(res)  ]
-	tokeep = R[filter]
-
-	listPoint = points[:,tokeep]
-
-	# update fit parameters
-	direction, centroid = Common.LinearFit(listPoint)
-	hyperplane.direction = direction
-	hyperplane.centroid = centroid
-
-	# elimino i punti che sono troppo distanti.
-	res = Common.residual(hyperplane).([points[:,i] for i in R])
-	todel = [ res[i] > par/2 for i in 1:length(res) ]
-	to_del = R[todel]
-	setdiff!(R,to_del)
-
-	return to_del
+	return hyperplanes
 end

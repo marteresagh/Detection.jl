@@ -25,7 +25,7 @@ function iterate_random_detection(params::InitialParams)
         found = false
         while !found && f < params.failed
             try
-                hyperplane, cluster, all_visited_verts = get_hyperplane_from_random_init_point(params)
+                hyperplane, cluster, all_visited_verts = get_hyperplane(params)
                 validity(hyperplane, params) # test of validity
                 found = true
             catch y

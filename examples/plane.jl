@@ -27,7 +27,7 @@ outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 # process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 @time hyperplanes = Detection.iterate_random_detection(params;debug = true)
-# hyperplane,_,_ = Detection.get_hyperplane_from_random_init_point(params)
+# hyperplane,_,_ = Detection.get_hyperplane(params)
 centroid = Common.centroid(INPUT_PC.coordinates)
 V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
 
