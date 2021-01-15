@@ -16,7 +16,7 @@ PC = FileManager.las2pointcloud(fname)
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 
 # user - parameters
-par = 0.07
+par = 0.02
 failed = 100
 N = 10
 k = 30
@@ -30,15 +30,15 @@ outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 # process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 
-hyperplanes = Detection.iterate_random_detection(params,debug = true)
+@time hyperplanes,inliers_removed = Detection.iterate_random_detection(params,debug = true)
 
-hyperplanes,_,_ = Detection.get_hyperplane(params)
+# hyperplanes,_,_ = Detection.get_hyperplane(params)
 
 V,EV = Common.DrawLines(hyperplanes,0.0)
 GL.VIEW([
 
 			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[12]),
-		#	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]) ,
+			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,inliers_removed])'),GL.COLORS[2]) ,
   			GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),V),EV,GL.COLORS[1],1.0)
 		])
 

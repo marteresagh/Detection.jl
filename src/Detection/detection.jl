@@ -15,7 +15,7 @@ function iterate_random_detection(params::Initializer; debug = false)
 
 	# 1. - Initialization
 	hyperplanes = Hyperplane[]
-
+	inliers_removed = Int64[]
 	hyperplane = nothing
 	cluster = nothing
 	all_visited_verts = nothing
@@ -54,7 +54,9 @@ function iterate_random_detection(params::Initializer; debug = false)
 			end
 			push!(hyperplanes,hyperplane)
 			union!(params.fitted,cluster)
-			#remove_points!(params.current_inds,cluster)
+			# some_inliers = [cluster[rand(1:length(cluster))] for i in 1:length(cluster)/2]
+			# union!(inliers_removed,some_inliers)
+			# remove_points!(params.current_inds,some_inliers)
 			if params.PC.dimension==3
 				 remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
 			end
@@ -73,7 +75,7 @@ function iterate_random_detection(params::Initializer; debug = false)
 		end
 	end
 
-	return hyperplanes
+	return hyperplanes #,inliers_removed
 end
 
 
@@ -108,7 +110,7 @@ function iterate_seeds_detection(params::Initializer, seeds::Array{Int64,1}; deb
 		end
 
 		try
-			hyperplane, cluster, all_visited_verts = get_hyperplane(params; given_seed = seed)
+			hyperplane, cluster, _ = get_hyperplane(params; given_seed = seed)
 			found = true
 		catch y
 		end
@@ -118,7 +120,6 @@ function iterate_seeds_detection(params::Initializer, seeds::Array{Int64,1}; deb
 			flushprintln("$i shapes found of $(length(seeds))")
 			push!(hyperplanes,hyperplane)
 			union!(params.fitted,cluster)
-			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed
 		end
 
 	end

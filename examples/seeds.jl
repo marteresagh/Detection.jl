@@ -10,7 +10,7 @@ INPUT_PC = FileManager.source2pc(source,2)
 # user parameters
 par = 0.06
 failed = 100
-N = 1000
+N = 100
 k = 60
 
 # threshold estimation
@@ -28,7 +28,7 @@ params = Initializer(INPUT_PC, par, threshold, failed, N, k)
 
 # 2. Detection
 hyperplanes = Detection.iterate_seeds_detection(params,seeds; debug = true)
-hyperplane, cluster, all_visited_verts = Detection.get_hyperplane(params; given_seed = seeds[1])
+#hyperplane, cluster, all_visited_verts = Detection.get_hyperplane(params; given_seed = seeds[1])
 centroid = Common.centroid(INPUT_PC.coordinates)
 V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
 
