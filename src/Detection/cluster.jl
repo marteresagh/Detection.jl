@@ -31,7 +31,7 @@ function get_hyperplane(params::Initializer; given_seed=nothing::Union{Nothing,I
 		# 1. ricerca del seed partendo da uno dato
 		points = params.PC.coordinates[:,params.current_inds]
 		init_seed = findall(x->x == given_seed, params.current_inds)[1]
-		seed, hyperplane = seedpoint(points, params, given_seed)
+		seed, hyperplane = seedpoint(points, params; given_seed = init_seed)
 		R = findall(x->x==params.current_inds[seed], params.current_inds)
 	end
 

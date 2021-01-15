@@ -108,7 +108,7 @@ function iterate_seeds_detection(params::Initializer, seeds::Array{Int64,1}; deb
 		end
 
 		try
-			hyperplane, cluster, all_visited_verts = get_hyperplane(params,seed)
+			hyperplane, cluster, all_visited_verts = get_hyperplane(params; given_seed = seed)
 			found = true
 		catch y
 		end

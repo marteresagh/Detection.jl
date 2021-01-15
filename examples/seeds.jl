@@ -28,7 +28,7 @@ params = Initializer(INPUT_PC, par, threshold, failed, N, k)
 
 # 2. Detection
 hyperplanes = Detection.iterate_seeds_detection(params,seeds; debug = true)
-
+hyperplane, cluster, all_visited_verts = Detection.get_hyperplane(params; given_seed = seeds[1])
 centroid = Common.centroid(INPUT_PC.coordinates)
 V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
 
