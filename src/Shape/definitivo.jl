@@ -46,7 +46,7 @@ function graph_adjacency_clusters(V, EV, clusters)
 	graph = SimpleGraph(n_cluss)
 
 	for (k,v) in dict_clusters
-		M_1 = Common.K(EW[v])
+		M_1 = Common.K(EV[v])
 		∂_1 = M_1'
 		S1 = sum(∂_1,dims=2)
 		outers = [k for k=1:length(S1) if S1[k]==1]
@@ -54,7 +54,7 @@ function graph_adjacency_clusters(V, EV, clusters)
 
 		for n in N
 			for (kn,vn) in dict_clusters
-				if in(n,union(EW[vn]...))
+				if in(n,union(EV[vn]...))
 					if k!=kn
 						add_edge!(graph,k,kn)
 					end
@@ -82,7 +82,6 @@ function clusters(V, EV, subgraph, par)
 		try
 			R, linear_cluster = clustering_edge(V, EV, grph, vmap, par)
 			if valid(linear_cluster)
-				@show "found"
 				push!(linear_clusters, linear_cluster)
 				a = rem_vertices!(grph, R, keep_order=true);
 				vmap = vmap[a]

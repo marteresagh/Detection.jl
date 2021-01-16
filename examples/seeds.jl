@@ -2,7 +2,7 @@ using Common
 using FileManager
 using Detection
 using Visualization
-
+using AlphaStructures
 
 # alpha shape
 function get_boundary_alpha_shape(hyperplane::Hyperplane,plane::Plane)
@@ -31,12 +31,10 @@ function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::
 
 		input_model = get_boundary_alpha_shape(hyperplane,plane)
 
-		models = Detection.linearization(input_model...) #models = Detection.get_linerized_models(input_model)
+		model = Detection.linearization(input_model...) #models = Detection.get_linerized_models(input_model)
 
-		for model in models
-			vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(model[1],zeros(size(model[1],2))'))
-			out = push!(out, Lar.Struct([(vertices, model[2])]))
-		end
+		vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(model[1],zeros(size(model[1],2))'))
+		out = push!(out, Lar.Struct([(vertices, model[2])]))
 
 	end
 	out = Lar.Struct(out)
@@ -87,11 +85,11 @@ GL.VIEW([
 
 # Aggiungi parte nuovo codice di linearizzazione
 
-V,EV = boundary_shapes(hyperplanes, threshold)
+W,EW = boundary_shapes(hyperplanes, threshold)
 
 GL.VIEW([
-			Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+			#Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
 			#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates)'),GL.COLORS[12]),
 			#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates[:,outliers])'),GL.COLORS[2]) ,
-  			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),EV,GL.COLORS[1],0.8)
+  			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[2],0.8)
 		])
