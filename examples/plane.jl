@@ -5,13 +5,13 @@ using AlphaStructures
 using FileManager
 using LightGraphs
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/FUSION"
-INPUT_PC = FileManager.source2pc(source,-1)
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
+INPUT_PC = FileManager.source2pc(source,1)
 
 # user parameters
 par = 0.06
 failed = 100
-N = 1000
+N = 100
 k = 60
 
 # threshold estimation
@@ -52,40 +52,54 @@ GL.VIEW([  	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) 
 ])
 
 
+# seconda parte
 
-function get_boundary_shapes(filename::String, hyperplanes::Array{Hyperplane,1})
+# alpha shape
+function get_boundary_alpha_shape(hyperplane::Hyperplane,plane::Plane)
+	# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
+	points = hyperplane.inliers.coordinates
+	V = Common.apply_matrix(plane.matrix,points)[1:2,:]
 
-	io = open(filename,"w")
-	for i in 1:length(hyperplanes)
+	# 2. applica alpha shape con alpha = threshold
+	filtration = AlphaStructures.alphaFilter(V);
+	_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
 
-		hyperplane = hyperplanes[i]
-
-		# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
-		points = hyperplane.inliers.coordinates
-		plane = Plane(hyperplane.direction..., Lar.dot(hyperplane.direction,hyperplane.centroid))
-		T = Common.apply_matrix(Lar.inv(plane.matrix),points)[1:2,:]
-
-		# 2. applica alpha shape con alpha = threshold
-		filtration = AlphaStructures.alphaFilter(T);
-		_, _, FV = AlphaStructures.alphaSimplex(T, filtration, threshold)
-
-		# 3. estrai bordo
-		EV_boundary = Common.get_boundary_edges(T,FV)
-
-		# 4. salva i segmenti del bordo in 3D
-		T = Common.points_projection_on_plane(points, hyperplane)
-		for ev in EV_boundary
-			write(io, "$(T[1,ev[1]]) $(T[2,ev[1]]) $(T[3,ev[1]]) $(T[1,ev[2]]) $(T[2,ev[2]]) $(T[3,ev[2]])\n")
-		end
-
-		if i%10 == 0
-			Detection.flushprintln("$i planes processed")
-		end
-	end
-
-	close(io)
-	return FileManager.load_segment(filename) # V,EV
+	# 3. estrai bordo
+	EV_boundary = Common.get_boundary_edges(V,FV)
+	return Lar.simplifyCells(V,EV_boundary)
 end
 
-filename = "C:/Users/marte/Documents/GEOWEB/TEST/VECT_2D/EV_boundary_MURI_LOD1.txt"
-get_boundary_shapes(filename, hyperplanes)
+#main
+function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::Lar.LAR
+	out = Array{Lar.Struct,1}()
+	for i in 1:length(hyperplanes)
+
+		Detection.flushprintln("$i planes processed")
+
+		hyperplane = hyperplanes[i]
+		plane = Plane(hyperplane.direction, hyperplane.centroid)
+
+		input_model = get_boundary_alpha_shape(hyperplane,plane)
+
+		model = Detection.linearization(input_model...) #models = Detection.get_linerized_models(input_model)
+
+		vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(model[1],zeros(size(model[1],2))'))
+		out = push!(out, Lar.Struct([(vertices, model[2])]))
+
+	end
+	out = Lar.Struct(out)
+	V,EV = Lar.struct2lar(out)
+
+	# 5. salvo il modello come??
+
+	return V,EV
+end
+
+W,EW = boundary_shapes(hyperplanes, threshold)
+
+GL.VIEW([
+			#Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+			#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates)'),GL.COLORS[12]),
+			#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates[:,outliers])'),GL.COLORS[2]) ,
+  			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[2],0.8)
+		])

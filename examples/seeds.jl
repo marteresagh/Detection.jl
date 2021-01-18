@@ -83,7 +83,7 @@ GL.VIEW([
 		])
 
 
-# Aggiungi parte nuovo codice di linearizzazione
+# seconda parte
 
 W,EW = boundary_shapes(hyperplanes, threshold)
 

@@ -14,8 +14,7 @@
 # end
 
 ## INPUT = V,EV del bordo
-using LightGraphs
-using DataStructures
+
 
 function linearization(V::Lar.Points,EV::Lar.Cells)
 	out = Array{Lar.Struct,1}()
