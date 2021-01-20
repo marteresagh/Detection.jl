@@ -76,8 +76,8 @@ INPUT_PC = FileManager.source2pc(source,2)
 # user parameters
 par = 0.04
 failed = 100
-N = 100
-k = 30
+N = 10
+k = 80
 
 # threshold estimation
 threshold = Common.estimate_threshold(INPUT_PC,k)
@@ -117,6 +117,14 @@ W,EW = save_alpha_shape_model(hyperplanes, threshold, "CASALETTO_ashapes")
 # W,EW = boundary_shapes(hyperplanes, threshold)
 
 GL.VIEW([
-			Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
-			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.)
-		])
+		#Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+		GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.)
+])
+
+
+
+
+
+for i in 1:length(hyperplanes)
+	FileManager.save_hyperplane("HYPERPLANE/CASALETTO_$i.txt", hyperplanes[i])
+end
