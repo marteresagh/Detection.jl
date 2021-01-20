@@ -41,7 +41,7 @@ GL.VIEW([
 
 # process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,union(outliers,corner))
-hyperplanes = Detection.iterate_random_detection(params,debug = true)
+hyperplanes = Detection.iterate_detection(params,debug = true)
 
 # hyperplane,_,_ = Detection.get_hyperplane(params)
 

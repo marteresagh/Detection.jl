@@ -82,14 +82,15 @@ GL.VIEW([
   			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8)
 		])
 
+GL.VIEW([
+			Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+			])
 
 # seconda parte
 
 W,EW = boundary_shapes(hyperplanes, threshold)
 
 GL.VIEW([
-			#Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
-			#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates)'),GL.COLORS[12]),
-			#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates[:,outliers])'),GL.COLORS[2]) ,
-  			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[2],0.8)
+			Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.)
 		])

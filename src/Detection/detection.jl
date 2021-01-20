@@ -1,5 +1,5 @@
 """
-	iterate_random_detection(params::Initializer; debug = false)
+	iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1}, debug = false)
 
 Return hyperplanes in point cloud.
 
@@ -10,12 +10,11 @@ Algorithm description:
  - If not found, repeats the detection
  - Search terminates if the detection failed a number of times in a row
 """
-function iterate_random_detection(params::Initializer; debug = false)
+function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},  debug = false)
 	inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
 
 	# 1. - Initialization
 	hyperplanes = Hyperplane[]
-	inliers_removed = Int64[]
 	hyperplane = nothing
 	cluster = nothing
 	all_visited_verts = nothing
@@ -25,6 +24,30 @@ function iterate_random_detection(params::Initializer; debug = false)
 
 	# 2. - Main loop
 	flushprintln("= Start search =")
+
+	for seed in seeds
+		found = false
+		try
+			hyperplane, cluster, all_visited_verts = get_hyperplane(params; given_seed = seed)
+			found = true
+		catch y
+
+		end
+
+		if found
+			i = i+1
+			flushprintln("$i shapes found of $(length(seeds))")
+			push!(hyperplanes,hyperplane)
+			union!(params.fitted,cluster)
+
+			if params.PC.dimension==3
+				 remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
+			end
+
+			union!(params.visited,all_visited_verts)
+		end
+	end
+
 	search = true
 	while search
 
@@ -54,9 +77,6 @@ function iterate_random_detection(params::Initializer; debug = false)
 			end
 			push!(hyperplanes,hyperplane)
 			union!(params.fitted,cluster)
-			# some_inliers = [cluster[rand(1:length(cluster))] for i in 1:length(cluster)/2]
-			# union!(inliers_removed,some_inliers)
-			# remove_points!(params.current_inds,some_inliers)
 			if params.PC.dimension==3
 				 remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
 			end
@@ -71,11 +91,11 @@ function iterate_random_detection(params::Initializer; debug = false)
 		try
 			Base.throwto(task, InterruptException())
 		catch y
-			flushprintln("interrotto")
+			flushprintln("STOPPED")
 		end
 	end
 
-	return hyperplanes #,inliers_removed
+	return hyperplanes
 end
 
 

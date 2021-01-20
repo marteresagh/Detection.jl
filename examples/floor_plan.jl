@@ -30,7 +30,7 @@ outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 # process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 
-@time hyperplanes = Detection.iterate_random_detection(params,debug = true)
+@time hyperplanes = Detection.iterate_detection(params,debug = true)
 
 # hyperplanes,_,_ = Detection.get_hyperplane(params)
 

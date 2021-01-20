@@ -32,6 +32,7 @@ function pc2vectorize(
 	flushprintln("=========== INIT =============")
 	# output directory
 	dirs = VectDirs(folder, project_name)
+	seeds = Int64[]
 
 	if lines
 		INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
@@ -41,6 +42,7 @@ function pc2vectorize(
 			given_seeds_2D = Common.apply_matrix(affine_matrix,given_seeds)[1:2,:]
 			seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds_2D)])
 		end
+
 	else
 		INPUT_PC = PC
 		if !isnothing(masterseeds) # if seeds are provided
@@ -62,27 +64,20 @@ function pc2vectorize(
 		INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
 	end
 
-	if isnothing(masterseeds) # if seeds are not provided
-		# 1. Initialization
-		flushprintln("= Remove points from possible seeds =")
-		flushprintln("Search of possible outliers: ")
-		outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
-		flushprintln("$(length(outliers)) outliers")
+	# 1. Initialization
+	flushprintln("= Remove points from possible seeds =")
+	flushprintln("Search of possible outliers: ")
+	outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
+	flushprintln("$(length(outliers)) outliers")
 
-		# flushprintln("Search of points with high curvature")
-		# corners = Detection.corners_detection(INPUT_PC, par, threshold)
-		# flushprintln("$(length(corners)) points on corners")
+	# flushprintln("Search of points with high curvature")
+	# corners = Detection.corners_detection(INPUT_PC, par, threshold)
+	# flushprintln("$(length(corners)) points on corners")
 
-		params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
-		# 2. Detection
-		hyperplanes = Detection.iterate_random_detection(params)
+	params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
 
-	else # if seeds are provided
-
-		params = Initializer(INPUT_PC, par, threshold, failed, N, k)
-		# 2. Detection
-		hyperplanes = Detection.iterate_seeds_detection(params,seeds)
-	end
+	# 2. Detection
+	hyperplanes = Detection.iterate_detection(params; seeds = seeds)
 
 	# 3. Saves
 	if lines

@@ -81,11 +81,8 @@ function main()
 	Detection.flushprintln("Output folder  =>  $output_folder")
 	Detection.flushprintln("Project name  =>  $project_name")
 	Detection.flushprintln("Parameter  =>  $par")
-	if !isnothing(masterseeds)
-		Detection.flushprintln("Seeds =>  $(args["masterseeds"])")
-	else
-		Detection.flushprintln("N. of failed  =>  $failed")
-	end
+	Detection.flushprintln("Seeds =>  $(args["masterseeds"])")
+	Detection.flushprintln("N. of failed  =>  $failed")
 	Detection.flushprintln("N. of inliers  =>  $N")
 	Detection.flushprintln("N. of k-nn  =>  $k")
 	Detection.flushprintln("Affine matrix =>  $affine_matrix")

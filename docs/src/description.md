@@ -18,7 +18,7 @@ Features of algorithm:
 
 ## Pseudocode
 ```
-function iterate_random_detection(params::Initializer)
+function iterate_detection(params::Initializer)
     hyperplanes = Hyperplane[]
     f = 0
     search = true
