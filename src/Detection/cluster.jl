@@ -123,6 +123,6 @@ function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane
 	todel = [ res[i] > par/2 for i in 1:length(res) ]
 	to_del = R[todel]
 	setdiff!(R,to_del)
-
+	# to_del = copy(R)
 	return to_del
 end
