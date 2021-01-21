@@ -4,11 +4,11 @@ using Detection
 using Visualization
 using AlphaStructures
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CHIESA_COLOMBELLA"
-INPUT_PC = FileManager.source2pc(source,-1)
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
+INPUT_PC = FileManager.source2pc(source,1)
 
 # user parameters
-par = 0.07
+par = 0.04
 failed = 100
 N = 100
 k = 80
@@ -26,6 +26,7 @@ masterseeds = "C:/Users/marte/Documents/GEOWEB/wrapper_file/JSON/seeds_COLOMBELL
 given_seeds = FileManager.load_points(masterseeds)
 seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 
+seeds = Int64[]
 # outliers
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 
@@ -33,7 +34,6 @@ outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 
 # 2. Detection
-#seeds = Int64[]
 hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)
 #hyperplane, cluster, all_visited_verts = Detection.get_hyperplane(params; given_seed = seeds[1])
 centroid = Common.centroid(INPUT_PC.coordinates)
