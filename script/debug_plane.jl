@@ -111,15 +111,14 @@ function main()
 	Detection.flushprintln("Source  =>  $source")
 	Detection.flushprintln("Output folder  =>  $output_folder")
 	Detection.flushprintln("Project name  =>  $project_name")
-	Detection.flushprintln("Threshold =>  $threshold")
 	Detection.flushprintln("Parameter  =>  $par")
+	Detection.flushprintln("Seeds =>  $(args["masterseeds"])")
 	Detection.flushprintln("N. of failed  =>  $failed")
-	Detection.flushprintln("N. of points on line  =>  $N")
+	Detection.flushprintln("N. of inliers  =>  $N")
 	Detection.flushprintln("N. of k-nn  =>  $k")
 
+
 	# detection
-	Detection.flushprintln(" ")
-	Detection.flushprintln("=== Planes detection ===")
 
 	hyperplanes, params, dirs = Detection.pc2plane(output_folder, project_name, PC, par, failed, N, k; masterseeds = masterseeds)
 

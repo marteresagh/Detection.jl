@@ -51,38 +51,43 @@ function parse_commandline()
 end
 
 
-function get_boundary_shapes(filename::String, hyperplanes::Array{Hyperplane,1})
 
-	io = open(filename,"w")
+# alpha shape
+function save_alpha_shape_model(hyperplanes::Array{Hyperplane,1}, name_proj::String)
+	out = Array{Lar.Struct,1}()
 	for i in 1:length(hyperplanes)
 
+		Detection.flushprintln("$i planes processed")
+
 		hyperplane = hyperplanes[i]
+		plane = Plane(hyperplane.direction, hyperplane.centroid)
 
-		# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
-		points = hyperplane.inliers.coordinates
-		plane = Plane(hyperplane.direction..., Lar.dot(hyperplane.direction,hyperplane.centroid))
-		T = Common.apply_matrix(Lar.inv(plane.matrix),points)[1:2,:]
+		model = get_boundary_alpha_shape(hyperplane,plane)
 
-		# 2. applica alpha shape con alpha = threshold
-		filtration = AlphaStructures.alphaFilter(T);
-		_, _, FV = AlphaStructures.alphaSimplex(T, filtration, threshold)
+		vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(model[1],zeros(size(model[1],2))'))
+		out = push!(out, Lar.Struct([(vertices, model[2])]))
 
-		# 3. estrai bordo
-		EV_boundary = Common.get_boundary_edges(T,FV)
-
-		# 4. salva i segmenti del bordo in 3D
-		T = Common.points_projection_on_plane(points, hyperplane)
-		for ev in EV_boundary
-			write(io, "$(T[1,ev[1]]) $(T[2,ev[1]]) $(T[3,ev[1]]) $(T[1,ev[2]]) $(T[2,ev[2]]) $(T[3,ev[2]])\n")
-		end
-
-		if i%10 == 0
-			Detection.flushprintln("$i planes processed")
-		end
 	end
+	out = Lar.Struct(out)
+	V,EV = Lar.struct2lar(out)
+	FileManager.save_points_txt(name_proj*"_points.txt", V)
+	FileManager.save_cells_txt(name_proj*"_edges.txt", EV)
+	return V,EV
+end
 
-	close(io)
-	return FileManager.load_segment(filename) # V,EV
+function get_boundary_alpha_shape(hyperplane::Hyperplane, plane::Plane)
+	# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
+	points = hyperplane.inliers.coordinates
+	V = Common.apply_matrix(plane.matrix,points)[1:2,:]
+
+	# 2. applica alpha shape con alpha = threshold
+	filtration = AlphaStructures.alphaFilter(V);
+	threshold = Common.estimate_threshold(hyperplane.inliers,10)
+	_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
+
+	# 3. estrai bordo
+	EV_boundary = Common.get_boundary_edges(V,FV)
+	return Lar.simplifyCells(V,EV_boundary)
 end
 
 
@@ -106,19 +111,16 @@ function main()
 	Detection.flushprintln("Source  =>  $source")
 	Detection.flushprintln("Output folder  =>  $output_folder")
 	Detection.flushprintln("Project name  =>  $project_name")
-	Detection.flushprintln("Threshold =>  $threshold")
 	Detection.flushprintln("Parameter  =>  $par")
+	Detection.flushprintln("Seeds =>  $(args["masterseeds"])")
 	Detection.flushprintln("N. of failed  =>  $failed")
-	Detection.flushprintln("N. of points on line  =>  $N")
+	Detection.flushprintln("N. of inliers  =>  $N")
 	Detection.flushprintln("N. of k-nn  =>  $k")
-	Detection.flushprintln("Affine matrix =>  $affine_matrix")
+
 
 	# detection
-	Detection.flushprintln(" ")
-	Detection.flushprintln("=== Planes detection ===")
 
-	hyperplanes, params, _ = Detection.pc2plane(output_folder, project_name, PC, par, failed, N, k, affine_matrix; masterseeds = masterseeds, lines = false)
-
+	hyperplanes, params, dirs = Detection.pc2plane(output_folder, project_name, PC, par, failed, N, k; masterseeds = masterseeds)
 
 
 end
