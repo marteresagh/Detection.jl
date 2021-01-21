@@ -127,7 +127,6 @@ GL.VIEW([
 ])
 
 
-
 for i in 1:length(hyperplanes)
 	FileManager.save_hyperplane("HYPERPLANE/CHIESA_COLOMBELLA_$i.txt", hyperplanes[i])
 end
