@@ -51,3 +51,30 @@ struct VectDirs
 		new(output_folder,POINTCLOUDS,FULL,PARTITIONS,DXF,RAW)
 	end
 end
+
+
+
+"""
+
+"""
+struct PlaneDirs
+	output_folder::String
+	PLANE::String
+	A_SHAPES::String
+	LINES::String
+
+	function PlaneDirs(folder::String, project_name::String)
+		output_folder = FileManager.mkdir_project(folder, project_name)
+
+		PLANE = joinpath(output_folder,"PLANE")
+		FileManager.mkdir_if(PLANE)
+
+		A_SHAPES =  joinpath(output_folder,"A_SHAPES")
+		FileManager.mkdir_if(A_SHAPES)
+
+		LINES = joinpath(output_folder,"LINES")
+		FileManager.mkdir_if(LINES)
+
+		new(output_folder,PLANE,A_SHAPES,LINES)
+	end
+end

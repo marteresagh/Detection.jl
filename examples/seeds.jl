@@ -69,52 +69,60 @@ function boundary_shapes(hyperplanes::Array{Hyperplane,1}, threshold::Float64)::
 end
 
 
-masterseeds = "C:/Users/marte/Documents/GEOWEB/wrapper_file/JSON/seeds_CASALETTO.txt"
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASALETTO"
-INPUT_PC = FileManager.source2pc(source,2)
+
+
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CHIESA_COLOMBELLA"
+INPUT_PC = FileManager.source2pc(source,-1)
 
 # user parameters
-par = 0.04
+par = 0.07
 failed = 100
-N = 10
+N = 100
 k = 80
 
 # threshold estimation
 threshold = Common.estimate_threshold(INPUT_PC,k)
+#threshold = 3.0
 
 # normals
 normals = Common.compute_normals(INPUT_PC.coordinates, threshold, k)
 INPUT_PC.normals = normals
 
 # seeds indices
+masterseeds = "C:/Users/marte/Documents/GEOWEB/wrapper_file/JSON/seeds_COLOMBELLA.txt"
 given_seeds = FileManager.load_points(masterseeds)
 seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 
-params = Initializer(INPUT_PC, par, threshold, failed, N, k)
+# outliers
+outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
+
+# process
+params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 
 # 2. Detection
+#seeds = Int64[]
 hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)
 #hyperplane, cluster, all_visited_verts = Detection.get_hyperplane(params; given_seed = seeds[1])
 centroid = Common.centroid(INPUT_PC.coordinates)
 V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
 
 GL.VIEW([
-			Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
-			#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates)'),GL.COLORS[12]),
-			#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates[:,outliers])'),GL.COLORS[2]) ,
-  			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8)
-		])
+	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates)'),GL.COLORS[12]),
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates[:,outliers])'),GL.COLORS[2]) ,
+	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8)
+])
 
 GL.VIEW([
-			Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
-			])
+	Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+])
 
 # seconda parte
 # Alpha shape model
 
-W,EW = save_alpha_shape_model(hyperplanes, threshold, "CASALETTO_ashapes")
+W,EW = save_alpha_shape_model(hyperplanes, threshold, "CHIESA_COLOMBELLA_ashapes")
 
-# W,EW = boundary_shapes(hyperplanes, threshold)
+W,EW = boundary_shapes(hyperplanes, threshold)
 
 GL.VIEW([
 		#Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
@@ -123,8 +131,6 @@ GL.VIEW([
 
 
 
-
-
 for i in 1:length(hyperplanes)
-	FileManager.save_hyperplane("HYPERPLANE/CASALETTO_$i.txt", hyperplanes[i])
+	FileManager.save_hyperplane("HYPERPLANE/CHIESA_COLOMBELLA_$i.txt", hyperplanes[i])
 end

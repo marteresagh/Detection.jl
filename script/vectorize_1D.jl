@@ -43,11 +43,8 @@ function parse_commandline()
 		arg_type = String
 		required = true
 	"--masterseeds","-s"
-
-	# "--thickness"
-	# 	help = "Sections thickness"
-	# 	arg_type = Float64
-	# 	required = true
+		help = "A text file with seeds list"
+		arg_type = String
 	end
 
 	return parse_args(s)
@@ -66,7 +63,6 @@ function main()
 	lod = args["lod"]
 	plane = args["plane"]
 	masterseeds = args["masterseeds"]
-	#thickness = args["thickness"]
 
 	# plane description
 	b = tryparse.(Float64,split(plane, " "))
@@ -88,7 +84,7 @@ function main()
 	Detection.flushprintln("Affine matrix =>  $affine_matrix")
 
 
-	Detection.pc2vectorize(output_folder, project_name, PC, par, failed, N, k, affine_matrix; masterseeds = masterseeds )
+	Detection.pc2lines(output_folder, project_name, PC, par, failed, N, k, affine_matrix; masterseeds = masterseeds)
 end
 
 @time main()

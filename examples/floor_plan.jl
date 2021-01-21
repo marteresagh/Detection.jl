@@ -30,7 +30,12 @@ outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 # process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 
-@time hyperplanes = Detection.iterate_detection(params,debug = true)
+masterseeds = "C:/Users/marte/Documents/GEOWEB/wrapper_file/JSON/seeds_sezione650.txt"
+given_seeds = FileManager.load_points(masterseeds)
+seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
+# seeds = Int64[]
+
+@time hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)
 
 # hyperplanes,_,_ = Detection.get_hyperplane(params)
 
