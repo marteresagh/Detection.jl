@@ -53,7 +53,7 @@ end
 
 
 # alpha shape
-function save_alpha_shape_model(hyperplanes::Array{Hyperplane,1}, name_proj::String)
+function save_alpha_shape_model(hyperplanes::Array{Hyperplane,1})
 	out = Array{Lar.Struct,1}()
 	for i in 1:length(hyperplanes)
 
@@ -70,8 +70,8 @@ function save_alpha_shape_model(hyperplanes::Array{Hyperplane,1}, name_proj::Str
 	end
 	out = Lar.Struct(out)
 	V,EV = Lar.struct2lar(out)
-	FileManager.save_points_txt(name_proj*"_points.txt", V)
-	FileManager.save_cells_txt(name_proj*"_edges.txt", EV)
+	FileManager.save_points_txt("a_shapes_points.txt", V)
+	FileManager.save_cells_txt("a_shapes_edges.txt", EV)
 	return V,EV
 end
 
@@ -82,7 +82,7 @@ function get_boundary_alpha_shape(hyperplane::Hyperplane, plane::Plane)
 
 	# 2. applica alpha shape con alpha = threshold
 	filtration = AlphaStructures.alphaFilter(V);
-	threshold = Common.estimate_threshold(hyperplane.inliers,10)
+	threshold = Common.estimate_threshold(hyperplane.inliers,5)
 	_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
 
 	# 3. estrai bordo
@@ -122,6 +122,11 @@ function main()
 
 	hyperplanes, params, dirs = Detection.pc2plane(output_folder, project_name, PC, par, failed, N, k; masterseeds = masterseeds)
 
+	for i in 1:length(hyperplanes)
+		FileManager.save_hyperplane(joinpath(dirs.PLANE,"plane_$i.txt"), hyperplanes[i])
+	end
+
+	W,EW = save_alpha_shape_model(hyperplanes, joinpath(dirs.A_SHAPES,"a_shapes"))
 
 end
 

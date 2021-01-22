@@ -37,7 +37,7 @@ function parse_commandline()
 	"--k"
 		help = "Number of neighbors"
 		arg_type = Int64
-		default = 10
+		default = 30
 	"--plane"
 		help = "a, b, c, d parameters described the plane"
 		arg_type = String

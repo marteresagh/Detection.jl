@@ -82,7 +82,7 @@ function get_boundary_alpha_shape(hyperplane::Hyperplane, plane::Plane)
 
 	# 2. applica alpha shape con alpha = threshold
 	filtration = AlphaStructures.alphaFilter(V);
-	threshold = Common.estimate_threshold(hyperplane.inliers,5)
+	threshold = Common.estimate_threshold(hyperplane.inliers,10)
 	_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
 
 	# 3. estrai bordo
