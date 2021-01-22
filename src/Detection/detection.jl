@@ -77,9 +77,11 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 			end
 			push!(hyperplanes,hyperplane)
 			union!(params.fitted,cluster)
+
 			if params.PC.dimension==3
 				 remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
 			end
+
 			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed
 		else
 			search = false

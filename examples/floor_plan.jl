@@ -33,7 +33,7 @@ params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 masterseeds = "C:/Users/marte/Documents/GEOWEB/wrapper_file/JSON/seeds_sezione650.txt"
 given_seeds = FileManager.load_points(masterseeds)
 seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
-# seeds = Int64[]
+seeds = Int64[]
 
 @time hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)
 
@@ -41,16 +41,19 @@ seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 
 V,EV = Common.DrawLines(hyperplanes,0.0)
 GL.VIEW([
-			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[12]),
-			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,params.fitted])'),GL.COLORS[2]),
-			GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),V),EV,GL.COLORS[1],1.0)
-		])
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[12]),
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,params.fitted])'),GL.COLORS[2]),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),V),EV,GL.COLORS[1],1.0)
+])
 
 
-GL.VIEW([	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[2]),
-			Visualization.mesh_lines(hyperplanes)...])
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[2]),
+	Visualization.mesh_lines(hyperplanes)...
+])
 
 
-GL.VIEW([  	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) ,
-  			GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]),
-		])
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) ,
+	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]),
+])

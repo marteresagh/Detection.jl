@@ -46,7 +46,7 @@ end
 
 #############################################
 
-dirs = Detection.PlaneDirs( "C:/Users/marte/Documents/GEOWEB/TEST","PLANE_CASALETTO")
+dirs = Detection.PlaneDirs( "C:/Users/marte/Documents/GEOWEB/TEST","PLANE_CONTEA")
 
 hyperplanes = Hyperplane[]
 for (root, dirs, files) in walkdir(dirs.PLANE)
@@ -73,5 +73,5 @@ EW = FileManager.load_cells(joinpath(dirs.A_SHAPES,"a_shapes_edges.txt"))
 GL.VIEW([
 	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[2]),
 	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.0),
-	# Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+	#Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
 ])
