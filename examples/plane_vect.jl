@@ -46,7 +46,7 @@ end
 
 #############################################
 
-dirs = Detection.PlaneDirs( "C:/Users/marte/Documents/GEOWEB/TEST","PLANE_CONTEA")
+dirs = Detection.PlaneDirs( "C:/Users/marte/Documents/GEOWEB/TEST","PLANE_CASALETTO")
 
 hyperplanes = Hyperplane[]
 for (root, dirs, files) in walkdir(dirs.PLANE)

@@ -120,7 +120,7 @@ function pc2plane(
 	end
 
 	# threashold estimation
-	threshold = Common.estimate_threshold(INPUT_PC,5)
+	threshold = Common.estimate_threshold(INPUT_PC,k)
 	flushprintln("Compute threshold: $threshold")
 
 	# normals

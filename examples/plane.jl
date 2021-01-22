@@ -4,17 +4,17 @@ using Detection
 using Visualization
 using AlphaStructures
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
-INPUT_PC = FileManager.source2pc(source,1)
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASALETTO"
+INPUT_PC = FileManager.source2pc(source,3)
 
 # user parameters
 par = 0.04
 failed = 100
 N = 100
-k = 80
+k = 30
 
 # threshold estimation
-threshold = Common.estimate_threshold(INPUT_PC,k)
+threshold = Common.estimate_threshold(INPUT_PC,5)
 #threshold = 3.0
 
 # normals
