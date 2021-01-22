@@ -4,6 +4,7 @@ using Common
 using AlphaStructures
 using FileManager
 
+NAME_PROJ = "PLANE_CHIESA"
 
 ####################
 
@@ -32,6 +33,7 @@ end
 function get_boundary_alpha_shape(hyperplane::Hyperplane, plane::Plane)
 	# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
 	points = hyperplane.inliers.coordinates
+	@show points
 	V = Common.apply_matrix(plane.matrix,points)[1:2,:]
 
 	# 2. applica alpha shape con alpha = threshold
@@ -46,7 +48,7 @@ end
 
 #############################################
 
-dirs = Detection.PlaneDirs( "C:/Users/marte/Documents/GEOWEB/TEST","PLANE_CASALETTO")
+dirs = Detection.PlaneDirs( "C:/Users/marte/Documents/GEOWEB/TEST",NAME_PROJ)
 
 hyperplanes = Hyperplane[]
 for (root, dirs, files) in walkdir(dirs.PLANE)
