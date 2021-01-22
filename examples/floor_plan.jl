@@ -22,7 +22,7 @@ N = 10
 k = 30
 
 # threshold estimation
-threshold = Common.estimate_threshold(INPUT_PC,k)
+threshold = Common.estimate_threshold(INPUT_PC,2*k)
 
 # outliers
 outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)

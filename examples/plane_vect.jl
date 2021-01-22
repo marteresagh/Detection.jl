@@ -4,7 +4,7 @@ using Common
 using AlphaStructures
 using FileManager
 
-NAME_PROJ = "PLANE_CHIESA"
+NAME_PROJ = "CASALETTO_LOD3"
 
 ####################
 
@@ -33,12 +33,11 @@ end
 function get_boundary_alpha_shape(hyperplane::Hyperplane, plane::Plane)
 	# 1. applica matrice di rotazione agli inliers ed estrai i punti 2D
 	points = hyperplane.inliers.coordinates
-	@show points
 	V = Common.apply_matrix(plane.matrix,points)[1:2,:]
-
+	@show size(V)
 	# 2. applica alpha shape con alpha = threshold
 	filtration = AlphaStructures.alphaFilter(V);
-	threshold = Common.estimate_threshold(hyperplane.inliers,5)
+	threshold = Common.estimate_threshold(V,10)
 	_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
 
 	# 3. estrai bordo
@@ -69,11 +68,12 @@ GL.VIEW([
 ])
 
 W,EW = save_alpha_shape_model(hyperplanes, joinpath(dirs.A_SHAPES,"a_shapes"))
-W = FileManager.load_points(joinpath(dirs.A_SHAPES,"a_shapes_points.txt"))
-EW = FileManager.load_cells(joinpath(dirs.A_SHAPES,"a_shapes_edges.txt"))
+W2 = FileManager.load_points(joinpath(dirs.A_SHAPES,"a_shapes_points.txt"))
+EW2 = FileManager.load_cells(joinpath(dirs.A_SHAPES,"a_shapes_edges.txt"))
 
 GL.VIEW([
 	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[2]),
 	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.0),
+	#GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W2),EW2,GL.COLORS[2],1.0),
 	#Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
 ])

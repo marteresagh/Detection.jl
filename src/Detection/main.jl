@@ -46,7 +46,7 @@ function pc2lines(
 	end
 
 	# threashold estimation
-	threshold = Common.estimate_threshold(INPUT_PC,k)
+	threshold = Common.estimate_threshold(INPUT_PC,2*k)
 	flushprintln("Compute threshold: $threshold")
 
 	flushprintln("= Remove points from possible seeds =")
