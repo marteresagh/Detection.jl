@@ -12,11 +12,13 @@ fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
 fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
 fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/casaletto_planimetria.las"
 
+fname = "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS/SEZIONE_z=10_5.las"
+
 PC = FileManager.las2pointcloud(fname)
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 
 # user - parameters
-par = 0.07
+par = 0.05
 failed = 100
 N = 10
 k = 30
