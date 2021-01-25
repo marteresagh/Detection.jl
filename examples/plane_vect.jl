@@ -4,9 +4,12 @@ using Common
 using AlphaStructures
 using FileManager
 
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/NAVVIS"
+INPUT_PC = FileManager.source2pc(source,4)
+
 NAME_PROJ = "PLANE_NAVVIS"
 
-####################
+#############################################
 
 function save_alpha_shape_model(hyperplanes::Array{Hyperplane,1}, name_proj::String)
 	out = Array{Lar.Struct,1}()
@@ -56,40 +59,12 @@ for (root, dirs, files) in walkdir(dirs.PLANE)
 	end
 end
 
-function DrawPlanes(plane::Hyperplane, AABB::Union{AABB,Nothing})
-	DrawPlanes([plane], AABB)
-end
 
-function DrawPlanes(planes::Array{Hyperplane,1}, AABB::Union{AABB,Nothing})
-	out = Array{Lar.Struct,1}()
-	bb = deepcopy(AABB)
-	for obj in planes
-		plane = Plane(obj.direction,obj.centroid)
-		points = obj.inliers.coordinates
-		if isnothing(AABB)
-			bb = Common.boundingbox(points)
-		end
-		points_flat = Common.apply_matrix(plane.matrix,points)
-		extrema_x = extrema(points_flat[1,:])
-		extrema_y = extrema(points_flat[2,:])
-		extrema_z = extrema(points_flat[3,:])
-		Vol = Volume([extrema_x[2]-extrema_x[1],extrema_y[2]-extrema_y[1],extrema_z[2]-extrema_z[1]],obj.centroid,Common.matrix2euler(Lar.inv(plane.matrix)))
-		#triangulate vertex projected in plane XY
-		V,EV,FV = getmodel(Vol)
-		# FV = Common.delaunay_triangulation(V[1:2,:])
-		cell = (V,sort.(FV))
-		push!(out, Lar.Struct([cell]))
-	end
-	out = Lar.Struct( out )
-	V,FV = Lar.struct2lar(out)
-	return V,FV
-end
-
-
-V,FV = DrawPlanes(hyperplanes, nothing)
+V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
 centroid = Common.centroid(V)
 
 GL.VIEW([
+	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
 	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8)
 ])
 
@@ -97,13 +72,13 @@ GL.VIEW([
 	Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
 ])
 
-W,EW = save_alpha_shape_model(hyperplanes, "")
+# W,EW = save_alpha_shape_model(hyperplanes, "")
 W2 = FileManager.load_points(joinpath(dirs.A_SHAPES,"a_shapes_points.txt"))
 EW2 = FileManager.load_cells(joinpath(dirs.A_SHAPES,"a_shapes_edges.txt"))
 
 GL.VIEW([
 	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(W)...),W)'),GL.COLORS[2]),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.0),
-	# GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W2),EW2,GL.COLORS[2],1.0),
+	# GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.0),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W2),EW2,GL.COLORS[2],1.0),
 	#Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
 ])
