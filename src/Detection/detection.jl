@@ -29,7 +29,6 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 		found = false
 		try
 			hyperplane, cluster, all_visited_verts = get_hyperplane(params; given_seed = seed)
-			union!(params.visited,all_visited_verts)
 			found = true
 		catch y
 
@@ -60,6 +59,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 		while !found && f < params.failed
 			try
 				hyperplane, cluster, all_visited_verts = get_hyperplane(params)
+				union!(params.visited,all_visited_verts)
 				validity(hyperplane, params) # test of validity
 				found = true
 			catch y
