@@ -39,7 +39,7 @@ function parse_commandline()
 		arg_type = Int64
 		default = 30
 	"--plane"
-		help = "a, b, c, d parameters described the plane"
+		help = "a, b, c, d parameters of plane: ax + by + cz = d"
 		arg_type = String
 	"--masterseeds","-s"
 		help = "A text file with seeds list"
