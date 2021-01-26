@@ -41,7 +41,6 @@ function parse_commandline()
 	"--plane"
 		help = "a, b, c, d parameters described the plane"
 		arg_type = String
-		required = true
 	"--masterseeds","-s"
 		help = "A text file with seeds list"
 		arg_type = String
@@ -64,13 +63,19 @@ function main()
 	plane = args["plane"]
 	masterseeds = args["masterseeds"]
 
-	# plane description
-	b = tryparse.(Float64,split(plane, " "))
-	@assert length(b) == 4 "$plane: Please described the plane in Hessian normal form"
-	plane = Detection.Plane(b[1],b[2],b[3],b[4])
-	affine_matrix = plane.matrix # rotation matrix
-
 	PC = Detection.FileManager.source2pc(source, lod)
+
+	# plane description
+	if isnothing(plane)
+		direction, centroid = Common.LinearFit(PC.coordinates)
+		plane = Detection.Plane(direction,centroid)
+	else
+		b = tryparse.(Float64,split(plane, " "))
+		@assert length(b) == 4 "$plane: Please described the plane in Hessian normal form"
+		plane = Detection.Plane(b[1],b[2],b[3],b[4])
+	end
+
+	affine_matrix = plane.matrix # rotation matrix
 
 	Detection.flushprintln("== Parameters ==")
 	Detection.flushprintln("Source  =>  $source")
@@ -81,6 +86,7 @@ function main()
 	Detection.flushprintln("N. of failed  =>  $failed")
 	Detection.flushprintln("N. of inliers  =>  $N")
 	Detection.flushprintln("N. of k-nn  =>  $k")
+	Detection.flushprintln("Plane =>  $(plane.a) $(plane.b) $(plane.c) $(plane.d)")
 	Detection.flushprintln("Affine matrix =>  $affine_matrix")
 
 
