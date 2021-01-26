@@ -7,7 +7,7 @@ using FileManager
 source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/NAVVIS"
 INPUT_PC = FileManager.source2pc(source,3)
 
-NAME_PROJ = "PLANE_NAVVIS_LOD3"
+NAME_PROJ = "PLANE_NAVVIS_LOD4"
 
 dirs = Detection.PlaneDirs( "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS",NAME_PROJ)
 
