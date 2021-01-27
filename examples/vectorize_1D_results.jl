@@ -4,7 +4,7 @@ using Common
 using FileManager
 
 FOLDER = "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS/SEZIONE"
-NAME_PROJ = "SEZIONE_z=10_5"
+NAME_PROJ = "SEZIONE_z=11_8"  #"SEZIONE_z=10_5"
 dirs = Detection.VectDirs(FOLDER, NAME_PROJ)
 
 plane = Plane(0, 0, 1, 10.5)

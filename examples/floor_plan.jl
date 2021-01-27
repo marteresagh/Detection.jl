@@ -13,7 +13,7 @@ fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_
 fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/casaletto_planimetria.las"
 
 fname = "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS/SEZIONE_z=10_5.las"
-
+fname = "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS/SEZIONE/SEZIONE_z=11_8.las"
 PC = FileManager.las2pointcloud(fname)
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 
@@ -43,8 +43,9 @@ seeds = Int64[]
 
 V,EV = Common.DrawLines(hyperplanes,0.0)
 GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,params.visited])'),GL.COLORS[2]),
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[12]),
-	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,params.fitted])'),GL.COLORS[2]),
+	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,params.visited])'),GL.COLORS[2]),
 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),V),EV,GL.COLORS[1],1.0)
 ])
 
