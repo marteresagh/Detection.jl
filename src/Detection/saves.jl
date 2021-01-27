@@ -31,7 +31,7 @@ function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperp
 		points_unfitted = setdiff(collect(1:PC.n_points),params.fitted)
 		if !isempty(points_unfitted)
 			flushprintln("Unfitted points: saving...")
-			PC_unfitted_2D = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),PC.coordinates[1:2,points_unfitted]),PC.rgbs[:,points_unfitted])
+			PC_unfitted_2D = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),PC.coordinates)[1:2,points_unfitted],PC.rgbs[:,points_unfitted])
 			PC_unfitted_3D = PointCloud(PC.coordinates[:,points_unfitted],PC.rgbs[:,points_unfitted])
 			flushprintln("Unfitted $(length(points_unfitted)) points")
 			# POINTCLOUDS/PARTITIONS
