@@ -34,12 +34,19 @@ function main()
 	PC = Detection.FileManager.source2pc(source, lod)
 
 	# plane description
-	direction, centroid = Common.LinearFit(PC.coordinates)
-	plane = Detection.Plane(direction,centroid)
+	try
+		direction, centroid = Common.LinearFit(PC.coordinates)
+		plane = Detection.Plane(direction,centroid)
 
-	io = open(joinpath(output_folder,"planeCoeff.csv"),"w")
-	write(io, "$(plane.a) $(plane.b) $(plane.c) $(plane.d)")
-	close(io)
+		io = open(joinpath(output_folder,"planeCoeff.csv"),"w")
+		write(io, "$(plane.a) $(plane.b) $(plane.c) $(plane.d)")
+		close(io)
+
+		FileManager.successful(true, output_folder)
+	catch y
+
+	end
+
 end
 
 @time main()
