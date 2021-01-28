@@ -3,16 +3,16 @@ using Visualization
 using Common
 using FileManager
 using Statistics
-
-fname = "examples/las/wall.las"
-fname = "examples/las/polyline.las"
-fname = "examples/las/full.las"
-fname = "examples/las/square.las"
-fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
-fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
-fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/casaletto_planimetria.las"
-
-fname = "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS/SEZIONE_z=10_5.las"
+#
+# fname = "examples/las/wall.las"
+# fname = "examples/las/polyline.las"
+# fname = "examples/las/full.las"
+# fname = "examples/las/square.las"
+# fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
+# fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
+# fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/casaletto_planimetria.las"
+#
+# fname = "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS/SEZIONE_z=10_5.las"
 fname = "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS/SEZIONE/SEZIONE_z=11_8.las"
 PC = FileManager.las2pointcloud(fname)
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
@@ -32,9 +32,9 @@ outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 # process
 params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 
-masterseeds = "C:/Users/marte/Documents/GEOWEB/wrapper_file/JSON/seeds_sezione650.txt"
-given_seeds = FileManager.load_points(masterseeds)
-seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
+# masterseeds = "C:/Users/marte/Documents/GEOWEB/wrapper_file/JSON/seeds_sezione650.txt"
+# given_seeds = FileManager.load_points(masterseeds)
+# seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 seeds = Int64[]
 
 @time hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)

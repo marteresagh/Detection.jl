@@ -4,9 +4,9 @@ using Common
 using FileManager
 
 FOLDER = "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS/SEZIONE"
-NAME_PROJ =  "SEZIONE_z=11_8"
-NAME_PROJ =  "SEZIONE_z=10_5"
-NAME_PROJ =  "SEZIONE_Debug"  
+NAME_PROJ =  "SEZIONE_z=11_8_new"
+# NAME_PROJ =  "SEZIONE_z=10_5_new"
+
 
 dirs = Detection.VectDirs(FOLDER, NAME_PROJ)
 
@@ -37,12 +37,14 @@ GL.VIEW(
 )
 
 
-V,EV = FileManager.load_segment(joinpath(dirs.RAW,"segment2D.ext"))
-points = FileManager.load_points(joinpath(dirs.RAW,"fitted2D.pnt"))
+L,EL = FileManager.load_segment(joinpath(dirs.RAW,"segment2D.ext"))
+fitted_points = FileManager.load_points(joinpath(dirs.RAW,"fitted2D.pnt"))
+unfitted_points = FileManager.load_points(joinpath(dirs.RAW,"unfitted2D.pnt"))
 GL.VIEW(
     [
-    Visualization.points(points[1:2,:],GL.COLORS[1],0.2),
-    GL.GLGrid(V,EV,GL.COLORS[2],1.0),
+    Visualization.points(fitted_points[1:2,:],GL.COLORS[1],0.2),
+    Visualization.points(unfitted_points[1:2,:],GL.COLORS[2],0.2),
+    GL.GLGrid(L,EL,GL.COLORS[12],1.0),
 #    GL.GLFrame2
     ]
 )

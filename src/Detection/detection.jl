@@ -1,3 +1,10 @@
+# TODO modificare i salvataggi
+# per ogni shape creare una cartella_timestamp con :
+# 1. file per descrizione piano infinito : normal e centroide
+# 2. bounding box orientato
+# 3. segmenti del bordo alpha shape
+# 4. inliers
+
 """
 	iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1}, debug = false)
 
@@ -35,6 +42,8 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 		end
 
 		if found
+			# save_plane() |_ save_hyperplane() attenzionecon le linee e con i piani
+			# save_lines() |
 			i = i+1
 			flushprintln("$i of $(length(seeds))")
 			push!(hyperplanes,hyperplane)
@@ -71,6 +80,8 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 		end
 
 		if found
+			# save_plane() |_ save_hyperplane() attenzionecon le linee e con i piani
+			# save_lines() |
 			f = 0
 			i = i+1
 			if i%10 == 0
