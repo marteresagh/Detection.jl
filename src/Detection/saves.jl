@@ -2,9 +2,8 @@
 	saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperplane,1},affine_matrix::Matrix, dirs::VectDirs)
 """
 function saves_data(PC::PointCloud,params::Initializer,hyperplanes::Array{Hyperplane,1}, affine_matrix::Matrix, dirs::VectDirs)
+	FileManager.successful(!isempty(hyperplanes), dirs.output_folder)
 	if !isempty(hyperplanes)
-		io = open(joinpath(dirs.output_folder,"execution.prob"),"w")
-		close(io)
 
 		PC_fitted_2D = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),PC.coordinates)[1:2,params.fitted],PC.rgbs[:,params.fitted])
 		PC_fitted_3D = PointCloud(PC.coordinates[:,params.fitted],PC.rgbs[:,params.fitted])
