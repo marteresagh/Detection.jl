@@ -30,7 +30,13 @@ function Initializer(
 		lines = true::Bool)
 
 	if lines
-	INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
+		INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
+	else
+		INPUT_PC = PC
+		# normals
+		flushprintln("Compute normals")
+		INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
+	end
 
 	# threashold estimation
 	threshold = Common.estimate_threshold(INPUT_PC,2*k)
@@ -44,7 +50,7 @@ function Initializer(
 	# flushprintln("Search of points with high curvature")
 	# corners = Detection.corners_detection(INPUT_PC, par, threshold)
 	# flushprintln("$(length(corners)) points on corners")
-	end
+
 	return Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
 end
 
