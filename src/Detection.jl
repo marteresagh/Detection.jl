@@ -12,9 +12,7 @@ module Detection
     # hyperplane detection
     include("Detection/detection.jl")
     include("Detection/cluster.jl")
-    include("Detection/main.jl")
     include("Detection/util.jl")
-    include("Detection/saves.jl")
     # lines
     include("Detection/Lines/detection.jl")
     include("Detection/Lines/main.jl")
