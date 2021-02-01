@@ -15,6 +15,10 @@ module Detection
     include("Detection/main.jl")
     include("Detection/util.jl")
     include("Detection/saves.jl")
+    # lines
+    include("Detection/Lines/detection.jl")
+    include("Detection/Lines/main.jl")
+    include("Detection/Lines/saves.jl")
     # flat shape detection
     include("Shape/definitivo.jl")
 

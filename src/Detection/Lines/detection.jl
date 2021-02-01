@@ -1,27 +1,34 @@
-# TODO modificare i salvataggi
-# per ogni shape creare una cartella_timestamp con :
-# 1. file per descrizione piano infinito : normal e centroide
-# 2. bounding box orientato
-# 3. segmenti del bordo alpha shape
-# 4. inliers
-
 """
-	iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1}, debug = false)
+	iterate_lines_detection(
+		params::Initializer,
+		affine_matrix::Matrix,
+		s_2d::IOStream,
+		s_3d::IOStream;
+		seeds = Int64[]::Array{Int64,1},
+		debug = false
+		)
 
-Return hyperplanes in point cloud.
+Detect lines in 2D point cloud.
 
 Algorithm description:
  - Search starts with initial parameters
- - Detects a valid hyperplane
- - If found, marks all vertices in cluster as visited
- - If not found, repeats the detection
- - Search terminates if the detection failed a number of times in a row
+ - A line is detected
+ - If valid, all vertices in cluster are marked as visited and segment are saved in a text file
+ - If not valid, the detection is repeated
+ - Search ends if the detection failed a number of times in a row
 """
-function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1}, debug = false)
+function iterate_lines_detection(
+	params::Initializer,
+	affine_matrix::Matrix,
+	s_2d::IOStream,
+	s_3d::IOStream;
+	seeds = Int64[]::Array{Int64,1},
+	debug = false
+	)
+
 	inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
 
 	# 1. - Initialization
-	hyperplanes = Hyperplane[]
 	hyperplane = nothing
 	cluster = nothing
 	all_visited_verts = nothing
@@ -44,17 +51,11 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 		if found
 			i = i+1
 			flushprintln("$i of $(length(seeds))")
-			push!(hyperplanes,hyperplane)
+
+			write_line(s_2d, s_3d, line, affine_matrix)
+
 			union!(params.fitted,cluster)
-
-			if params.PC.dimension==3
-				 remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
-			end
-
 			union!(params.visited,all_visited_verts)
-
-			# save_plane() |_ save_hyperplane() attenzionecon le linee e con i piani
-			# save_lines() |
 
 		end
 	end
@@ -82,21 +83,17 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 		end
 
 		if found
-			# save_plane() |_ save_hyperplane() attenzionecon le linee e con i piani
-			# save_lines() |
 			f = 0
 			i = i+1
 			if i%10 == 0
-				flushprintln("$i shapes found")
+				flushprintln("$i lines detected")
 			end
-			push!(hyperplanes,hyperplane)
+
+			write_line(s_2d, s_3d, line, affine_matrix)
+
 			union!(params.fitted,cluster)
-
-			if params.PC.dimension==3
-				 remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
-			end
-
 			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed
+
 		else
 			search = false
 		end
@@ -111,5 +108,5 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 		end
 	end
 
-	return hyperplanes
+	return i
 end

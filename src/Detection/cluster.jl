@@ -1,22 +1,4 @@
 """
-First seed.
-"""
-# init_seed = findall(x->x == given_seed, params.current_inds)[1] # se dato
-function seedpoint(points::Lar.Points, params::Initializer; given_seed = rand(1:size(points,2))::Int64)
-
-	kdtree = Common.KDTree(points)
-	idxseeds = Common.neighborhood(kdtree,points,[given_seed],Int64[],params.threshold,params.k)
-	seeds = points[:,idxseeds]
-	direction, centroid = Common.LinearFit(seeds)
-
-	hyperplane = Hyperplane(direction,centroid)
-	min_index = Common.minresidual(seeds,hyperplane)
-	seed = idxseeds[min_index]
-
-	return seed, hyperplane
-end
-
-"""
 """
 function get_hyperplane(params::Initializer; given_seed=nothing::Union{Nothing,Int64})
 
