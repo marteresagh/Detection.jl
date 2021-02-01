@@ -37,7 +37,9 @@ function pc2lines(
 	flushprintln("Slice: $(PC.n_points) points in slice")
 	FileManager.save_pointcloud(joinpath(dirs.FULL,"slice.las"), PC, "VECTORIZATION_1D" )
 
-	params = Initializer(PC,par,failed,	N, k, affine_matrix; lines = true)
+	INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
+
+	params = Initializer(INPUT_PC, par, failed, N, k)
 
 	#seeds
 	seeds = Int64[]

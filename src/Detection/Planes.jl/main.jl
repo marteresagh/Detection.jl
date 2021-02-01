@@ -29,7 +29,12 @@ function pc2plane(
 	# output directory
 	dirs = PlaneDirs(folder, project_name)
 
+	# Input Point Cloud
 	INPUT_PC = PC
+	# normals
+	flushprintln("Compute normals")
+	INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
+
 
 	# seeds
 	seeds = Int64[]
@@ -39,25 +44,7 @@ function pc2plane(
 		seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 	end
 
-	# threashold estimation
-	threshold = Common.estimate_threshold(INPUT_PC,2*k)
-	flushprintln("Compute threshold: $threshold")
-
-	# normals
-	flushprintln("Compute normals")
-	INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
-
-	# 1. Initialization
-	flushprintln("= Remove points from possible seeds =")
-	flushprintln("Search of possible outliers: ")
-	outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
-	flushprintln("$(length(outliers)) outliers")
-
-	# flushprintln("Search of points with high curvature")
-	# corners = Detection.corners_detection(INPUT_PC, par, threshold)
-	# flushprintln("$(length(corners)) points on corners")
-
-	params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
+	params = Initializer(INPUT_PC, par, failed,	N, k)
 
 	# 2. Detection
 	flushprintln()

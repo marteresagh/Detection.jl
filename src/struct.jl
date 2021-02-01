@@ -18,22 +18,11 @@ mutable struct Initializer
 	Initializer(PC::PointCloud, par::Float64, threshold::Float64, failed::Int64, N::Int64, k::Int64) = new(PC, par, threshold, failed, N, k, Int64[], Int64[], collect(1:PC.n_points),Int64[])
 
 	function Initializer(
-			PC::PointCloud,
+			INPUT_PC::PointCloud,
 			par::Float64,
 			failed::Int64,
 			N::Int64,
-			k::Int64,
-			affine_matrix::Matrix;
-			lines = true::Bool)
-
-		if lines
-			INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
-		else
-			INPUT_PC = PC
-			# normals
-			flushprintln("Compute normals")
-			INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
-		end
+			k::Int64)
 
 		# threashold estimation
 		threshold = Common.estimate_threshold(INPUT_PC,2*k)
