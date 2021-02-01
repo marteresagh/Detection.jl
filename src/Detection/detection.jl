@@ -115,7 +115,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 end
 
 
-function iterate_lines_detection(params::Initializer, s_2d::IOStream, s_3d::IOStream; seeds = Int64[]::Array{Int64,1}, debug = false)
+function iterate_lines_detection(params::Initializer, affine_matrix::Matrix, s_2d::IOStream, s_3d::IOStream; seeds = Int64[]::Array{Int64,1}, debug = false)
 	inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
 
 	# 1. - Initialization
