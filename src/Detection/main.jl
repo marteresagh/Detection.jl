@@ -31,8 +31,11 @@ function pc2lines(
 
 	# output directory
 	dirs = VectDirs(folder, project_name)
-#	params = Initializer(PC, par, failed, N, k, affine_matrix; masterseeds = masterseeds)
+	# params = Initializer(PC, par, failed, N, k, affine_matrix; masterseeds = masterseeds)
 
+	# POINTCLOUDS/FULL
+	flushprintln("Slice: $(PC.n_points) points in slice")
+	FileManager.save_pointcloud(joinpath(dirs.FULL,"slice.las"), PC, "VECTORIZATION" )
 
 	INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
 
@@ -66,17 +69,11 @@ function pc2lines(
 	flushprintln()
 	flushprintln("=========== PROCESSING =============")
 
-	# POINTCLOUDS/FULL
-	flushprintln("Slice: saving...")
-	flushprintln(" $(PC.n_points) points in slice")
-	FileManager.save_pointcloud(joinpath(dirs.FULL,"slice.las"), PC, "VECTORIZATION" )
-	flushprintln("Slice: done...")
-
 	# qui devo aprire segment 2d e segment 3d
 	s_2d = open(joinpath(dirs.RAW,"segment2D.ext"), "w")
 	s_3d = open(joinpath(dirs.RAW,"segment3D.ext"), "w")
 
-	i = Detection.iterate_lines_detection(params, s_2d, s_3d; seeds = seeds)
+	i = Detection.iterate_lines_detection(params, affine_matrix, s_2d, s_3d; seeds = seeds)
 
 	close(s_2d)
 	close(s_3d)
