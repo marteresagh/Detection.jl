@@ -28,6 +28,12 @@ mutable struct Initializer
 		threshold = Common.estimate_threshold(INPUT_PC,2*k)
 		flushprintln("Compute threshold: $threshold")
 
+		# normals
+		if INPUT_PC.dimension == 3
+			flushprintln("Compute normals")
+			INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
+		end
+		
 		flushprintln("= Remove points from possible seeds =")
 		flushprintln("Search of possible outliers: ")
 		outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)

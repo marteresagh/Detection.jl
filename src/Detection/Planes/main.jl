@@ -40,10 +40,6 @@ function pc2plane(
 		seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 	end
 
-	# normals
-	flushprintln("Compute normals")
-	INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
-
 	params = Initializer(INPUT_PC, par, failed,	N, k)
 
 	# 2. Detection
