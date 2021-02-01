@@ -31,7 +31,7 @@ function pc2lines(
 	flushprintln("=========== INIT =============")
 
 	# output directory
-	dirs = VectDirs(folder, project_name)
+	dirs = Vect_1D_Dirs(folder, project_name)
 
 	# POINTCLOUDS/FULL
 	flushprintln("Slice: $(PC.n_points) points in slice")

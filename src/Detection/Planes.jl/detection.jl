@@ -17,7 +17,7 @@ Algorithm description:
  - If not found, repeats the detection
  - Search terminates if the detection failed a number of times in a row
 """
-function iterate_planes_detection(params::Initializer; seeds = Int64[]::Array{Int64,1}, debug = false)
+function iterate_planes_detection(params::Initializer, output_folder::String; seeds = Int64[]::Array{Int64,1}, debug = false)
 	inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
 
 	# 1. - Initialization
@@ -42,6 +42,14 @@ function iterate_planes_detection(params::Initializer; seeds = Int64[]::Array{In
 
 		if found
 			i = i+1
+
+			####################################
+			FileManager.mkdir_if(joinpath(output_folder,"plane_$i"))
+			save_finite_plane(folder::String, hyperplane::Hyperplane)
+			#bordo
+			####################################
+
+
 			flushprintln("$i of $(length(seeds))")
 			union!(params.fitted,cluster)
 			remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
@@ -72,8 +80,9 @@ function iterate_planes_detection(params::Initializer; seeds = Int64[]::Array{In
 		end
 
 		if found
-			# save_plane() |_ save_hyperplane() attenzionecon le linee e con i piani
-			# save_lines() |
+			# creo cartella
+			# salvo i tre file
+			# quindi devo anche calcolare l'alpha shapes
 			f = 0
 			i = i+1
 			if i%10 == 0

@@ -1,7 +1,7 @@
 """
-	 save_partitions(PC::PointCloud, params::Initializer, affine_matrix::Matrix, dirs::VectDirs)
+	 save_partitions(PC::PointCloud, params::Initializer, affine_matrix::Matrix, dirs::Vect_1D_Dirs)
 """
-function save_partitions(PC::PointCloud, params::Initializer, affine_matrix::Matrix, dirs::VectDirs)
+function save_partitions(PC::PointCloud, params::Initializer, affine_matrix::Matrix, dirs::Vect_1D_Dirs)
 
 	PC_fitted_2D = PointCloud(Common.apply_matrix(Lar.inv(affine_matrix),PC.coordinates)[1:2,params.fitted],PC.rgbs[:,params.fitted])
 	PC_fitted_3D = PointCloud(PC.coordinates[:,params.fitted],PC.rgbs[:,params.fitted])
@@ -27,16 +27,4 @@ function save_partitions(PC::PointCloud, params::Initializer, affine_matrix::Mat
 		FileManager.save_points_rgbs_txt(joinpath(dirs.RAW,"unfitted2D.pnt"), PC_unfitted_2D)
 	end
 
-end
-
-
-"""
-	 write_line(s_2d::IOStream, s_3d::IOStream, line::Hyperplane, affine_matrix::Matrix)
-"""
-function write_line(s_2d::IOStream, s_3d::IOStream, line::Hyperplane, affine_matrix::Matrix)
-	V,_ = Common.DrawLines(line,0.0)
-	write(s_2d, "$(V[1,1]) $(V[2,1]) $(V[1,2]) $(V[2,2])\n")
-	V1 = vcat(V,(zeros(size(V,2)))')
-	V3D = Common.apply_matrix(affine_matrix,V1)
-	write(s_3d, "$(V3D[1,1]) $(V3D[2,1]) $(V3D[3,1]) $(V3D[1,2]) $(V3D[2,2]) $(V3D[3,2])\n")
 end

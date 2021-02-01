@@ -8,7 +8,7 @@ NAME_PROJ =  "SEZIONE_z=11_8_new"
 NAME_PROJ =  "SEZIONE_z=10_5"
 
 
-dirs = Detection.VectDirs(FOLDER, NAME_PROJ)
+dirs = Detection.Vect_1D_Dirs(FOLDER, NAME_PROJ)
 
 plane = Plane(0, 0, 1, 10.5)
 

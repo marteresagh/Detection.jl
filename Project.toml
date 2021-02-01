@@ -4,6 +4,7 @@ authors = ["marteresagh <marteresa28@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+AlphaStructures = "b34a2d8f-0989-4844-9314-dd3cff8ff09b"
 Common = "1e120bc2-2bd2-483a-9663-793997b3971f"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 FileManager = "0bd84659-c0f7-4690-a84b-0a06eabf7473"

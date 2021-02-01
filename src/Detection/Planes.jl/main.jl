@@ -27,14 +27,10 @@ function pc2plane(
 	# 1. Initialization
 	flushprintln("=========== INIT =============")
 	# output directory
-	dirs = PlaneDirs(folder, project_name)
+	output_folder = FileManager.mkdir_project(folder,project_name)
 
 	# Input Point Cloud
 	INPUT_PC = PC
-	# normals
-	flushprintln("Compute normals")
-	INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
-
 
 	# seeds
 	seeds = Int64[]
@@ -44,12 +40,16 @@ function pc2plane(
 		seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 	end
 
+	# normals
+	flushprintln("Compute normals")
+	INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
+
 	params = Initializer(INPUT_PC, par, failed,	N, k)
 
 	# 2. Detection
 	flushprintln()
 	flushprintln("=========== PROCESSING =============")
-	hyperplanes = Detection.iterate_detection(params; seeds = seeds)
+	hyperplanes = Detection.iterate_planes_detection(params, output_folder; seeds = seeds)
 
 	# 3. Saves
 

@@ -46,7 +46,7 @@ end
 """
 
 """
-struct VectDirs
+struct Vect_1D_Dirs
 	output_folder::String
 	POINTCLOUDS::String
 	FULL::String
@@ -54,7 +54,7 @@ struct VectDirs
 	DXF::String
 	RAW::String
 
-	function VectDirs(folder::String, project_name::String)
+	function Vect_1D_Dirs(folder::String, project_name::String)
 		output_folder = FileManager.mkdir_project(folder,project_name)
 
 		POINTCLOUDS = joinpath(output_folder,"POINTCLOUDS")
@@ -75,7 +75,6 @@ struct VectDirs
 		new(output_folder,POINTCLOUDS,FULL,PARTITIONS,DXF,RAW)
 	end
 end
-
 
 
 """

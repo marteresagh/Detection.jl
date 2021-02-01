@@ -4,6 +4,7 @@ module Detection
     using FileManager
     using LightGraphs
     using DataStructures
+    using AlphaStructures
 
     # struct
     include("struct.jl")
