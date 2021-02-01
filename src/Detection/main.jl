@@ -1,5 +1,5 @@
 """
-	pc2vectorize(
+	pc2lines(
 		folder::String,
 		project_name::String,
 		PC::PointCloud,
@@ -8,8 +8,7 @@
 		N::Int64,
 		k::Int64,
 		affine_matrix::Matrix;
-		masterseeds = nothing::Union{String,Nothing},
-		lines = true::Bool
+		masterseeds = nothing::Union{String,Nothing}
 		)
 
 Main program.
@@ -32,6 +31,8 @@ function pc2lines(
 
 	# output directory
 	dirs = VectDirs(folder, project_name)
+#	params = Initializer(PC, par, failed, N, k, affine_matrix; masterseeds = masterseeds)
+
 
 	INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
 
@@ -60,38 +61,53 @@ function pc2lines(
 
 	params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
 
+
 	# 2. Detection
 	flushprintln()
 	flushprintln("=========== PROCESSING =============")
-	hyperplanes = Detection.iterate_detection(params; seeds = seeds)
+
+	# POINTCLOUDS/FULL
+	flushprintln("Slice: saving...")
+	flushprintln(" $(PC.n_points) points in slice")
+	FileManager.save_pointcloud(joinpath(dirs.FULL,"slice.las"), PC, "VECTORIZATION" )
+	flushprintln("Slice: done...")
+
+	# qui devo aprire segment 2d e segment 3d
+	s_2d = open(joinpath(dirs.RAW,"segment2D.ext"), "w")
+	s_3d = open(joinpath(dirs.RAW,"segment3D.ext"), "w")
+
+	i = Detection.iterate_lines_detection(params, s_2d, s_3d; seeds = seeds)
+
+	close(s_2d)
+	close(s_3d)
+
+	flushprintln("Detect $i lines")
+	FileManager.successful(i!=0, dirs.output_folder)
 
 	# 3. Saves
 	flushprintln()
 	flushprintln("=========== SAVES =============")
 
-	saves_data(PC, params, hyperplanes, Lar.inv(affine_matrix), dirs)
+	save_partitions(PC, params, Lar.inv(affine_matrix), dirs)
 
-	return hyperplanes, params, dirs
 end
 
 
 
 """
-	pc2vectorize(
+	pc2plane(
 		folder::String,
 		project_name::String,
 		PC::PointCloud,
 		par::Float64,
 		failed::Int64,
 		N::Int64,
-		k::Int64,
-		affine_matrix::Matrix;
-		masterseeds = nothing::Union{String,Nothing},
-		lines = true::Bool
+		k::Int64;
+		masterseeds = nothing::Union{String,Nothing}
 		)
 
 Main program.
-Detect hyperplanes in point cloud. In 2D space results are saved in different files.
+Detect hyperplanes in point cloud.
 """
 function pc2plane(
 	folder::String,
