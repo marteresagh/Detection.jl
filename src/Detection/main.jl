@@ -73,7 +73,7 @@ function pc2lines(
 	s_2d = open(joinpath(dirs.RAW,"segment2D.ext"), "w")
 	s_3d = open(joinpath(dirs.RAW,"segment3D.ext"), "w")
 
-	i = Detection.iterate_lines_detection(params, affine_matrix, s_2d, s_3d; seeds = seeds)
+	i = Detection.iterate_lines_detection(params, Lar.inv(affine_matrix), s_2d, s_3d; seeds = seeds)
 
 	close(s_2d)
 	close(s_3d)
