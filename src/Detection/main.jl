@@ -37,7 +37,25 @@ function pc2lines(
 	flushprintln("Slice: $(PC.n_points) points in slice")
 	FileManager.save_pointcloud(joinpath(dirs.FULL,"slice.las"), PC, "VECTORIZATION" )
 
-	INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
+	# INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
+
+
+	#
+	# # threashold estimation
+	# threshold = Common.estimate_threshold(INPUT_PC,2*k)
+	# flushprintln("Compute threshold: $threshold")
+	#
+	# flushprintln("= Remove points from possible seeds =")
+	# flushprintln("Search of possible outliers: ")
+	# outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
+	# flushprintln("$(length(outliers)) outliers")
+
+	# flushprintln("Search of points with high curvature")
+	# corners = Detection.corners_detection(INPUT_PC, par, threshold)
+	# flushprintln("$(length(corners)) points on corners")
+
+#	params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
+	params = Initializer(PC,par,failed,	N, k, affine_matrix; lines = true)
 
 	#seeds
 	seeds = Int64[]
@@ -48,22 +66,6 @@ function pc2lines(
 		given_seeds_2D = Common.apply_matrix(affine_matrix,given_seeds)[1:2,:]
 		seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds_2D)])
 	end
-
-	# threashold estimation
-	threshold = Common.estimate_threshold(INPUT_PC,2*k)
-	flushprintln("Compute threshold: $threshold")
-
-	flushprintln("= Remove points from possible seeds =")
-	flushprintln("Search of possible outliers: ")
-	outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
-	flushprintln("$(length(outliers)) outliers")
-
-	# flushprintln("Search of points with high curvature")
-	# corners = Detection.corners_detection(INPUT_PC, par, threshold)
-	# flushprintln("$(length(corners)) points on corners")
-
-	params = Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
-
 
 	# 2. Detection
 	flushprintln()
@@ -78,13 +80,11 @@ function pc2lines(
 	close(s_2d)
 	close(s_3d)
 
-	flushprintln("Detect $i lines")
-	FileManager.successful(i!=0, dirs.output_folder)
-
 	# 3. Saves
 	flushprintln()
-	flushprintln("=========== SAVES =============")
-
+	flushprintln("=========== RESULTS =============")
+	flushprintln("$i lines detected")
+	FileManager.successful(i!=0, dirs.output_folder)
 	save_partitions(PC, params, Lar.inv(affine_matrix), dirs)
 
 end

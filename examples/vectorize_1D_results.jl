@@ -5,7 +5,7 @@ using FileManager
 
 FOLDER = "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS/SEZIONE"
 NAME_PROJ =  "SEZIONE_z=11_8_new"
-# NAME_PROJ =  "SEZIONE_z=10_5_new"
+NAME_PROJ =  "SEZIONE_z=10_5"
 
 
 dirs = Detection.VectDirs(FOLDER, NAME_PROJ)
