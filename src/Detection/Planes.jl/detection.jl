@@ -44,11 +44,13 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			i = i+1
 
 			####################################
-			FileManager.mkdir_if(joinpath(output_folder,"plane_$i"))
-			save_finite_plane(folder::String, hyperplane::Hyperplane)
-			#bordo
+			folder = joinpath(output_folder,"plane_$i")
+			FileManager.mkdir_if(folder)
+			FileManager.save_finite_plane(folder, hyperplane)
+			V,EV = get_boundary_alpha_shape(hyperplane)
+			FileManager.save_points_txt(joinpath(folder,"boundary_points.txt"), V)
+			FileManager.save_cells_txt(joinpath(folder,"boundary_edges.txt"), EV)
 			####################################
-
 
 			flushprintln("$i of $(length(seeds))")
 			union!(params.fitted,cluster)
@@ -80,14 +82,21 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 		end
 
 		if found
-			# creo cartella
-			# salvo i tre file
-			# quindi devo anche calcolare l'alpha shapes
 			f = 0
 			i = i+1
 			if i%10 == 0
 				flushprintln("$i shapes found")
 			end
+
+			####################################
+			folder = joinpath(output_folder,"plane_$i")
+			FileManager.mkdir_if(folder)
+			FileManager.save_finite_plane(folder, hyperplane)
+			V,EV = get_boundary_alpha_shape(hyperplane)
+			FileManager.save_points_txt(joinpath(folder,"boundary_points.txt"), V)
+			FileManager.save_cells_txt(joinpath(folder,"boundary_edges.txt"), EV)
+			####################################
+
 			union!(params.fitted,cluster)
 			remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
 			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed
@@ -105,5 +114,5 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 		end
 	end
 
-	return hyperplanes
+	return i
 end

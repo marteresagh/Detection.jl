@@ -49,10 +49,12 @@ function pc2plane(
 	# 2. Detection
 	flushprintln()
 	flushprintln("=========== PROCESSING =============")
-	hyperplanes = Detection.iterate_planes_detection(params, output_folder; seeds = seeds)
+	i = Detection.iterate_planes_detection(params, output_folder; seeds = seeds)
 
 	# 3. Saves
+	flushprintln()
+	flushprintln("=========== RESULTS =============")
+	flushprintln("$i planes detected")
+	FileManager.successful(i!=0, output_folder)
 
-
-	return hyperplanes, params, dirs
 end
