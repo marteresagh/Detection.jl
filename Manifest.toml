@@ -36,7 +36,7 @@ version = "1.0.2"
 
 [[Common]]
 deps = ["Delaunay", "LightGraphs", "LinearAlgebraicRepresentation", "NearestNeighbors", "SparseArrays", "Statistics"]
-git-tree-sha1 = "2a4146914800cb1cc073de5ecff1636a7cba75d4"
+git-tree-sha1 = "89b419ad7922e9b3f37b020f440d0fcfe04606d2"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/Common.jl"
 uuid = "1e120bc2-2bd2-483a-9663-793997b3971f"
@@ -102,7 +102,7 @@ version = "1.4.5"
 
 [[FileManager]]
 deps = ["Common", "DataStructures", "Dates", "JSON", "LasIO", "LazIO", "PlyIO", "Printf"]
-git-tree-sha1 = "9f68e90d4f0d4a8a26fd6612991195f57660c02f"
+git-tree-sha1 = "eb9d4fd4e553946b7c8e3d6d558c9c9e5c64512f"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/FileManager.jl"
 uuid = "0bd84659-c0f7-4690-a84b-0a06eabf7473"
