@@ -44,7 +44,8 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			i = i+1
 
 			####################################
-			folder = joinpath(output_folder,"plane_$i")
+			timestamp = FileManager.Dates.datetime2epochms(Dates.now())
+			folder = joinpath(output_folder,"plane_$timestamp")
 			FileManager.mkdir_if(folder)
 			FileManager.save_finite_plane(folder, hyperplane)
 			V,EV = get_boundary_alpha_shape(hyperplane)
@@ -89,7 +90,8 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			end
 
 			####################################
-			folder = joinpath(output_folder,"plane_$i")
+			timestamp = FileManager.Dates.datetime2epochms(Dates.now())
+			folder = joinpath(output_folder,"plane_$timestamp")
 			FileManager.mkdir_if(folder)
 			FileManager.save_finite_plane(folder, hyperplane)
 			V,EV = get_boundary_alpha_shape(hyperplane)
