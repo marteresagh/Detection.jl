@@ -5,7 +5,7 @@ function get_boundary_alpha_shape(hyperplane::Hyperplane)
 	V = Common.apply_matrix(plane.matrix,points)[1:2,:]
 
 	# 2. applica alpha shape con alpha = threshold
-	DT = Common.delaunay_triangulation(points)
+	DT = Common.delaunay_triangulation(V)
 	filtration = AlphaStructures.alphaFilter(V,DT);
 	threshold = Common.estimate_threshold(hyperplane.inliers,5)
 	_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
