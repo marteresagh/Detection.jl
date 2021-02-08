@@ -6,7 +6,7 @@ source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
 INPUT_PC = FileManager.source2pc(source,1)
 centroid = Common.centroid(INPUT_PC.coordinates)
 
-NAME_PROJ = "MURI_LOD3"
+NAME_PROJ = "MURI"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 
 function read_data(folder,NAME_PROJ)
@@ -43,7 +43,11 @@ hyperplanes, W, EW = read_data(folder,NAME_PROJ)
 V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
 
 GL.VIEW([
-	# Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
-	# GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8),
-	GL.GLGrid(W,EW,GL.COLORS[1],1.0),
+	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8),
+	# GL.GLGrid(W,EW,GL.COLORS[1],1.0),
+])
+
+GL.VIEW([
+	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.0),
 ])
