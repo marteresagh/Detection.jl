@@ -48,9 +48,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			folder = joinpath(output_folder,"plane_$timestamp")
 			FileManager.mkdir_if(folder)
 			FileManager.save_finite_plane(folder, hyperplane)
-			V,EV = get_boundary_alpha_shape(hyperplane)
-			FileManager.save_points_txt(joinpath(folder,"boundary_points.txt"), V)
-			FileManager.save_cells_txt(joinpath(folder,"boundary_edges.txt"), EV)
+			Detection.save_boundary_shape(folder,hyperplane)
 			####################################
 
 			flushprintln("$i of $(length(seeds))")
@@ -94,9 +92,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			folder = joinpath(output_folder,"plane_$timestamp")
 			FileManager.mkdir_if(folder)
 			FileManager.save_finite_plane(folder, hyperplane)
-			V,EV = get_boundary_alpha_shape(hyperplane)
-			FileManager.save_points_txt(joinpath(folder,"boundary_points.txt"), V)
-			FileManager.save_cells_txt(joinpath(folder,"boundary_edges.txt"), EV)
+			Detection.save_boundary_shape(folder,hyperplane)
 			####################################
 
 			union!(params.fitted,cluster)

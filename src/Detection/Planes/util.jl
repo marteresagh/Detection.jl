@@ -14,3 +14,13 @@ function get_boundary_alpha_shape(hyperplane::Hyperplane)
 	EV_boundary = Common.get_boundary_edges(V,FV)
 	return Lar.simplifyCells(V,EV_boundary)
 end
+
+
+function save_boundary_shape(folder::String,hyperplane::Hyperplane)
+	V,EV = get_boundary_alpha_shape(hyperplane)
+	# embed V,EV in 3D space
+	plane = Plane(hyperplane.direction, hyperplane.centroid)
+	vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(V,zeros(size(V,2))'))
+	FileManager.save_points_txt(joinpath(folder,"boundary_points.txt"), vertices)
+	FileManager.save_cells_txt(joinpath(folder,"boundary_edges.txt"), EV)
+end
