@@ -16,7 +16,6 @@ function get_boundary_alpha_shape(hyperplane::Hyperplane)
 end
 
 
-# TODO da debuggare
 function save_boundary_shape(folder::String,hyperplane::Hyperplane)
 	V,EV = get_boundary_alpha_shape(hyperplane)
 	# devo renderlo diretto e cercare i cicli
@@ -28,7 +27,11 @@ function save_boundary_shape(folder::String,hyperplane::Hyperplane)
 		subgraph,vmap = induced_subgraph(g, comp)
 		path = dfs_tree(subgraph, 1)
 		edges = topological_sort_by_dfs(path)
-		write(io,"$edges\n")
+		inds = vmap[edges]
+		for ind in inds
+			write(io,"$ind ")
+		end
+		write(io,"\n")
 	end
 	close(io)
 	# embed V,EV in 3D space
