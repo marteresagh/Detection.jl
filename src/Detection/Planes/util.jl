@@ -18,8 +18,7 @@ end
 
 function save_boundary_shape(folder::String,hyperplane::Hyperplane)
 	V,EV = get_boundary_alpha_shape(hyperplane)
-	# devo renderlo diretto e cercare i cicli
-
+	@show size(V,2), length(EV)
 	io = open(joinpath(folder,"boundary_edges.txt"),"w")
 	g = Common.model2graph(V,EV)
 	conn_comps = connected_components(g)
@@ -34,6 +33,7 @@ function save_boundary_shape(folder::String,hyperplane::Hyperplane)
 		write(io,"\n")
 	end
 	close(io)
+
 	# embed V,EV in 3D space
 	plane = Plane(hyperplane.direction, hyperplane.centroid)
 	vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(V,zeros(size(V,2))'))
