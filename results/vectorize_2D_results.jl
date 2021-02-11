@@ -6,10 +6,12 @@ source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
 INPUT_PC = FileManager.source2pc(source,1)
 centroid = Common.centroid(INPUT_PC.coordinates)
 
-NAME_PROJ = "MURI"
+NAME_PROJ = "MURI_debug"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 
 function read_data(folder,NAME_PROJ)
+	W = nothing
+	EW = nothing
 	hyperplanes = Hyperplane[]
 	out = Array{Lar.Struct,1}()
 	for (root, dirs, files) in walkdir(joinpath(folder,NAME_PROJ))
@@ -29,7 +31,7 @@ function read_data(folder,NAME_PROJ)
 			push!(hyperplanes,hyperplane)
 
 			W = FileManager.load_points(joinpath(folder_plane,"boundary_points.txt"))
-			EW = FileManager.load_cells(joinpath(folder_plane,"boundary_edges.txt"))
+			EW = FileManager.load_connected_components(joinpath(folder_plane,"boundary_edges.txt"))
 			out = push!(out, Lar.Struct([(W, EW)]))
 		end
 	end
@@ -49,5 +51,6 @@ GL.VIEW([
 ])
 
 GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),W)')),
 	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.0),
 ])

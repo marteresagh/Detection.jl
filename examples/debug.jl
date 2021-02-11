@@ -1,4 +1,5 @@
 using Common
+using FileManager
 using Detection
 using LightGraphs
 using AlphaStructures
@@ -21,46 +22,3 @@ V,EV = Lar.struct2lar(out)
 GL.VIEW([
 	GL.GLGrid(V,EV,GL.COLORS[2],1.0),
 ])
-
-#
-# g = Common.model2graph(V,EV)
-# conn_comps = connected_components(g)
-#
-# rows = []
-# for comp in conn_comps
-# 	subgraph,vmap = induced_subgraph(g, comp)
-# 	path = dfs_tree(subgraph, 1)
-# 	edges = topological_sort_by_dfs(path)
-# 	push!(rows,vmap[edges])
-# end
-#
-#
-# function generate_EV(path)
-# 	EV=[[path[i],path[i+1]] for i in 1:length(path)-1]
-# 	push!(EV,[path[end],path[1]])
-# end
-#
-# EV = generate_EV(rows[1])
-#
-# GL.VIEW([
-# 	GL.GLGrid(V,EV,GL.COLORS[2],1.0),
-# 	GL.GLFrame2
-# ])
-
-
-
-io = open("boundary_edges.txt","w")
-g = Common.model2graph(V,EV)
-conn_comps = connected_components(g)
-for comp in conn_comps
-	@show "ciao"
-	subgraph,vmap = induced_subgraph(g, comp)
-	path = dfs_tree(subgraph, 1)
-	edges = topological_sort_by_dfs(path)
-	inds = vmap[edges]
-	for ind in inds
-		write(io,"$ind ")
-	end
-	write(io,"\n")
-end
-close(io)
