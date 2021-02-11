@@ -16,11 +16,25 @@ function get_boundary_alpha_shape(hyperplane::Hyperplane)
 end
 
 
+# TODO da debuggare
 function save_boundary_shape(folder::String,hyperplane::Hyperplane)
 	V,EV = get_boundary_alpha_shape(hyperplane)
+	# devo renderlo diretto e cercare i cicli
+
+	io = open(joinpath(folder,"boundary_edges.txt"),"w")
+	g = model2graph(V,EV)
+	conn_comps = connected_components(g)
+	for comp in conn_comps
+		subgraph,vmap = induced_subgraph(g, comp)
+		path = dfs_tree(subgraph, 1)
+		edges = topological_sort_by_dfs(path)
+		write(io,"$edges\n")
+	end
+	close(io)
 	# embed V,EV in 3D space
 	plane = Plane(hyperplane.direction, hyperplane.centroid)
 	vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(V,zeros(size(V,2))'))
 	FileManager.save_points_txt(joinpath(folder,"boundary_points.txt"), vertices)
-	FileManager.save_cells_txt(joinpath(folder,"boundary_edges.txt"), EV)
+
+	#FileManager.save_cells_txt(joinpath(folder,"boundary_edges.txt"), EV)
 end

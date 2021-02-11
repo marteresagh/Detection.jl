@@ -18,7 +18,7 @@
 
 function linearization(V::Lar.Points,EV::Lar.Cells)
 	out = Array{Lar.Struct,1}()
-	graph = Common.graph_edge2edge(V,EV)
+	graph = Common.model2graph_edge2edge(V,EV)
 	conn_comps = connected_components(graph)
 
 	for comp in conn_comps # indice degli spigoli nella componente
