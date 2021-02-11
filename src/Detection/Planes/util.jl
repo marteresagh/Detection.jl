@@ -18,26 +18,10 @@ end
 
 function save_boundary_shape(folder::String,hyperplane::Hyperplane)
 	V,EV = get_boundary_alpha_shape(hyperplane)
-	@show size(V,2), length(EV)
-	io = open(joinpath(folder,"boundary_edges.txt"),"w")
-	g = Common.model2graph(V,EV)
-	conn_comps = connected_components(g)
-	for comp in conn_comps
-		subgraph,vmap = induced_subgraph(g, comp)
-		path = dfs_tree(subgraph, 1)
-		edges = topological_sort_by_dfs(path)
-		inds = vmap[edges]
-		for ind in inds
-			write(io,"$ind ")
-		end
-		write(io,"\n")
-	end
-	close(io)
 
-	# embed V,EV in 3D space
 	plane = Plane(hyperplane.direction, hyperplane.centroid)
 	vertices = Common.apply_matrix(Lar.inv(plane.matrix), vcat(V,zeros(size(V,2))'))
-	FileManager.save_points_txt(joinpath(folder,"boundary_points.txt"), vertices)
 
-	#FileManager.save_cells_txt(joinpath(folder,"boundary_edges.txt"), EV)
+	FileManager.save_points_txt(joinpath(folder,"boundary_points.txt"), vertices)
+	FileManager.save_connected_components(joinpath(folder,"boundary_edges.txt"), V, EV)
 end
