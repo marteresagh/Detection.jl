@@ -21,7 +21,7 @@ function save_boundary_shape(folder::String,hyperplane::Hyperplane)
 	# devo renderlo diretto e cercare i cicli
 
 	io = open(joinpath(folder,"boundary_edges.txt"),"w")
-	g = model2graph(V,EV)
+	g = Common.model2graph(V,EV)
 	conn_comps = connected_components(g)
 	for comp in conn_comps
 		subgraph,vmap = induced_subgraph(g, comp)
