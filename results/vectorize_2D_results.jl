@@ -2,16 +2,15 @@ using Common
 using FileManager
 using Visualization
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/LACONTEA"
 INPUT_PC = FileManager.source2pc(source,1)
+
 centroid = Common.centroid(INPUT_PC.coordinates)
 
-NAME_PROJ = "MURI_debug"
+NAME_PROJ = "LA_CONTEA_LOD3"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 
 function read_data(folder,NAME_PROJ)
-	W = nothing
-	EW = nothing
 	hyperplanes = Hyperplane[]
 	out = Array{Lar.Struct,1}()
 	for (root, dirs, files) in walkdir(joinpath(folder,NAME_PROJ))
@@ -41,6 +40,11 @@ function read_data(folder,NAME_PROJ)
 end
 
 hyperplanes, W, EW = read_data(folder,NAME_PROJ)
+
+GL.VIEW([
+	Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+])
+
 
 V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
 

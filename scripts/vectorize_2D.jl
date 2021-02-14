@@ -79,7 +79,6 @@ function main()
 	Detection.flushprintln("N. of inliers  =>  $N")
 	Detection.flushprintln("N. of k-nn  =>  $k")
 
-
 	# detection
 	Detection.pc2plane(output_folder, project_name, PC, par, failed, N, k; masterseeds = masterseeds)
 
