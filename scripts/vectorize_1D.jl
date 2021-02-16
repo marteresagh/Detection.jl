@@ -70,6 +70,8 @@ function main()
 	plane = Detection.Plane(b[1],b[2],b[3],b[4])
 	affine_matrix = Detection.Lar.approxVal(16).(plane.matrix) # rotation matrix
 
+	PC = Detection.FileManager.source2pc(source, lod)
+
 	Detection.flushprintln("== Parameters ==")
 	Detection.flushprintln("Source  =>  $source")
 	Detection.flushprintln("Output folder  =>  $output_folder")
@@ -82,7 +84,7 @@ function main()
 	Detection.flushprintln("Affine matrix =>  $affine_matrix")
 
 
-	Detection.pc2lines(output_folder, project_name, source, lod, par, failed, N, k, affine_matrix; masterseeds = masterseeds)
+	Detection.pc2lines(output_folder, project_name, PC, par, failed, N, k, affine_matrix; masterseeds = masterseeds)
 end
 
 @time main()
