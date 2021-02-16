@@ -17,7 +17,8 @@ Detect lines in a thin slice of point cloud.
 function pc2lines(
 	folder::String,
 	project_name::String,
-	PC::PointCloud,
+	source::String,
+	lod::Int64,
 	par::Float64,
 	failed::Int64,
 	N::Int64,
@@ -34,8 +35,14 @@ function pc2lines(
 	dirs = Vect_1D_Dirs(folder, project_name)
 
 	# POINTCLOUDS/FULL
+	PC = Detection.FileManager.source2pc(source, lod)
+
 	flushprintln("Slice: $(PC.n_points) points in slice")
-	FileManager.save_pointcloud(joinpath(dirs.FULL,"slice.las"), PC, "VECTORIZATION_1D" )
+	if isfile(source)
+		cp(source,joinpath(dirs.FULL,"slice.las"))
+	else
+		FileManager.save_pointcloud(joinpath(dirs.FULL,"slice.las"), PC, "VECTORIZATION_1D" )
+	end
 
 	INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
 
