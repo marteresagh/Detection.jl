@@ -68,7 +68,7 @@ function pc2lines(
 	flushprintln()
 	flushprintln("=========== RESULTS =============")
 	flushprintln("$i lines detected")
-	FileManager.successful(i!=0, dirs.output_folder)
 	save_partitions(PC, params, Lar.inv(affine_matrix), dirs)
+	FileManager.successful(i!=0, dirs.output_folder)
 
 end
