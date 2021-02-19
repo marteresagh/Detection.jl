@@ -8,15 +8,16 @@ using Statistics
 # fname = "examples/las/polyline.las"
 # fname = "examples/las/full.las"
 # fname = "examples/las/square.las"
-# fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
+fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
 # fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/sezione_AMPHI_z39_5cm.las"
 # fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/casaletto_planimetria.las"
 #
-# fname = "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS/SEZIONE_z=10_5.las"
 fname = "C:/Users/marte/Documents/GEOWEB/TEST/TEST NAVVIS/SEZIONE/SEZIONE_z=11_8.las"
 PC = FileManager.las2pointcloud(fname)
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
 
+
+# INPUT_PC = PointCloud(PC.coordinates[1:2,unfitted], PC.rgbs[:,unfitted])
 # user - parameters
 par = 0.05
 failed = 100
@@ -48,15 +49,49 @@ GL.VIEW([
 	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,params.visited])'),GL.COLORS[2]),
 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),V),EV,GL.COLORS[1],1.0)
 ])
+#
+#
+# GL.VIEW([
+# 	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[2]),
+# 	Visualization.mesh_lines(hyperplanes)...
+# ])
 
+current_inds = setdiff(collect(1:PC.n_points),params.fitted)
+# GL.VIEW([
+# 	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) ,
+# 	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,unfitted]'),GL.COLORS[2]),
+# ])
+#
 
+INPUT_PC2 = PointCloud(PC.coordinates[1:2,current_inds], PC.rgbs[:,current_inds])
+
+# outliers
+outliers = Common.outliers(INPUT_PC2, collect(1:INPUT_PC2.n_points), k)
+
+# process
+params2 = Initializer(INPUT_PC,par,threshold,failed,N,k,current_inds[outliers],current_inds)
+#params2.visited = copy(params.visited)
+
+# masterseeds = "C:/Users/marte/Documents/GEOWEB/wrapper_file/JSON/seeds_sezione650.txt"
+# given_seeds = FileManager.load_points(masterseeds)
+# seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
+seeds = Int64[]
+
+@time hyperplanes2 = Detection.iterate_detection(params2; seeds = seeds, debug = true)
+
+hyp = union(hyperplanes,hyperplanes2)
+
+V,EV = Common.DrawLines(hyperplanes,0.0)
+W,EW = Common.DrawLines(hyperplanes2,0.0)
 GL.VIEW([
-	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[2]),
-	Visualization.mesh_lines(hyperplanes)...
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,params.visited])'),GL.COLORS[2]),
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[12]),
+	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,params.visited])'),GL.COLORS[2]),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),V),EV,GL.COLORS[1],1.0),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),W),EW,GL.COLORS[2],1.0)
 ])
 
-
 GL.VIEW([
-	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates'),GL.COLORS[1]) ,
-	GL.GLPoints(convert(Lar.Points,INPUT_PC.coordinates[:,outliers]'),GL.COLORS[2]),
+	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[2]),
+	Visualization.mesh_lines(hyperplanes)...
 ])

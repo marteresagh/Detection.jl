@@ -1,10 +1,3 @@
-# TODO modificare i salvataggi
-# per ogni shape creare una cartella_timestamp con :
-# 1. file per descrizione piano infinito : normal e centroide
-# 2. bounding box orientato
-# 3. segmenti del bordo alpha shape
-# 4. inliers
-
 """
 	iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1}, debug = false)
 
@@ -18,7 +11,7 @@ Algorithm description:
  - Search terminates if the detection failed a number of times in a row
 """
 function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1}, debug = false)
-	inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
+	#inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
 
 	# 1. - Initialization
 	hyperplanes = Hyperplane[]
@@ -61,10 +54,10 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 
 	search = true
 	while search
-
-		if isready(inputBuffer) && take!(inputBuffer) == 'q'
-			break # break main loop
-		end
+		#
+		# if isready(inputBuffer) && take!(inputBuffer) == 'q'
+		# 	break # break main loop
+		# end
 
 		found = false
 		while !found && f < params.failed
@@ -103,13 +96,13 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 
 	end
 
-	if debug # interrompe il task per la lettura da tastiera
-		try
-			Base.throwto(task, InterruptException())
-		catch y
-			flushprintln("STOPPED")
-		end
-	end
+	# if debug # interrompe il task per la lettura da tastiera
+	# 	try
+	# 		Base.throwto(task, InterruptException())
+	# 	catch y
+	# 		flushprintln("STOPPED")
+	# 	end
+	# end
 
 	return hyperplanes
 end

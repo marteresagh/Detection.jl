@@ -70,12 +70,12 @@ function main()
 	plane = Detection.Plane(b[1],b[2],b[3],b[4])
 
 	PC = Detection.FileManager.source2pc(source, lod)
-	affine_matrix = Detection.Lar.approxVal(16).(plane.matrix) # rotation matrix
+	# affine_matrix = Detection.Lar.approxVal(16).(plane.matrix) # rotation matrix
 
-
-	# points2D = Detection.apply_matrix(plane.matrix,points)[1:2,:]
-	# R = Detection.basis_minimum_OBB_2D(points2D)
-	# affine_matrix = Detection.Lar.approxVal(16).(Common.matrix4(Lar.inv(R))*plane.matrix) # rotation matrix
+	points = PC.coordinates
+	points2D = Detection.Common.apply_matrix(plane.matrix,points)[1:2,:]
+	R = Detection.Common.basis_minimum_OBB_2D(points2D)
+	affine_matrix = Detection.Lar.approxVal(16).(Detection.Common.matrix4(Detection.Lar.inv(R))*plane.matrix) # rotation matrix
 
 
 	Detection.flushprintln("== Parameters ==")
