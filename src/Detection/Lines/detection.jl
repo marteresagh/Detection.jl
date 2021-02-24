@@ -71,7 +71,7 @@ function iterate_lines_detection(
 		while !found && f < params.failed
 			try
 				hyperplane, cluster, all_visited_verts = get_hyperplane(params)
-				# union!(params.visited,all_visited_verts)
+			#	union!(params.visited,all_visited_verts)
 				validity(hyperplane, params) # test of validity
 				found = true
 			catch y
