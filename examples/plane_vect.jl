@@ -60,7 +60,7 @@ for (root, dirs, files) in walkdir(dirs.PLANE)
 end
 
 
-V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
+V,FV = Common.DrawPlanes(hyperplanes; box_oriented=false)
 centroid = Common.centroid(V)
 
 GL.VIEW([

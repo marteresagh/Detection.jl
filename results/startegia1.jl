@@ -54,6 +54,7 @@ function planes_intersection_test(planes, aabb)
 				GL.GLPoints(convert(Lar.Points,V')),
 				GL.GLGrid(V,union(FVs...))
 			 ]);
+	return V,FVs
 end
 
 
@@ -82,15 +83,4 @@ aabb = cloudmetadata.tightBoundingBox
 
 # planes=[Plane([0,1,0.],[0,0,0.]),Plane([0,0.,1],[0,0,5.]),Plane([1,0,0.],[5,0,0.])]
 # AABBs=[AABB(10,0,1,0,10,0),AABB(6,0,6,0,6,4),AABB(6,4,10,0,10,4)]
-planes_intersection_test(planes[1:20], AABBs)
-
-# GL.VIEW([
-# 	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),W)')),
-# 	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.0),
-# ])
-
-# TODO da concludere
-V,FV = Common.DrawPlanes(planes,aabb)
-GL.VIEW( [
-			GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV)
-		 ]);
+V,FVs = planes_intersection_test(planes[1:20], AABBs)

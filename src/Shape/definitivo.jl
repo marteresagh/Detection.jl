@@ -165,7 +165,7 @@ function polyline(V, EV, clusters)
 		inliers = setdiff(inds,outer)
 		direction, centroid = Common.Fit_Line(V[:,inliers])
 		line = Hyperplane(PointCloud(V[:,inds]),direction,centroid)
-		L,EL = Common.DrawLines(line, 0.0)
+		L,EL = Common.DrawLines(line)
 		out = push!(out, Lar.Struct([(L,EL)]))
 	end
 

@@ -49,7 +49,7 @@ GL.VIEW([
 ])
 
 
-V,FV = Common.DrawPlanes(hyperplanes, nothing, 0.0)
+V,FV = Common.DrawPlanes(hyperplanes; box_oriented=false)
 
 GL.VIEW([
 	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),

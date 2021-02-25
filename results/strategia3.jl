@@ -46,7 +46,7 @@ function test(folder,NAME_PROJ)
 			hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)
 
 			try
-				V,EV = Common.DrawLines(hyperplanes,0.0)
+				V,EV = Common.DrawLines(hyperplanes)
 				V = Common.apply_matrix(Lar.inv(plane.matrix), vcat(V,zeros(size(V,2))'))
 
 				out = push!(out, Lar.Struct([(V, EV)]))

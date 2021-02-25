@@ -45,7 +45,7 @@ hyperplanes = Detection.iterate_detection(params,debug = true)
 
 # hyperplane,_,_ = Detection.get_hyperplane(params)
 
-V,EV = Common.DrawLines(hyperplanes,0.0)
+V,EV = Common.DrawLines(hyperplanes)
 GL.VIEW([
 
 			GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[12]),
