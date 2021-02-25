@@ -6,15 +6,21 @@ NAME_PROJ = "MURI"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 
 
-function planes_intersection_test(planes, aabb, centroid)
-	function EV_FV_Planes(planes::Array{Plane,1}, AABBs::Array{AABB,1})
+function planes_intersection_test(planes, aabb)
+	function EV_FV_Planes(planes::Array{Plane,1}, AABBs::Array{AABB,1}, u = 0.05)
 		out = Array{Lar.Struct,1}()
 		for i in  1:length(planes)
 			plane = planes[i]
 			direction = [plane.a,plane.b,plane.c]
 			centroid = direction*plane.d
 			AABB = AABBs[i]
-			V = Common.intersectAABBplane(AABB,direction,centroid)
+			AABB.x_min -= u
+			AABB.x_max += u
+			AABB.y_min -= u
+			AABB.y_max += u
+			AABB.z_min -= u
+			AABB.z_max += u
+			V = Common.box_intersects_plane(AABB,direction,centroid)
 			#triangulate vertex projected in plane XY
 			points2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
 			FV = Common.delaunay_triangulation(points2D)
@@ -37,14 +43,16 @@ function planes_intersection_test(planes, aabb, centroid)
 	rV, rcopEV, rcopFE = Lar.Arrangement.spatial_arrangement_1( W,copEV,copFE,false)
 	#
 	triangulated_faces = Lar.triangulate(rV, [rcopEV, rcopFE]);
+
 	FVs = convert(Array{Lar.Cells}, triangulated_faces);
+	centroid = Common.centroid(Matrix(rV'))
 	V = Common.apply_matrix(Lar.t(-centroid...),convert(Lar.Points, rV'));
 	GL.VIEW( GL.GLExplode(V,FVs,1.5,1.5,1.5,99,1) );
 	#
 	#
 	GL.VIEW( [
-				GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),V)')),
-				GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),union(FVs...))
+				GL.GLPoints(convert(Lar.Points,V')),
+				GL.GLGrid(V,union(FVs...))
 			 ]);
 end
 
@@ -71,9 +79,10 @@ planes,AABBs = test(folder,NAME_PROJ)
 source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
 cloudmetadata = CloudMetadata(source)
 aabb = cloudmetadata.tightBoundingBox
-centroid = [(aabb.x_max+aabb.x_min)/2,(aabb.y_max+aabb.y_min)/2,(aabb.z_max+aabb.z_min)/2]
 
-planes_intersection_test(planes[1:5], AABBs[1:5], centroid)
+# planes=[Plane([0,1,0.],[0,0,0.]),Plane([0,0.,1],[0,0,5.]),Plane([1,0,0.],[5,0,0.])]
+# AABBs=[AABB(10,0,1,0,10,0),AABB(6,0,6,0,6,4),AABB(6,4,10,0,10,4)]
+planes_intersection_test(planes[1:20], AABBs)
 
 # GL.VIEW([
 # 	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),W)')),
