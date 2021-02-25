@@ -174,7 +174,7 @@ version = "1.4.5"
 
 [[FileManager]]
 deps = ["Common", "DataStructures", "Dates", "JSON", "LasIO", "LazIO", "PlyIO", "Printf"]
-git-tree-sha1 = "cfd8a158861925053c446c6c7b2d5a224785be49"
+git-tree-sha1 = "c924b3d49334a7949c96c84b355e7cb3a3be8bb6"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/FileManager.jl"
 uuid = "0bd84659-c0f7-4690-a84b-0a06eabf7473"

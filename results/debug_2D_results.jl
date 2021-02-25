@@ -19,12 +19,12 @@ for (root, dirs, files) in walkdir(dirs.PLANE)
 end
 
 
-V,FV = Common.DrawPlanes(hyperplanes; box_oriented=false)
+V,EV,FV = Common.DrawPlanes(hyperplanes; box_oriented=false)
 centroid = Common.centroid(V)
 
 GL.VIEW([
-	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8)
+	# Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),EV,GL.COLORS[1],0.8)
 ])
 
 GL.VIEW([
