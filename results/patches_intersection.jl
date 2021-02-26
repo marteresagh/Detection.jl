@@ -5,9 +5,10 @@ using Visualization
 source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
 cloudmetadata = CloudMetadata(source)
 aabb = cloudmetadata.tightBoundingBox
-NAME_PROJ = "MURI.old"
+NAME_PROJ = "MURI"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
-
+full_inliers_folder = joinpath(joinpath(folder,NAME_PROJ),"PLANES")
+isdir(full_inliers_folder)
 hyperplanes, OBBs, alpha_shapes, las_full_inliers = FileManager.read_data_vect2D(folder,NAME_PROJ)
 
 OBBs = [Common.ch_oriented_boundingbox(las2pointcloud(file).coordinates) for file in las_full_inliers]
