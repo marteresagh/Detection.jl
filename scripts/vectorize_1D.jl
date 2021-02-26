@@ -67,15 +67,19 @@ function main()
 	# plane description
 	b = tryparse.(Float64,split(plane, " "))
 	@assert length(b) == 4 "$plane: Please described the plane in Hessian normal form"
-	plane = Detection.Plane(b[1],b[2],b[3],b[4])
+
 
 	PC = Detection.FileManager.source2pc(source, lod)
+
+	# plane = Detection.Plane(b[1],b[2],b[3],b[4])
 	# affine_matrix = Detection.Lar.approxVal(16).(plane.matrix) # rotation matrix
 
 	points = PC.coordinates
+	centroid = Detection.Common.centroid(points)
+	plane = Detection.Plane([b[1],b[2],b[3]],centroid)
 	points2D = Detection.Common.apply_matrix(plane.matrix,points)[1:2,:]
 	R = Detection.Common.basis_minimum_OBB_2D(points2D)
-	affine_matrix = Detection.Lar.approxVal(16).(Detection.Common.matrix4(Detection.Lar.inv(R))*plane.matrix) # rotation matrix
+	affine_matrix = Detection.Lar.approxVal(16).(Detection.Common.matrix4(R)*plane.matrix) # rotation matrix
 
 
 	Detection.flushprintln("== Parameters ==")

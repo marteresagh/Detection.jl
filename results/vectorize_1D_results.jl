@@ -8,13 +8,12 @@ using FileManager
 # NAME_PROJ =  "SEZIONE_z=10_5"
 
 FOLDER = "C:/Users/marte/Documents/Julia_package/package_test/TEST/VECT_1D"
-NAME_PROJ =  "PROFILO"; plane = Plane(0, 1, 0, 14.45)
-NAME_PROJ =  "PLANIMETRIA"; plane = Plane(0, 0, 1, 6.50)
+NAME_PROJ =  "PROFILO"; plane = Plane(0, 1, 0, 15.45)
+# NAME_PROJ =  "PLANIMETRIA"; plane = Plane(0, 0, 1, 6.50)
 
 
 dirs = Detection.Vect_1D_Dirs(FOLDER, NAME_PROJ)
 
-plane = Plane(0, 1, 0, 14.45)
 
 V,EV = FileManager.load_segment(joinpath(dirs.RAW,"segment3D.ext"))
 PC = FileManager.las2pointcloud(joinpath(dirs.FULL,"slice.las"))
