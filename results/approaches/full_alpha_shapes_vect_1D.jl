@@ -4,8 +4,8 @@ using AlphaStructures
 using Visualization
 using Detection
 
-function test(folder,NAME_PROJ)
-	files = FileManager.searchfile(joinpath(joinpath(folder,NAME_PROJ),"PLANES"),".las")
+function full_vect_1D_on_boundary(folder,NAME_PROJ)
+	files = FileManager.searchfile(joinpath(joinpath(folder,NAME_PROJ),"PLANES"),".las") #TODO da sistemare la struttura delle cartelle
 	out = Array{Lar.Struct,1}()
 	for file in files
 		h,_ = LasIO.FileIO.load(file)
@@ -57,7 +57,7 @@ end
 NAME_PROJ = "MURI.old"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 
-W,EW = test(folder,NAME_PROJ)
+W,EW = full_vect_1D_on_boundary(folder,NAME_PROJ)
 centroid = Common.centroid(W)
 
 GL.VIEW([

@@ -4,13 +4,12 @@ using AlphaStructures
 using Visualization
 using Detection
 
-function alpha_shapes(folder,NAME_PROJ)
-	files = FileManager.searchfile(joinpath(joinpath(folder,NAME_PROJ),"PLANES"),".las")
-	out = Array{Lar.Struct,1}()
-	for file in files
-		h,_ = LasIO.FileIO.load(file)
-		if h.records_count > 1000
-			@show "sono qui"
+# TODO sistemare struttura cartelle
+function full_alpha_shapes(folder,NAME_PROJ)
+	for (root, dirs, files) in walkdir(joinpath(folder,NAME_PROJ))
+		for dir in dirs
+			folder_plane = joinpath(root,dir)
+			file = joinpath(folder_plane,"full_inliers.las")
 			PC = FileManager.las2pointcloud(file)
 			points = PC.coordinates
 			plane = Plane(points)
@@ -28,18 +27,16 @@ function alpha_shapes(folder,NAME_PROJ)
 			#w, EW = Detection.linearization(w,EW)
 			W = Common.apply_matrix(Lar.inv(plane.matrix), vcat(w,zeros(size(w,2))'))
 
-			out = push!(out, Lar.Struct([(W, EW)]))
+			FileManager.save_points_txt(joinpath(folder_plane,"full_boundary_points.txt"), W)
+			FileManager.save_connected_components(joinpath(folder_plane,"full_boundary_edges.txt"), W, EW)
 		end
 	end
-	out = Lar.Struct(out)
-	W,EW = Lar.struct2lar(out)
-	return W, EW
 end
 
 NAME_PROJ = "MURI.old"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 
-W,EW = alpha_shapes(folder,NAME_PROJ)
+W,EW = full_alpha_shapes(folder,NAME_PROJ)
 centroid = Common.centroid(W)
 
 GL.VIEW([
