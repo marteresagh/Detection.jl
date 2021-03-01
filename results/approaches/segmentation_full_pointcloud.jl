@@ -5,27 +5,21 @@ using Visualization
 using Detection
 
 
-function segment_pointcloud(folder, NAME_PROJ, potree)
-	for (root, dirs, files) in walkdir(joinpath(folder,NAME_PROJ))
-		for dir in dirs
-			folder_plane = joinpath(root,dir)
-			# inliers = FileManager.load_points(joinpath(folder_plane,"inliers.txt"))[1:3,:]
-			# OBB = Common.ch_oriented_boundingbox(inliers)
-			io = open(joinpath(folder_plane,"finite_plane.txt"), "r")
-			lines = readlines(io)
-			close(io)
-			b = [tryparse.(Float64,split(lines[i], " ")) for i in 1:length(lines)]
-			OBB = Volume([b[2][1],b[2][2],b[2][3]],[b[3][1],b[3][2],b[3][3]],[b[4][1],b[4][2],b[4][3]])
-
-			model = getmodel(OBB)
-			OrthographicProjection.segment("C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI", joinpath(folder_plane,"full_inliers.las"), model)
-		end
+function segment_pointcloud(folders, hyperplanes, potree, thickness)
+	n_planes = length(folders)
+	for i in 1:n_planes
+		inliers_points = hyperplanes[i].inliers.coordinates
+		aabb = Common.boundingbox(inliers_points)
+		plane = Plane(hyperplanes[i].direction,hyperplanes[i].centroid)
+		model = Common.getmodel(plane, thickness, aabb)
+		OrthographicProjection.segment("C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI", joinpath(folders[i],"full_inliers.las"), model)
 	end
 end
 
 
-NAME_PROJ = "MURI.old"
+NAME_PROJ = "MURI_LOD3"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 potree = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
 
-segment_pointcloud(folder, NAME_PROJ, potree)
+dirs, hyperplanes, OBBs, alpha_shapes, las_full_inliers = read_data_vect2D(folder,NAME_PROJ)
+# segment_pointcloud(dirs, hyperplanes, potree, 0.04)
