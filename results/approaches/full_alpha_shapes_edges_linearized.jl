@@ -4,9 +4,10 @@ using AlphaStructures
 using Visualization
 using Detection
 
-function full_alpha_shapes(folders)
+function full_boundary(folders)
 	n_planes = length(folders)
 	for i in 1:n_planes
+		println("$i of $n_planes")
 		file = joinpath(folders[i],"full_inliers.las")
 		PC = FileManager.las2pointcloud(file)
 		points = PC.coordinates
@@ -25,20 +26,27 @@ function full_alpha_shapes(folders)
 		#w, EW = Detection.linearization(w,EW)
 		W = Common.apply_matrix(Lar.inv(plane.matrix), vcat(w,zeros(size(w,2))'))
 
-		FileManager.save_points_txt(joinpath(folder_plane,"full_boundary_points.txt"), W)
-		FileManager.save_connected_components(joinpath(folder_plane,"full_boundary_edges.txt"), W, EW)
+		FileManager.save_points_txt(joinpath(folders[i],"full_boundary_points.txt"), W)
+		FileManager.save_connected_components(joinpath(folders[i],"full_boundary_edges.txt"), W, EW)
 	end
 end
 
 NAME_PROJ = "MURI_LOD3"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 
-folders, hyperplanes, OBBs, alpha_shapes, las_full_inliers = FileManager.read_data_vect2D(folder,NAME_PROJ)
+folders, hyperplanes, OBBs, alpha_shapes, las_full_inliers, full_alpha_shapes = read_data_vect2D(folder,NAME_PROJ)
 
-full_alpha_shapes(folders)
-centroid = Common.centroid(W)
+# full_boundary(folders)
 
-GL.VIEW([
-	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),W)')),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.0),
-])
+function vect2D(full_alpha_shapes, centroid)
+	mesh = []
+	for shape in full_alpha_shapes
+		V,EV = shape
+		push!(mesh,GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),EV,GL.COLORS[1],1.0))
+	end
+	return mesh
+end
+
+centroid = Common.centroid(hyperplanes[1].inliers.coordinates)
+
+GL.VIEW(vect2D(full_alpha_shapes, centroid))
