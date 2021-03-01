@@ -34,7 +34,7 @@ end
 NAME_PROJ = "MURI_LOD3"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 
-folders, hyperplanes, OBBs, alpha_shapes, las_full_inliers, full_alpha_shapes = read_data_vect2D(folder,NAME_PROJ)
+folders, hyperplanes, OBBs, alpha_shapes, las_full_inliers, full_alpha_shapes = FileManager.read_data_vect2D(folder,NAME_PROJ)
 
 # full_boundary(folders)
 
