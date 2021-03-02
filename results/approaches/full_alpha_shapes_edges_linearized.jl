@@ -34,19 +34,20 @@ end
 NAME_PROJ = "MURI_LOD3"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 
-folders, hyperplanes, OBBs, alpha_shapes, las_full_inliers, full_alpha_shapes = FileManager.read_data_vect2D(folder,NAME_PROJ)
+folders, hyperplanes, OBBs, alpha_shapes, las_full_inliers, full_alpha_shapes = FileManager.read_all_data(folder,NAME_PROJ)
 
 # full_boundary(folders)
 
-function vect2D(full_alpha_shapes, centroid)
+function draw_shapes(full_alpha_shapes, centroid)
 	mesh = []
 	for shape in full_alpha_shapes
 		V,EV = shape
-		push!(mesh,GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),EV,GL.COLORS[1],1.0))
+		col = GL.COLORS[rand(1:12)]
+		push!(mesh,GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),EV,col,1.0))
 	end
 	return mesh
 end
 
 centroid = Common.centroid(hyperplanes[1].inliers.coordinates)
 
-GL.VIEW(vect2D(full_alpha_shapes, centroid))
+GL.VIEW(draw_shapes(full_alpha_shapes, centroid))

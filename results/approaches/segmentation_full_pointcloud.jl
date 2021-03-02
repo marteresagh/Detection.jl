@@ -21,5 +21,5 @@ NAME_PROJ = "MURI_LOD3"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 potree = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
 
-dirs, hyperplanes, OBBs, alpha_shapes, las_full_inliers = read_data_vect2D(folder,NAME_PROJ)
+dirs, hyperplanes, OBBs, alpha_shapes, las_full_inliers = read_all_data(folder,NAME_PROJ)
 # segment_pointcloud(dirs, hyperplanes, potree, 0.04)

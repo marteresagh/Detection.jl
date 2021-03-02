@@ -8,7 +8,7 @@ aabb = cloudmetadata.tightBoundingBox
 NAME_PROJ = "MURI_LOD3"
 folder = "C:/Users/marte/Documents/GEOWEB/TEST"
 
-hyperplanes, OBBs, alpha_shapes, las_full_inliers = FileManager.read_data_vect2D(folder,NAME_PROJ)
+hyperplanes, OBBs, alpha_shapes, las_full_inliers = FileManager.read_all_data(folder,NAME_PROJ)
 
 # OBBs = [Common.ch_oriented_boundingbox(las2pointcloud(file).coordinates) for file in las_full_inliers]
 
