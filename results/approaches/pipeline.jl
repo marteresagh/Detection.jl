@@ -31,7 +31,7 @@ GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V_p), FV_p)
 ]);
 
 ################################################################################
-#							PIANI - INTERSEZIONI							   #
+#							PIANI - ARRANGEMENT							       #
 ################################################################################
 
 planes = [Plane(hyperplane.direction,hyperplane.centroid) for hyperplane in hyperplanes]
@@ -60,7 +60,7 @@ GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),union(EVs...))
 # salvo un file .las "full_inliers.las" nella cartella del piano associato
 ################################################################################
 
-function segment_pointcloud(folders, hyperplanes, potree, thickness)
+function save_inliers(folders, hyperplanes, potree, thickness)
 	n_planes = length(folders)
 	for i in 1:n_planes
 		inliers_points = hyperplanes[i].inliers.coordinates
@@ -73,7 +73,7 @@ end
 
 thickness = 0.04
 # RIMUOVERE il commento per estrazione degli inliers
-# segment_pointcloud(folders, hyperplanes, potree, thickness)
+# save_inliers(folders, hyperplanes, potree, thickness)
 
 ################################################################################
 # 2.
@@ -85,7 +85,7 @@ thickness = 0.04
 
 las_full_inliers = FileManager.get_all_inliers(folders)
 
-function full_boundary(folders::Array{String,1}, las_full_inliers::Array{String,1})
+function save_boundary(folders::Array{String,1}, las_full_inliers::Array{String,1})
 	n_planes = length(folders)
 	for i in 1:n_planes
 		println("$i of $n_planes")
@@ -113,7 +113,7 @@ function full_boundary(folders::Array{String,1}, las_full_inliers::Array{String,
 end
 
 # RIMUOVERE il commento per calcolo degli spigoli di bordo
-# full_boundary(folders, las_full_inliers)
+# save_boundary(folders, las_full_inliers)
 
 boundary, full_boundary = FileManager.get_boundary(folders)
 
