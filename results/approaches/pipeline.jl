@@ -136,3 +136,26 @@ GL.VIEW(mesh_models(full_boundary, centroid))
 # 3.
 # Dato il bordo di ogni patch, provare con la linearizzazione
 ################################################################################
+
+function linearized_boundary(models)
+	out = Array{Lar.Struct,1}()
+	i = 1
+	for model in models
+		@show i
+		V,EV = model
+		plane = Plane(V)
+		V2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
+		W2D,EW = Detection.linearization(V2D,EV)
+		W = Common.apply_matrix(Lar.inv(plane.matrix),vcat(W2D,zeros(size(W2D,2))'))
+		out = push!(out, Lar.Struct([(W,EW)]))
+		i = i+1
+	end
+	out = Lar.Struct(out)
+	V,EV = Lar.struct2lar(out)
+end
+
+V_boundary,EV_boundary = linearized_boundary(full_boundary)
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),V_boundary)')),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V_boundary), EV_boundary)
+]);

@@ -26,7 +26,9 @@ function linearization(V::Lar.Points,EV::Lar.Cells)
 		clus = clusters(V,EV, deepcopy(subgraph), 0.1)
 		#dict_clusters, graph_cluadj = graph_adjacency_clusters(V, EV, subgraph, clusters)
 		pol = polyline(V, EV, clus)
-		out = push!(out, Lar.Struct([pol]))
+		if !isnothing(pol)
+			out = push!(out, Lar.Struct([pol]))
+		end
 	end
 
 	out = Lar.Struct(out)
@@ -43,13 +45,17 @@ function graph_adjacency_clusters(V, EV, clusters)
 	n_cluss = length(clusters)
 	dict_clusters = DataStructures.OrderedDict([i => clusters[i] for i in 1:n_cluss]...)
 	graph = SimpleGraph(n_cluss)
-
 	for (k,v) in dict_clusters
 		M_1 = Common.K(EV[v])
 		∂_1 = M_1'
 		S1 = sum(∂_1,dims=2)
 		outers = [k for k=1:length(S1) if S1[k]==1]
-		N = union([neighbors(graph_verts, outer) for outer in outers]...)
+
+		if !isempty(outers)
+			N = union([neighbors(graph_verts, outer) for outer in outers]...)
+		else
+			N = Int64[]
+		end
 
 		for n in N
 			for (kn,vn) in dict_clusters
@@ -169,6 +175,11 @@ function polyline(V, EV, clusters)
 		out = push!(out, Lar.Struct([(L,EL)]))
 	end
 
-	out = Lar.Struct(out)
-	return Lar.struct2lar(out)
+	if !isempty(out)
+		out = Lar.Struct(out)
+		return Lar.struct2lar(out)
+	else
+		return nothing
+	end
+
 end
