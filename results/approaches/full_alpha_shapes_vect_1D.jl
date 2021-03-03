@@ -4,64 +4,49 @@ using AlphaStructures
 using Visualization
 using Detection
 
-# TODO da vettorializzare gli spigoli ottenuti
-function full_vect_1D_on_boundary(folder,NAME_PROJ)
-	files = FileManager.searchfile(joinpath(joinpath(folder,NAME_PROJ),"PLANES"),".las") #TODO da sistemare la struttura delle cartelle
+function linearized_boundary(models)
 	out = Array{Lar.Struct,1}()
-	for file in files
-		h,_ = LasIO.FileIO.load(file)
-		if h.records_count > 1000
-			PC = FileManager.las2pointcloud(file)
-			points = PC.coordinates
-			plane = Plane(points)
-			V = Common.apply_matrix(plane.matrix,points)[1:2,:]
+	i = 1
+	cluss = []
+	for model in models
+		@show i
+		V,EV = model
+		plane = Plane(V)
+		V2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
+		(W2D,EW), clus = Detection.linearization(V2D,EV)
+		W = Common.apply_matrix(Lar.inv(plane.matrix),vcat(W2D,zeros(size(W2D,2))'))
+		push!(out, Lar.Struct([(W,EW)]))
+		push!(cluss,clus)
+		i = i+1
+	end
+	out = Lar.Struct(out)
+	V,EV = Lar.struct2lar(out)
+	return V,EV, cluss
+end
 
-			# 2. applica alpha shape con alpha = threshold
-			DT = Common.delaunay_triangulation(V)
-			filtration = AlphaStructures.alphaFilter(V,DT);
-			threshold = Common.estimate_threshold(V,40)
-			_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
+V_boundary,EV_boundary, cluss = linearized_boundary(full_boundary)
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),V_boundary)')),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V_boundary), EV_boundary)
+]);
 
-			# 3. estrai bordo
-			EV_boundary = Common.get_boundary_edges(V,FV)
-			w,EW = Lar.simplifyCells(V,EV_boundary)
-
-			par = 0.06
-			failed = 100
-			N = 10
-			k = 5
-			# threshold estimation
-			threshold = 0.06
-			# outliers
-			outliers = Int64[]
-			# process
-			params = Initializer(PointCloud(w, zeros(3,size(w,2))),par,threshold,failed,N,k,outliers)
-			seeds = Int64[]
-
-			hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)
-
-			try
-				V,EV = Common.DrawLines(hyperplanes)
-				V = Common.apply_matrix(Lar.inv(plane.matrix), vcat(V,zeros(size(V,2))'))
-
-				out = push!(out, Lar.Struct([(V, EV)]))
-			catch y
+function view_clusters(models,clusters, centroid)
+	mesh = []
+	l = length(models)
+	for i in 1:l
+		P, EP = models[i]
+		for clus in clusters[i]
+			for comp in clus
+				if !isempty(comp)
+					col=GL.COLORS[rand(1:12)]
+					push!(mesh,GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),P), EP[comp], col,1.0))
+				end
 			end
 		end
 	end
-	out = Lar.Struct(out)
-	W,EW = Lar.struct2lar(out)
-	return W, EW
+	return mesh
 end
 
+GL.VIEW(view_clusters(full_boundary,cluss, centroid));
 
-NAME_PROJ = "MURI.old"
-folder = "C:/Users/marte/Documents/GEOWEB/TEST"
-
-W,EW = full_vect_1D_on_boundary(folder,NAME_PROJ)
-centroid = Common.centroid(W)
-
-GL.VIEW([
-	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),W)')),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.0),
-])
+cluster = test()

@@ -13,26 +13,27 @@
 # 	return Lar.simplifyCells(V,EV_boundary)
 # end
 
-## INPUT = V,EV del bordo
+## INPUT = V,EV del bordo nel 2D
 
 
 function linearization(V::Lar.Points,EV::Lar.Cells)
 	out = Array{Lar.Struct,1}()
 	graph = Common.model2graph_edge2edge(V,EV)
 	conn_comps = connected_components(graph)
-
+	cluss = []
 	for comp in conn_comps # indice degli spigoli nella componente
 		subgraph = induced_subgraph(graph, comp)
 		clus = clusters(V,EV, deepcopy(subgraph), 0.1)
 		#dict_clusters, graph_cluadj = graph_adjacency_clusters(V, EV, subgraph, clusters)
 		pol = polyline(V, EV, clus)
+		push!(cluss,clus)
 		if !isnothing(pol)
 			out = push!(out, Lar.Struct([pol]))
 		end
 	end
 
 	out = Lar.Struct(out)
-	return Lar.struct2lar(out)
+	return Lar.struct2lar(out), cluss
 end
 
 

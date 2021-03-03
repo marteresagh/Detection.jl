@@ -23,7 +23,8 @@ module Detection
     include("Detection/Planes/main.jl")
     include("Detection/Planes/util.jl")
     # flat shape detection
-    include("Shape/definitivo.jl")
+    # include("Shape/definitivo.jl")
+    include("Shape/new.jl")
 
     export Initializer, Common, FileManager, LightGraphs
 end # module
