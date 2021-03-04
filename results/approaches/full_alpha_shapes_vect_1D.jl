@@ -55,29 +55,30 @@ centroid = [ 291250.5043433152, 4.630341344699344e6, 106.74835850440863]
 #
 # GL.VIEW(view_clusters(models,cluss, centroid));
 #
-model = full_boundary[1]
-V,EV = Detection.symplify_model(model; par = 0.01, angle = pi/6)
-GL.VIEW([
-	GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,model[1])[1:2,:])')),
-	GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,V)[1:2,:])'), GL.COLORS[2]),
-	GL.GLGrid(Common.apply_matrix(Plane(V).matrix,V)[1:2,:],EV, GL.COLORS[2],1.)
-])
-
+for i in 1:length(full_boundary)
+	@show i
+	model = full_boundary[i]
+	V,EV = Detection.symplify_model(model; par = 0.01, angle = pi/8)
+	GL.VIEW([
+		GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,model[1])[1:2,:])')),
+		GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,V)[1:2,:])'), GL.COLORS[2]),
+		GL.GLGrid(Common.apply_matrix(Plane(V).matrix,V)[1:2,:],EV, GL.COLORS[2],1.)
+	])
+end
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),models[1][1])')),
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),V)'), GL.COLORS[2]),
 	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),EV, GL.COLORS[2],1.)
 ])
 
-P = [7. 2 2 7 6 4 4 10; 6 6 5 5 4 4 2 2]
-EP = [[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8]]
-
+# DEBUG PROBLEMI con questi modelli 
+i = 24 #24 25 33 34 39 41
+model = full_boundary[i]
+T,ET = model
+V,EV = Detection.symplify_model(model; par = 0.01, angle = pi/10)
 GL.VIEW([
-	GL.GLGrid(P,EP, GL.COLORS[2],1.)
-])
-
-T,ET = Detection.remove_some_edges!(P, EP; err = 1.)
-
-GL.VIEW([
-	GL.GLGrid(T,ET, GL.COLORS[2],1.)
+	# GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,model[1])[1:2,:])')),
+	# GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,V)[1:2,:])'), GL.COLORS[2]),
+	GL.GLGrid(Common.apply_matrix(Plane(V).matrix,T)[1:2,:],ET, GL.COLORS[12],1.)
+	GL.GLGrid(Common.apply_matrix(Plane(V).matrix,V)[1:2,:],EV, GL.COLORS[2],1.)
 ])
