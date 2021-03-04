@@ -6,7 +6,7 @@ using Detection
 folder_proj = "C:/Users/marte/Documents/GEOWEB/TEST"
 NAME_PROJ = "MURI_LOD3"
 folders = FileManager.get_plane_folders(folder_proj,NAME_PROJ)
-boundary, models = FileManager.get_boundary(folders)
+boundary, full_boundary = FileManager.get_boundary(folders)
 centroid = [ 291250.5043433152, 4.630341344699344e6, 106.74835850440863]
 
 #
@@ -55,10 +55,29 @@ centroid = [ 291250.5043433152, 4.630341344699344e6, 106.74835850440863]
 #
 # GL.VIEW(view_clusters(models,cluss, centroid));
 #
-
-V,EV = Detection.test(models)
+model = full_boundary[1]
+V,EV = Detection.symplify_model(model; par = 0.01, angle = pi/6)
 GL.VIEW([
-	GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,models[1][1])[1:2,:])')),
+	GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,model[1])[1:2,:])')),
 	GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,V)[1:2,:])'), GL.COLORS[2]),
 	GL.GLGrid(Common.apply_matrix(Plane(V).matrix,V)[1:2,:],EV, GL.COLORS[2],1.)
+])
+
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),models[1][1])')),
+	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),V)'), GL.COLORS[2]),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),EV, GL.COLORS[2],1.)
+])
+
+P = [7. 2 2 7 6 4 4 10; 6 6 5 5 4 4 2 2]
+EP = [[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8]]
+
+GL.VIEW([
+	GL.GLGrid(P,EP, GL.COLORS[2],1.)
+])
+
+T,ET = Detection.remove_some_edges!(P, EP; err = 1.)
+
+GL.VIEW([
+	GL.GLGrid(T,ET, GL.COLORS[2],1.)
 ])
