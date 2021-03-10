@@ -1,10 +1,10 @@
-using NearestNeighbors
-using SparseArrays
+# using NearestNeighbors
+# using SparseArrays
 
 """
 linearizazzione della patch planare 3D.
 """
-function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
+function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 	# model = V,EV in 3D space
 	V,EV = model
 	EV = unique(sort.(EV)) # per togliere un problema nel salvataggio delle componenti. Poi da eliminare
