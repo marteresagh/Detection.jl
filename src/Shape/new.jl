@@ -141,7 +141,6 @@ function optimize!(P, EV, new_EV, all_clusters_in_model)
 
 			new_point = Common.lines_intersection(line1,line2)
 			@assert !isnothing(new_point) "impossible"
-			@show new_point
 			P[:,vertice] = new_point
 		end
 	end

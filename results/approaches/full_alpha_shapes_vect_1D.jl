@@ -10,7 +10,7 @@ boundary, full_boundary = FileManager.get_boundary(folders)
 centroid = [291250.5043433152, 4.630341344699344e6, 106.74835850440863]
 
 model = full_boundary[1] #11 12 16 17 20 28
-V,EV = Detection.simplify_model(model; par = 0.01, angle = pi/8)
+V,EV = Detection.simplify_model(model; par = 0.015, angle = pi/8)
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,model[1])[1:2,:])')),
 	GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,V)[1:2,:])'), GL.COLORS[2]),
@@ -25,11 +25,11 @@ for i in 1:length(full_boundary)
 	model = full_boundary[i]
 	V,EV = Detection.simplify_model(model; par = 0.01, angle = pi/8)
 	push!(vect2D,(V,EV))
-	GL.VIEW([
-		GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,model[1])[1:2,:])')),
-		GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,V)[1:2,:])'), GL.COLORS[2]),
-		GL.GLGrid(Common.apply_matrix(Plane(V).matrix,V)[1:2,:],EV, GL.COLORS[2],1.)
-	])
+	# GL.VIEW([
+	# 	GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,model[1])[1:2,:])')),
+	# 	GL.GLPoints(convert(Lar.Points,(Common.apply_matrix(Plane(V).matrix,V)[1:2,:])'), GL.COLORS[2]),
+	# 	GL.GLGrid(Common.apply_matrix(Plane(V).matrix,V)[1:2,:],EV, GL.COLORS[2],1.)
+	# ])
 end
 
 GL.VIEW(
