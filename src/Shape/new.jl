@@ -4,21 +4,23 @@ using SparseArrays
 """
 linearizazzione della patch planare 3D.
 """
-function symplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
+function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 	# model = V,EV in 3D space
 	V,EV = model
+	EV = unique(sort.(EV)) # per togliere un problema nel salvataggio delle componenti. Poi da eliminare
 	npoints = size(V,2)
 	diff_npoints = npoints
 
+	# porto i punti sul piano 2D
+	plane = Plane(V)
+	P = Common.apply_matrix(plane.matrix,V)[1:2,:]
+
 	while diff_npoints!=0
+		@show "giro"
 		all_clusters_in_model = Array{Array{Int64,1},1}[] #tutti i cluster di spigoli nel modello
 
-		# porto i punti sul piano 2D
-		plane = Plane(V)
-		P = Common.apply_matrix(plane.matrix,V)[1:2,:]
-
 		# grafo riferito agli spigoli
-	    graph = Common.model2graph_edge2edge(V,EV)
+	    graph = Common.model2graph_edge2edge(P,EV)
 	    conn_comps = LightGraphs.connected_components(graph)
 
 		# per ogni componente connessa
@@ -26,29 +28,34 @@ function symplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 			# calcolo il sottografo indotto dalla componente connessa
 	        subgraph = LightGraphs.induced_subgraph(graph, comp)
 			# estraggo catene lineari come collezioni di indici
-	        cl_edges = get_cluster_edges((P,EV), subgraph; angle=angle)
+	        cl_edges = get_cluster_edges((P,EV), subgraph; par=par, angle=angle)
 			push!(all_clusters_in_model, cl_edges)
 		end
 
 		# costruisco i nuovi spigoli eliminando i punti interni della catena
 		new_EV = simplify_edges(EV, all_clusters_in_model)
-		V,EV = Lar.simplifyCells(V,new_EV) #semplifico il modello eliminando i punti non usati
 
-		# unisco i vertici molto vicini
-		V,EV = remove_some_edges!(V,EV; err=par, angle = angle)  # nuovo modello da riutilizzare
+		# optimize V
+		optimize!(P, EV, new_EV, all_clusters_in_model)
+
+		P,EV = Lar.simplifyCells(P,new_EV) #semplifico il modello eliminando i punti non usati
+
+		#* unisco i vertici molto vicini
+		P,EV = remove_some_edges!(P,EV; par=par, angle = angle)  # nuovo modello da riutilizzare
 
 		# per la condizione di uscita dal loop
-		diff_npoints = npoints - size(V,2)
-		npoints = size(V,2)
+		diff_npoints = npoints - size(P,2)
+		npoints = size(P,2)
+
 	end
 
-	return V,EV
+	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))')),EV
 end
 
 """
 cerco i clusters nel sottografo corrente (una componente connessa)
 """
-function get_cluster_edges(model::Lar.LAR, subgraph; angle = pi/5)::Array{Array{Int64,1},1}
+function get_cluster_edges(model::Lar.LAR, subgraph; par = 0.01, angle = pi/8)::Array{Array{Int64,1},1}
 	# model = V,EV in 2D space
 	V, EV = model
 	grph, vmap = subgraph
@@ -59,6 +66,21 @@ function get_cluster_edges(model::Lar.LAR, subgraph; angle = pi/5)::Array{Array{
 		dir /= Lar.norm(dir)
 		return dir
 	end
+
+	function test_dist(e, direction, centroid)
+		inds = EV[vmap[e]]
+
+		v = V[:,inds[1]] - centroid
+		p_star = v - Lar.dot(direction,v)*direction
+		dist1 = Lar.norm(p_star)
+
+		v = V[:,inds[2]] - centroid
+		p_star = v - Lar.dot(direction,v)*direction
+		dist2 = Lar.norm(p_star)
+
+		return dist1<par && dist2<par
+	end
+
 
 	seen = zeros(Bool,LightGraphs.nv(grph))
 	current_ind = [1:LightGraphs.nv(grph)...]
@@ -72,6 +94,7 @@ function get_cluster_edges(model::Lar.LAR, subgraph; angle = pi/5)::Array{Array{
 		S = [e1]
 
 		dir_ref = direction(e1)
+		centroid = V[:,EV[vmap[e1]][1]]
 
 		while !isempty(S)
 
@@ -80,7 +103,8 @@ function get_cluster_edges(model::Lar.LAR, subgraph; angle = pi/5)::Array{Array{
 			for neighbor in neighbors
 				if !seen[neighbor]
 					dir = direction(neighbor)
-					if Common.angle_between_directions(dir_ref,dir)<=angle
+					test = test_dist(neighbor, dir_ref, centroid)
+					if Common.angle_between_directions(dir_ref,dir)<=angle || test
 						push!(cluster,vmap[neighbor])
 						push!(S,neighbor)
 						seen[neighbor] = true
@@ -88,7 +112,7 @@ function get_cluster_edges(model::Lar.LAR, subgraph; angle = pi/5)::Array{Array{
 					end
 				end
 			end
-			dir_ref,_ = Common.LinearFit(V[:,union(EV[cluster]...)])
+			dir_ref,centroid = Common.LinearFit(V[:,union(EV[cluster]...)])
 		end
 
 		push!(clusters_found, cluster)
@@ -97,6 +121,32 @@ function get_cluster_edges(model::Lar.LAR, subgraph; angle = pi/5)::Array{Array{
 
 	return clusters_found
 end
+
+"""
+ottimizzare
+"""
+function optimize!(P, EV, new_EV, all_clusters_in_model)
+	clusters_edges = union(all_clusters_in_model...)
+	clusters_verts = [union(EV[element]...) for element in clusters_edges]
+	vertici = union(new_EV...)
+	for vertice in vertici
+		dove = issubset.([vertice],clusters_verts)
+		intersection_clusters = clusters_verts[dove]
+		if length(intersection_clusters)==2
+			dir1,cen1 = Common.LinearFit(P[:,intersection_clusters[1]])
+			dir2,cen2 = Common.LinearFit(P[:,intersection_clusters[2]])
+
+			line1 = [cen1,cen1+dir1]
+			line2 = [cen2,cen2+dir2]
+
+			new_point = Common.lines_intersection(line1,line2)
+			@assert !isnothing(new_point) "impossible"
+			@show new_point
+			P[:,vertice] = new_point
+		end
+	end
+end
+
 
 """
 crea i nuovi spigoli eliminando i vertici interni della catena e creando un unico spigolo che collega i due vertici estremi
@@ -190,7 +240,10 @@ end
 # 1. provare a manterene in un dizionario tutti i punti del cluster o gli spigoli
 # 2. aggiornare ad ogni iterazione
 # 3. entri nel cluster se la direzione o la distanza dalla linea di entrambi i vertici del segmento è molto piccola
-function remove_some_edges!(P::Lar.Points, EP::Lar.Cells; err=1e-4, angle = pi/8)
+"""
+rimuove spigoli con una certa caratteristica
+"""
+function remove_some_edges!(P::Lar.Points, EP::Lar.Cells; par=1e-4, angle = pi/8)
 	graph = Common.model2graph_edge2edge(P,EP)
 
 	function direction(e)
@@ -200,33 +253,49 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells; err=1e-4, angle = pi/8
 		return dir
 	end
 
+	function dist_ortho(e, direction, centroid)
+		inds = EP[e]
+		v = P[:,inds[1]] - centroid
+		p_star = v - Lar.dot(direction,v)*direction
+		dist1 = Lar.norm(p_star)
+
+		v = P[:,inds[2]] - centroid
+		p_star = v - Lar.dot(direction,v)*direction
+		dist2 = Lar.norm(p_star)
+
+		return dist1, dist2
+	end
+
+
 	for i in 1:length(EP)
 		ep = EP[i]
 		N = setdiff(LightGraphs.neighborhood(graph,i,1),i)
 
 		flag = false
-		dist_ref=0.
+		dist1 = 0.
+		dist2 = 0.
+
 		if length(N)==2
 			n1 = N[1]
 			n2 = N[2]
 			dist1 = Lar.norm(P[:,EP[n1][1]]-P[:,EP[n1][2]])
 			dist2 = Lar.norm(P[:,EP[n2][1]]-P[:,EP[n2][2]])
-			dist_ref = min(dist1,dist2)
 			dir1=direction(n1)
 			dir2=direction(n2)
+
 			if Common.angle_between_directions(dir1,dir2) <= angle
-				flag = true
+				dir_ref, cent = Common.LinearFit(P[:,union(EP[N]...)])
+				dist_ortho1, dist_ortho2 = dist_ortho(i, dir_ref, cent)
+				#dist = Lar.norm(P[:,ep[1]]-P[:,ep[2]])
+
+				if dist_ortho1 <= par && dist_ortho2 <= par
+					centroid = Common.centroid(P[:,ep])
+					P[:,ep[1]] = centroid
+					P[:,ep[2]] = centroid
+				end
 			end
 		end
-
-		dist = Lar.norm(P[:,ep[1]]-P[:,ep[2]])
-		if flag && dist <= dist_ref/2
-			centroid = Common.centroid(P[:,ep])
-			P[:,ep[1]] = centroid
-			P[:,ep[2]] = centroid
-		end
-
 	end
 
-	return merge_vertices!(P, EP; err=err)
+	return  merge_vertices!(P, EP; err=par)
 end
