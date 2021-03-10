@@ -1,6 +1,3 @@
-# using NearestNeighbors
-# using SparseArrays
-
 """
 linearizazzione della patch planare 3D.
 """
@@ -16,7 +13,6 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 	P = Common.apply_matrix(plane.matrix,V)[1:2,:]
 
 	while diff_npoints!=0
-		@show "giro"
 		all_clusters_in_model = Array{Array{Int64,1},1}[] #tutti i cluster di spigoli nel modello
 
 		# grafo riferito agli spigoli
@@ -189,7 +185,7 @@ unisce i vertici molto vicini
 function merge_vertices!(P::Lar.Points, EP::Lar.Cells; err=1e-4)
 	EV = Common.K(EP)
 	V = convert(Lar.Points,P')
-	kdtree = KDTree(P)
+	kdtree = Common.KDTree(P)
 
     vertsnum = size(V, 1)
     edgenum = size(EV, 1)
@@ -221,7 +217,7 @@ function merge_vertices!(P::Lar.Points, EP::Lar.Cells; err=1e-4)
     nedges = union(edges)
     nedges = filter(t->t[1]!=t[2], nedges)
     nedgenum = length(nedges)
-    nEV = spzeros(Int8, nedgenum, size(nV, 1))
+    nEV = Common.spzeros(Int8, nedgenum, size(nV, 1))
     # maps pairs of vertex indices to edge index
     etuple2idx = Dict{Tuple{Int, Int}, Int}()
     # builds `edge_map`
@@ -235,7 +231,6 @@ end
 
 
 # TODO da sistemare
-# voglio eliminare gli spigolini inutili
 # 1. provare a manterene in un dizionario tutti i punti del cluster o gli spigoli
 # 2. aggiornare ad ogni iterazione
 # 3. entri nel cluster se la direzione o la distanza dalla linea di entrambi i vertici del segmento è molto piccola
