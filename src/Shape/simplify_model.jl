@@ -1,7 +1,7 @@
 """
 linearizazzione della patch planare 3D.
 """
-function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
+function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 	# model = V,EV in 3D space
 	V,EV = model
 	EV = unique(sort.(EV)) # per togliere un problema nel salvataggio delle componenti. Poi da eliminare
@@ -11,8 +11,10 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 	# porto i punti sul piano 2D
 	plane = Plane(V)
 	P = Common.apply_matrix(plane.matrix,V)[1:2,:]
+	P_original = Common.apply_matrix(plane.matrix,V)[1:2,:]
 
 	while diff_npoints!=0
+		@show "giro"
 		all_clusters_in_model = Array{Array{Int64,1},1}[] #tutti i cluster di spigoli nel modello
 
 		# grafo riferito agli spigoli
@@ -28,16 +30,18 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 			push!(all_clusters_in_model, cl_edges)
 		end
 
+
 		# costruisco i nuovi spigoli eliminando i punti interni della catena
 		new_EV = simplify_edges(EV, all_clusters_in_model)
 
 		# optimize V
-		optimize!(P, EV, new_EV, all_clusters_in_model)
+		#optimize!(P, EV, new_EV, all_clusters_in_model)
 
 		P,EV = Lar.simplifyCells(P,new_EV) #semplifico il modello eliminando i punti non usati
-
+		#optimize!(P_original, P, EV; par = par)
+		
 		#* unisco i vertici molto vicini
-		P,EV = remove_some_edges!(P,EV; par=par, angle = angle)  # nuovo modello da riutilizzare
+		P,EV = remove_some_edges!(P,EV; par = par, angle = angle)  # nuovo modello da riutilizzare
 
 		# per la condizione di uscita dal loop
 		diff_npoints = npoints - size(P,2)
@@ -45,7 +49,7 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 
 	end
 
-	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))')),EV
+	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))')), EV
 end
 
 """
@@ -118,10 +122,49 @@ function get_cluster_edges(model::Lar.LAR, subgraph; par = 0.01, angle = pi/8)::
 	return clusters_found
 end
 
-"""
-ottimizzare
-"""
-function optimize!(P, EV, new_EV, all_clusters_in_model)
+
+function optimize!(P_original::Lar.Points, P::Lar.Points, new_EV::Lar.Cells; par = 0.01)
+	V =  [c[:] for c in eachcol(P_original)]
+	dict = Dict()
+	for i in 1:length(new_EV)
+		inliers = Array{Float64,1}[]
+		segment = P[:,new_EV[i]]
+		push!(inliers, [c[:] for c in eachcol(segment)]...)
+		for point in V
+			if test_point_on_segment(segment,point; par = par)
+				push!(inliers,point)
+			end
+		end
+		dict[i] = hcat(inliers...)
+	end
+
+	########################## fino a qui tutto OK #############################
+	vertici = union(new_EV...)
+	cop = Lar.characteristicMatrix(new_EV)
+	I,J,VAL = Lar.findnz(cop)
+	for vertice in vertici
+		dove = I[Lar.nzrange(cop, vertice)]
+		intersection_clusters = [dict[i] for i in dove]
+		if length(intersection_clusters)==2
+			dir1,cen1 = Common.LinearFit(intersection_clusters[1])
+			dir2,cen2 = Common.LinearFit(intersection_clusters[2])
+
+			line1 = [cen1,cen1 + dir1]
+			line2 = [cen2,cen2 + dir2]
+
+			new_point = Common.lines_intersection(line1,line2)
+
+			if !isnothing(new_point)
+				P[:,vertice] = new_point
+			end
+
+		end
+	end
+
+end
+
+
+function optimize!(P::Lar.Points, EV::Lar.Cells, new_EV::Lar.Cells, all_clusters_in_model::Array{Array{Array{Int64,1},1},1})
 	clusters_edges = union(all_clusters_in_model...)
 	clusters_verts = [union(EV[element]...) for element in clusters_edges]
 	vertici = union(new_EV...)
@@ -141,7 +184,6 @@ function optimize!(P, EV, new_EV, all_clusters_in_model)
 		end
 	end
 end
-
 
 """
 crea i nuovi spigoli eliminando i vertici interni della catena e creando un unico spigolo che collega i due vertici estremi
@@ -177,7 +219,6 @@ function simplify_edges(EV::Lar.Cells, clusters_of_edges::Array{Array{Array{Int6
 
 	return new_EV
 end
-
 
 """
 unisce i vertici molto vicini
@@ -292,4 +333,17 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells; par=1e-4, angle = pi/8
 	end
 
 	return  merge_vertices!(P, EP; err=par)
+end
+
+
+#segment=start,end point lar.points format
+function test_point_on_segment(segment,point; par = 0.01)
+	direction = segment[:,2]-segment[:,1]
+	dist_segment = Lar.norm(direction)
+	direction/=dist_segment
+	centroid = segment[:,1]
+	test_dist = Common.Dist_Point2Line(point,Hyperplane(direction,centroid))<=2*par
+	t = Lar.dot(direction,point-centroid)/dist_segment
+	test_in_segment = t>=0 && t<=1
+	return test_dist && test_in_segment
 end
