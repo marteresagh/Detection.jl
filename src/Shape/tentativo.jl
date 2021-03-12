@@ -32,16 +32,16 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 
 
 		# costruisco i nuovi spigoli eliminando i punti interni della catena
-		new_EV = simplify_edges(EV, all_clusters_in_model)
+		EV = simplify_edges(EV, all_clusters_in_model)
 
 		# optimize V
 		#optimize!(P, EV, new_EV, all_clusters_in_model)
 
-		P,EV = Lar.simplifyCells(P,new_EV) #semplifico il modello eliminando i punti non usati
+	#	P,EV = Lar.simplifyCells(P,new_EV) #semplifico il modello eliminando i punti non usati
 		#optimize!(P_original, P, EV; par = par)
 
 		#* unisco i vertici molto vicini
-		P,EV = remove_some_edges!(P,EV; par = par, angle = angle)  # nuovo modello da riutilizzare
+		EV = remove_some_edges!(P,EV; par = par, angle = angle)  # nuovo modello da riutilizzare
 
 		# per la condizione di uscita dal loop
 		diff_npoints = npoints - size(P,2)
@@ -301,7 +301,7 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells; par=1e-4, angle = pi/8
 		return dist1, dist2
 	end
 
-
+	todel = Int64[]
 	for i in 1:length(EP)
 		ep = EP[i]
 		N = setdiff(LightGraphs.neighborhood(graph,i,1),i)
@@ -315,8 +315,8 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells; par=1e-4, angle = pi/8
 			n2 = N[2]
 			dist1 = Lar.norm(P[:,EP[n1][1]]-P[:,EP[n1][2]])
 			dist2 = Lar.norm(P[:,EP[n2][1]]-P[:,EP[n2][2]])
-			dir1=direction(n1)
-			dir2=direction(n2)
+			dir1 = direction(n1)
+			dir2 = direction(n2)
 
 			if Common.angle_between_directions(dir1,dir2) <= angle
 				dir_ref, cent = Common.LinearFit(P[:,union(EP[N]...)])
@@ -327,12 +327,16 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells; par=1e-4, angle = pi/8
 					centroid = Common.centroid(P[:,ep])
 					P[:,ep[1]] = centroid
 					P[:,ep[2]] = centroid
+					push!(todel,i)
+					EP[n1][EP[n1].==ep[1]] .= ep[2]
+					EP[n2][EP[n2].==ep[1]] .= ep[2]
 				end
 			end
 		end
 	end
-
-	return  merge_vertices!(P, EP; err=par)
+	tokeep = setdiff(collect(1:length(EP)),todel)
+	EP = EP[tokeep]
+	#return  merge_vertices!(P, EP; err=par)
 end
 
 
