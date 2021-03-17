@@ -3,7 +3,6 @@ println("loading packages... ")
 using ArgParse
 using Detection
 using Common
-using AlphaStructures
 
 println("packages OK")
 
@@ -37,7 +36,7 @@ function parse_commandline()
 	"--validity"
 		help = "number of points in a line"
 		arg_type = Int64
-		default = 5
+		default = 40
 	"--k"
 		help = "number of neighbors"
 		arg_type = Int64

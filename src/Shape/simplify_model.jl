@@ -1,7 +1,7 @@
 """
 linearizazzione della patch planare 3D.
 """
-function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
+function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 	# model = V,EV in 3D space
 	V,EV = model
 	EV = unique(sort.(EV)) # per togliere un problema nel salvataggio delle componenti. Poi da eliminare
@@ -14,7 +14,6 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 	P_original = Common.apply_matrix(plane.matrix,V)[1:2,:]
 
 	while diff_npoints!=0
-		@show "giro"
 		all_clusters_in_model = Array{Array{Int64,1},1}[] #tutti i cluster di spigoli nel modello
 
 		# grafo riferito agli spigoli
@@ -39,7 +38,7 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 
 		P,EV = Lar.simplifyCells(P,new_EV) #semplifico il modello eliminando i punti non usati
 		#optimize!(P_original, P, EV; par = par)
-		
+
 		#* unisco i vertici molto vicini
 		P,EV = remove_some_edges!(P,EV; par = par, angle = angle)  # nuovo modello da riutilizzare
 
@@ -306,7 +305,6 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells; par=1e-4, angle = pi/8
 		ep = EP[i]
 		N = setdiff(LightGraphs.neighborhood(graph,i,1),i)
 
-		flag = false
 		dist1 = 0.
 		dist2 = 0.
 

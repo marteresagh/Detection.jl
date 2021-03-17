@@ -1,3 +1,4 @@
+using Visualization
 """
 linearizazzione della patch planare 3D.
 """
@@ -5,16 +6,22 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 	# model = V,EV in 3D space
 	V,EV = model
 	EV = unique(sort.(EV)) # per togliere un problema nel salvataggio delle componenti. Poi da eliminare
-	npoints = size(V,2)
-	diff_npoints = npoints
+	nedges = length(EV)
+	diff_nedges = nedges
 
+	dict = Dict()
 	# porto i punti sul piano 2D
 	plane = Plane(V)
 	P = Common.apply_matrix(plane.matrix,V)[1:2,:]
-	P_original = Common.apply_matrix(plane.matrix,V)[1:2,:]
 
-	while diff_npoints!=0
+	for i in 1:length(EV)
+		dict[EV[i]] = P[:,EV[i]]
+	end
+
+	while diff_nedges!=0
 		@show "giro"
+		@show "1"
+
 		all_clusters_in_model = Array{Array{Int64,1},1}[] #tutti i cluster di spigoli nel modello
 
 		# grafo riferito agli spigoli
@@ -30,27 +37,40 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 			push!(all_clusters_in_model, cl_edges)
 		end
 
-
+		cluss = union(all_clusters_in_model...)
+		# dict = update_dict!(P, EV, cluss, dict)
 		# costruisco i nuovi spigoli eliminando i punti interni della catena
-		EV = simplify_edges(EV, all_clusters_in_model)
-
-		# optimize V
-		#optimize!(P, EV, new_EV, all_clusters_in_model)
-
-	#	P,EV = Lar.simplifyCells(P,new_EV) #semplifico il modello eliminando i punti non usati
-		#optimize!(P_original, P, EV; par = par)
-
+		EV, dict = simplify_edges(EV, cluss, dict)
+		@show "2"
+		optimize!(P::Lar.Points, EV::Lar.Cells, dict)
 		#* unisco i vertici molto vicini
-		EV = remove_some_edges!(P,EV; par = par, angle = angle)  # nuovo modello da riutilizzare
 
+
+		#EV,dict = remove_some_edges!(P, EV, dict; par = par, angle = angle)  # nuovo modello da riutilizzare
+		@show "3"
 		# per la condizione di uscita dal loop
-		diff_npoints = npoints - size(P,2)
-		npoints = size(P,2)
-
+		diff_nedges = nedges - length(EV)
+		nedges = length(EV)
 	end
-
-	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))')), EV
+	P,EV = Lar.simplifyCells(P,EV)
+	return P, EV, dict #semplifico il modello eliminando i punti non usati
+#	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))')), EV ,dict
 end
+
+# function update_dict!(P, EV, cluss, dict)
+# 	if isempty(dict)
+# 		for i in 1:length(cluss)
+# 			dict[i] = P[:,union(EV[cluss[i]]...)]
+# 		end
+# 		return dict
+# 	else
+# 		dict_tmp = Dict()
+# 		for i in 1:length(cluss)
+# 			dict_tmp[i] = hcat([dict[j] for j in cluss[i]]...)
+# 		end
+# 		return dict_tmp
+# 	end
+# end
 
 """
 cerco i clusters nel sottografo corrente (una componente connessa)
@@ -123,57 +143,17 @@ function get_cluster_edges(model::Lar.LAR, subgraph; par = 0.01, angle = pi/8)::
 end
 
 
-function optimize!(P_original::Lar.Points, P::Lar.Points, new_EV::Lar.Cells; par = 0.01)
-	V =  [c[:] for c in eachcol(P_original)]
-	dict = Dict()
-	for i in 1:length(new_EV)
-		inliers = Array{Float64,1}[]
-		segment = P[:,new_EV[i]]
-		push!(inliers, [c[:] for c in eachcol(segment)]...)
-		for point in V
-			if test_point_on_segment(segment,point; par = par)
-				push!(inliers,point)
-			end
-		end
-		dict[i] = hcat(inliers...)
-	end
-
-	########################## fino a qui tutto OK #############################
-	vertici = union(new_EV...)
-	cop = Lar.characteristicMatrix(new_EV)
+function optimize!(P::Lar.Points, EV::Lar.Cells, dict)
+	vertici = union(EV...)
+	cop = Lar.characteristicMatrix(EV)
 	I,J,VAL = Lar.findnz(cop)
 	for vertice in vertici
 		dove = I[Lar.nzrange(cop, vertice)]
+		@show EV[dove]
 		intersection_clusters = [dict[i] for i in dove]
 		if length(intersection_clusters)==2
 			dir1,cen1 = Common.LinearFit(intersection_clusters[1])
 			dir2,cen2 = Common.LinearFit(intersection_clusters[2])
-
-			line1 = [cen1,cen1 + dir1]
-			line2 = [cen2,cen2 + dir2]
-
-			new_point = Common.lines_intersection(line1,line2)
-
-			if !isnothing(new_point)
-				P[:,vertice] = new_point
-			end
-
-		end
-	end
-
-end
-
-
-function optimize!(P::Lar.Points, EV::Lar.Cells, new_EV::Lar.Cells, all_clusters_in_model::Array{Array{Array{Int64,1},1},1})
-	clusters_edges = union(all_clusters_in_model...)
-	clusters_verts = [union(EV[element]...) for element in clusters_edges]
-	vertici = union(new_EV...)
-	for vertice in vertici
-		dove = issubset.([vertice],clusters_verts)
-		intersection_clusters = clusters_verts[dove]
-		if length(intersection_clusters)==2
-			dir1,cen1 = Common.LinearFit(P[:,intersection_clusters[1]])
-			dir2,cen2 = Common.LinearFit(P[:,intersection_clusters[2]])
 
 			line1 = [cen1,cen1+dir1]
 			line2 = [cen2,cen2+dir2]
@@ -188,8 +168,8 @@ end
 """
 crea i nuovi spigoli eliminando i vertici interni della catena e creando un unico spigolo che collega i due vertici estremi
 """
-function simplify_edges(EV::Lar.Cells, clusters_of_edges::Array{Array{Array{Int64,1},1},1})::Lar.Cells
-
+function simplify_edges(EV::Lar.Cells, cluss::Array{Array{Int64,1},1},dict)
+	dict_tmp = Dict()
 	function boundary_chain(EV::Lar.Cells)
 		M_2 = Common.K(EV)
 
@@ -203,21 +183,20 @@ function simplify_edges(EV::Lar.Cells, clusters_of_edges::Array{Array{Array{Int6
 	new_EV = Array{Int64,1}[] # nuovo modello di spigoli
 
 	# per ogni componente  nella componente connessa
-	for comp in clusters_of_edges
-		# per ogni cluster nella componente
-		for cluster in comp
-			# catena di spigoli presi in riferimento
-			EV_current = EV[cluster]
-			# vertici estremi
-			verts_extrema = boundary_chain(EV_current)
-			if length(verts_extrema)==2
-				# nuovo spigolo cotruito
-				push!(new_EV,verts_extrema)
-			end
+	for cluster in cluss
+		# catena di spigoli presi in riferimento
+		EV_current = EV[cluster]
+		# vertici estremi
+		verts_extrema = boundary_chain(EV_current)
+		if length(verts_extrema)==2
+			# nuovo spigolo cotruito
+			dict_tmp[verts_extrema] = hcat([dict[ev] for ev in EV_current]...)
+			union!(new_EV,[verts_extrema])
 		end
 	end
 
-	return new_EV
+	dict = dict_tmp
+	return new_EV, dict
 end
 
 """
@@ -278,8 +257,10 @@ end
 """
 rimuove spigoli con una certa caratteristica
 """
-function remove_some_edges!(P::Lar.Points, EP::Lar.Cells; par=1e-4, angle = pi/8)
+function remove_some_edges!(P::Lar.Points, EP::Lar.Cells, dict; par=1e-4, angle = pi/8)
 	graph = Common.model2graph_edge2edge(P,EP)
+	dict_tmp = copy(dict)
+	EV = copy(EP)
 
 	function direction(e)
 		inds = EP[e]
@@ -303,10 +284,9 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells; par=1e-4, angle = pi/8
 
 	todel = Int64[]
 	for i in 1:length(EP)
-		ep = EP[i]
+		ep = EP[i] # attenzione che questi cambiano
 		N = setdiff(LightGraphs.neighborhood(graph,i,1),i)
 
-		flag = false
 		dist1 = 0.
 		dist2 = 0.
 
@@ -324,30 +304,38 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells; par=1e-4, angle = pi/8
 				#dist = Lar.norm(P[:,ep[1]]-P[:,ep[2]])
 
 				if dist_ortho1 <= par && dist_ortho2 <= par
+					push!(todel, i)
 					centroid = Common.centroid(P[:,ep])
 					P[:,ep[1]] = centroid
 					P[:,ep[2]] = centroid
-					push!(todel,i)
-					EP[n1][EP[n1].==ep[1]] .= ep[2]
-					EP[n2][EP[n2].==ep[1]] .= ep[2]
+					dict[EP[N[1]]] = hcat(dict[EP[N[1]]],dict[ep])
+					dict[EP[N[2]]] = hcat(dict[EP[N[2]]],dict[ep])
 				end
 			end
 		end
 	end
-	tokeep = setdiff(collect(1:length(EP)),todel)
-	EP = EP[tokeep]
+
+	del = []
+	graph = Common.model2graph_edge2edge(P,EV)
+	for i in todel
+		ep = EP[i]
+		delete!(dict_tmp,ep)
+		N = setdiff(LightGraphs.neighborhood(graph,i,1),i)
+		for n in N
+			EV[n][EV[n].==ep[1]] .= ep[2]
+			push!(del,n)
+			if !haskey(dict_tmp,EV[n])
+				dict_tmp[EV[n]] = dict[EP[n]]
+			end
+		end
+		graph = Common.model2graph_edge2edge(P,EV)
+	end
+
+	EV = EV[ filter(x->!(x in todel), eachindex(EV)) ]
+	for i in del
+		delete!(dict_tmp,EP[i])
+	end
+
+	return EV, dict_tmp
 	#return  merge_vertices!(P, EP; err=par)
-end
-
-
-#segment=start,end point lar.points format
-function test_point_on_segment(segment,point; par = 0.01)
-	direction = segment[:,2]-segment[:,1]
-	dist_segment = Lar.norm(direction)
-	direction/=dist_segment
-	centroid = segment[:,1]
-	test_dist = Common.Dist_Point2Line(point,Hyperplane(direction,centroid))<=2*par
-	t = Lar.dot(direction,point-centroid)/dist_segment
-	test_in_segment = t>=0 && t<=1
-	return test_dist && test_in_segment
 end

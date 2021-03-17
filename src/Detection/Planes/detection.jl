@@ -48,7 +48,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			folder = joinpath(output_folder,"plane_$timestamp")
 			FileManager.mkdir_if(folder)
 			FileManager.save_finite_plane(folder, hyperplane)
-			Detection.save_boundary_shape(folder,hyperplane)
+		#	Detection.save_boundary_shape(folder,hyperplane)
 			####################################
 
 			flushprintln("$i of $(length(seeds))")
@@ -92,7 +92,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			folder = joinpath(output_folder,"plane_$timestamp")
 			FileManager.mkdir_if(folder)
 			FileManager.save_finite_plane(folder, hyperplane)
-			Detection.save_boundary_shape(folder,hyperplane)
+		#	Detection.save_boundary_shape(folder,hyperplane)
 			####################################
 
 			union!(params.fitted,cluster)
