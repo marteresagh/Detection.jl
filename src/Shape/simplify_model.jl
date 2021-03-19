@@ -11,7 +11,6 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 	# porto i punti sul piano 2D
 	plane = Plane(V)
 	P = Common.apply_matrix(plane.matrix,V)[1:2,:]
-	P_original = Common.apply_matrix(plane.matrix,V)[1:2,:]
 
 	while diff_npoints!=0
 		all_clusters_in_model = Array{Array{Int64,1},1}[] #tutti i cluster di spigoli nel modello
@@ -31,7 +30,6 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 
 
 		# costruisco i nuovi spigoli eliminando i punti interni della catena
-
 		new_EV = simplify_edges(EV, all_clusters_in_model)
 
 		if !isempty(new_EV) # se non vuoto procedo
@@ -42,7 +40,6 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 			#optimize!(P_original, P, EV; par = par)
 
 			#* unisco i vertici molto vicini
-
 			P,EV = remove_some_edges!(P,EV; par = par, angle = angle)  # nuovo modello da riutilizzare
 		else # altrimenti mi fermo
 			break
@@ -53,8 +50,18 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 		npoints = size(P,2)
 
 	end
+	P3D = Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))'))
 
-	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))')), EV
+	### components closure
+	graph = Common.model2graph_edge2edge(P3D,EV)
+	comps = LightGraphs.connected_components(graph)
+	for comp in comps
+		ext = Common.get_boundary_points(V,EV[comp])
+		if length(ext) == 2
+			push!(EV,ext)
+		end
+	end
+	return P3D, EV
 end
 
 """

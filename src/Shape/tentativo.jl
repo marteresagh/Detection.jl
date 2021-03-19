@@ -52,7 +52,7 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 		diff_nedges = nedges - length(EV)
 		nedges = length(EV)
 	end
-	P,EV = Lar.simplifyCells(P,EV)
+#	P,EV = Lar.simplifyCells(P,EV)
 	return P, EV, dict #semplifico il modello eliminando i punti non usati
 #	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))')), EV ,dict
 end

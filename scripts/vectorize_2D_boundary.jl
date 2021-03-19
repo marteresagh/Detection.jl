@@ -34,6 +34,10 @@ function parse_commandline()
 		help = "Angle"
 		arg_type = Float64
 		default = pi/8
+	"--k"
+		help = "number of neighbors"
+		arg_type = Int64
+		default = 30
 	end
 
 	return parse_args(s)
@@ -41,7 +45,7 @@ end
 
 
 
-function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Array{Hyperplane,1}, thickness::Float64, par::Float64, angle::Float64)
+function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Array{Hyperplane,1}, thickness::Float64, par::Float64, angle::Float64, k::Int64)
 	n_planes = length(folders)
 	Threads.@threads for i in 1:n_planes
 		Detection.flushprintln("=================== $i of $n_planes ======================")
@@ -71,7 +75,7 @@ function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Ar
 
 		DT = Common.delaunay_triangulation(V)
 		filtration = AlphaStructures.alphaFilter(V,DT);
-		threshold = Common.estimate_threshold(V,40)
+		threshold = Common.estimate_threshold(V,k)
 		_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
 		Detection.flushprintln("Alpha shapes.... Done")
 
@@ -87,6 +91,7 @@ function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Ar
 		# boundary semplification
 		Detection.flushprintln("Boundary semplification....")
 		V, EV = Detection.simplify_model(model; par = par, angle = angle)
+		Detection.flushprintln("############## SPIGOLI RIMASTI= $(length(EV))")
 		Detection.flushprintln("Boundary semplification.... Done")
 
 		# save data
@@ -113,6 +118,7 @@ function main()
 	thickness = args["thickness"]
 	par = args["par"]
 	angle = args["angle"]
+	k = args["k"]
 
 	Detection.flushprintln("== Parameters ==")
 	Detection.flushprintln("Source  =>  $source")
@@ -125,7 +131,7 @@ function main()
 	folders = FileManager.get_plane_folders(output_folder, project_name)
 	hyperplanes, OBBs = FileManager.get_hyperplanes(folders)
 
-	save_boundary(source, folders, hyperplanes, thickness, par, angle)
+	save_boundary(source, folders, hyperplanes, thickness, par, angle, k)
 
 end
 
