@@ -5,6 +5,7 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 	# model = V,EV in 3D space
 	V,EV = model
 	EV = unique(sort.(EV)) # per togliere un problema nel salvataggio delle componenti. Poi da eliminare
+	EV = filter(ev -> length(ev) > 1, EV)
 	npoints = size(V,2)
 	diff_npoints = npoints
 
