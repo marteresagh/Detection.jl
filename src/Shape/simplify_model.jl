@@ -31,16 +31,22 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 
 
 		# costruisco i nuovi spigoli eliminando i punti interni della catena
+
 		new_EV = simplify_edges(EV, all_clusters_in_model)
 
-		# optimize V
-		#optimize!(P, EV, new_EV, all_clusters_in_model)
+		if !isempty(new_EV) # se non vuoto procedo
+			# optimize V
+			#optimize!(P, EV, new_EV, all_clusters_in_model)
 
-		P,EV = Lar.simplifyCells(P,new_EV) #semplifico il modello eliminando i punti non usati
-		#optimize!(P_original, P, EV; par = par)
+			P,EV = Lar.simplifyCells(P,new_EV) #semplifico il modello eliminando i punti non usati
+			#optimize!(P_original, P, EV; par = par)
 
-		#* unisco i vertici molto vicini
-		P,EV = remove_some_edges!(P,EV; par = par, angle = angle)  # nuovo modello da riutilizzare
+			#* unisco i vertici molto vicini
+
+			P,EV = remove_some_edges!(P,EV; par = par, angle = angle)  # nuovo modello da riutilizzare
+		else # altrimenti mi fermo
+			break
+		end
 
 		# per la condizione di uscita dal loop
 		diff_npoints = npoints - size(P,2)

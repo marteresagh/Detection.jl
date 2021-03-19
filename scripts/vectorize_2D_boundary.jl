@@ -29,6 +29,7 @@ function parse_commandline()
 	"--par"
 		help = "Parameter"
 		arg_type = Float64
+		default = 0.01
 	"--angle"
 		help = "Angle"
 		arg_type = Float64
@@ -43,8 +44,12 @@ end
 function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Array{Hyperplane,1}, thickness::Float64, par::Float64, angle::Float64)
 	n_planes = length(folders)
 	Threads.@threads for i in 1:n_planes
+		Detection.flushprintln("=================== $i of $n_planes ======================")
+
 		# segmentation: to extract all inliers
+		Detection.flushprintln()
 		Detection.flushprintln("Segmentation....")
+
 		inliers_points = hyperplanes[i].inliers.coordinates
 		aabb = Common.boundingbox(inliers_points)
 		plane = Plane(hyperplanes[i].direction,hyperplanes[i].centroid)
@@ -53,6 +58,7 @@ function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Ar
 		Detection.flushprintln("Segmentation.... Done")
 
 		# alpha shape of full inliers
+		Detection.flushprintln()
 		Detection.flushprintln("Alpha shapes....")
 		file = joinpath(folders[i],"full_inliers.las")
 		#######################################
@@ -70,6 +76,7 @@ function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Ar
 		Detection.flushprintln("Alpha shapes.... Done")
 
 		# boundary extraction
+		Detection.flushprintln()
 		Detection.flushprintln("Boundary extraction....")
 		EV_boundary = Common.get_boundary_edges(V,FV)
 		w,EW = Lar.simplifyCells(V,EV_boundary)
@@ -83,13 +90,16 @@ function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Ar
 		Detection.flushprintln("Boundary semplification.... Done")
 
 		# save data
+		Detection.flushprintln()
 		Detection.flushprintln("Saves....")
-		plane = Plane(V)
 		V2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
 		FileManager.save_points_txt(joinpath(folders[i],"boundary_points2D.txt"), V2D)
 		FileManager.save_points_txt(joinpath(folders[i],"boundary_points3D.txt"), V)
 		FileManager.save_connected_components(joinpath(folders[i],"boundary_edges.txt"), V, EV)
 		Detection.flushprintln("Saves.... Done")
+		Detection.flushprintln("==========================================================")
+		Detection.flushprintln("==========================================================")
+
 	end
 end
 

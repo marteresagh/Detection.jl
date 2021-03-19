@@ -40,7 +40,7 @@ function parse_commandline()
 	"--k"
 		help = "number of neighbors"
 		arg_type = Int64
-		default = 20
+		default = 30
 	"--masterseeds","-s"
 		help = "A text file with seeds list"
 		arg_type = String
