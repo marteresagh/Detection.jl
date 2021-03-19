@@ -30,7 +30,7 @@ NAME_PROJ = "MURI_FULL"
 folder_proj = "C:/Users/marte/Documents/GEOWEB/TEST"
 
 folders = FileManager.get_plane_folders(folder_proj,NAME_PROJ)
-PC = FileManager.source2pc(joinpath(folders[23],"full_inliers.las"),1)
+PC = FileManager.source2pc(joinpath(folders[69],"full_inliers.las"),1)
 
 points = PC.coordinates
 plane = Plane(points)
@@ -38,7 +38,7 @@ V = Common.apply_matrix(plane.matrix,points)[1:2,:]
 
 DT = Common.delaunay_triangulation(V)
 filtration = AlphaStructures.alphaFilter(V,DT);
-threshold = Common.estimate_threshold(V,30)
+threshold = Common.estimate_threshold(V,40)
 _, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
 EV_boundary = Common.get_boundary_edges(V,FV)
 w,EW = Lar.simplifyCells(V,EV_boundary)

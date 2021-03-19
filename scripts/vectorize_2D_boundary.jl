@@ -48,22 +48,26 @@ end
 function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Array{Hyperplane,1}, thickness::Float64, par::Float64, angle::Float64, k::Int64)
 	n_planes = length(folders)
 	Threads.@threads for i in 1:n_planes
+		Detection.flushprintln()
+		Detection.flushprintln("==========================================================")
 		Detection.flushprintln("=================== $i of $n_planes ======================")
+		Detection.flushprintln("==========================================================")
 
 		# segmentation: to extract all inliers
 		Detection.flushprintln()
 		Detection.flushprintln("Segmentation....")
-
+		Detection.flushprintln("-----------------------------------------------------------")
 		inliers_points = hyperplanes[i].inliers.coordinates
 		aabb = Common.boundingbox(inliers_points)
 		plane = Plane(hyperplanes[i].direction,hyperplanes[i].centroid)
 		model = Common.getmodel(plane, thickness, aabb)
 		OrthographicProjection.segment(potree, joinpath(folders[i],"full_inliers.las"), model)
+		Detection.flushprintln("-----------------------------------------------------------")
 		Detection.flushprintln("Segmentation.... Done")
 
 		# alpha shape of full inliers
 		Detection.flushprintln()
-		Detection.flushprintln("Alpha shapes....")
+		Detection.flushprint("Alpha shapes....")
 		file = joinpath(folders[i],"full_inliers.las")
 		#######################################
 		# se troppi punti si possono decimare #
@@ -77,33 +81,31 @@ function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Ar
 		filtration = AlphaStructures.alphaFilter(V,DT);
 		threshold = Common.estimate_threshold(V,k)
 		_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
-		Detection.flushprintln("Alpha shapes.... Done")
+		Detection.flushprintln("Done")
 
 		# boundary extraction
 		Detection.flushprintln()
-		Detection.flushprintln("Boundary extraction....")
+		Detection.flushprint("Boundary extraction....")
 		EV_boundary = Common.get_boundary_edges(V,FV)
 		w,EW = Lar.simplifyCells(V,EV_boundary)
 		W = Common.apply_matrix(Lar.inv(plane.matrix), vcat(w,zeros(size(w,2))'))
 		model = (W,EW)
-		Detection.flushprintln("Boundary extraction.... Done")
+		Detection.flushprintln("Done")
 
 		# boundary semplification
-		Detection.flushprintln("Boundary semplification....")
+		Detection.flushprint("Boundary semplification....")
 		V, EV = Detection.simplify_model(model; par = par, angle = angle)
-		Detection.flushprintln("############## SPIGOLI RIMASTI= $(length(EV))")
-		Detection.flushprintln("Boundary semplification.... Done")
+		Detection.flushprintln("Done")
 
 		# save data
 		Detection.flushprintln()
-		Detection.flushprintln("Saves....")
+		Detection.flushprint("Saves....")
 		V2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
 		FileManager.save_points_txt(joinpath(folders[i],"boundary_points2D.txt"), V2D)
 		FileManager.save_points_txt(joinpath(folders[i],"boundary_points3D.txt"), V)
 		FileManager.save_connected_components(joinpath(folders[i],"boundary_edges.txt"), V, EV)
-		Detection.flushprintln("Saves.... Done")
-		Detection.flushprintln("==========================================================")
-		Detection.flushprintln("==========================================================")
+		Detection.flushprintln("Done")
+		Detection.flushprintln()
 
 	end
 end
