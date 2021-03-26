@@ -7,7 +7,7 @@ INPUT_PC = FileManager.source2pc(source,1)
 
 centroid = Common.centroid(INPUT_PC.coordinates)
 
-NAME_PROJ = "MURI_FULL"
+NAME_PROJ = "CASALETTO"
 folder_proj = "C:/Users/marte/Documents/GEOWEB/TEST"
 
 folders = FileManager.get_plane_folders(folder_proj,NAME_PROJ)

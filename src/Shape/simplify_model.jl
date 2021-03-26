@@ -18,7 +18,7 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 
 		# grafo riferito agli spigoli
 	    graph = Common.model2graph_edge2edge(P,EV)
-	    conn_comps = LightGraphs.connected_components(graph)
+	    conn_comps = Common.biconnected_comps(graph)
 
 		# per ogni componente connessa
 	    for comp in conn_comps
@@ -54,13 +54,22 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 	P3D = Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))'))
 
 	### components closure
+	points = Int64[]
 	graph = Common.model2graph_edge2edge(P3D,EV)
 	comps = LightGraphs.connected_components(graph)
 	for comp in comps
 		ext = Common.get_boundary_points(V,EV[comp])
 		if length(ext) == 2
-			push!(EV,ext)
+			push!(points,ext...)
+			# push!(EV,ext)
 		end
+	end
+	T = P[:,points]
+	kdtree = Common.KDTree(T)
+	for p in 1:length(points)
+		@show p
+		idxs,dists = Common.knn(kdtree, T[:,p], 1, true, i -> i == p)
+		push!(EV,[points[p],points[idxs[1]]])
 	end
 	return P3D, EV
 end
