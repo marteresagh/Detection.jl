@@ -18,7 +18,7 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 
 		# grafo riferito agli spigoli
 	    graph = Common.model2graph_edge2edge(P,EV)
-	    conn_comps = Common.biconnected_comps(graph)
+	    conn_comps = Common.biconnected_comps(P,EV)
 
 		# per ogni componente connessa
 	    for comp in conn_comps
