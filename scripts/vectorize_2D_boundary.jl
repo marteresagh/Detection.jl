@@ -99,11 +99,14 @@ function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Ar
 
 		# save data
 		Detection.flushprintln()
-		Detection.flushprint("Saves....")
-		V2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
-		FileManager.save_points_txt(joinpath(folders[i],"boundary_points2D.txt"), V2D)
-		FileManager.save_points_txt(joinpath(folders[i],"boundary_points3D.txt"), V)
-		FileManager.save_connected_components(joinpath(folders[i],"boundary_edges.txt"), V, EV)
+		Detection.flushprint("Saves $(lenght(EV)) edges....")
+		if length(EV)>2
+			V2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
+			FileManager.save_points_txt(joinpath(folders[i],"boundary_points2D.txt"), V2D)
+			FileManager.save_points_txt(joinpath(folders[i],"boundary_points3D.txt"), V)
+			FileManager.save_connected_components(joinpath(folders[i],"boundary_edges.txt"), V, EV)
+			FileManager.successful(true, folders[i])
+		end
 		Detection.flushprintln("Done")
 		Detection.flushprintln()
 
