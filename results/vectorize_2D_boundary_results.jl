@@ -21,11 +21,7 @@ function get_boundary_models(folders)
 		V = FileManager.load_points(joinpath(folders[i],"boundary_points3D.txt"))
 		EV = FileManager.load_connected_components(joinpath(folders[i],"boundary_edges.txt"))
 		model = (V,EV)
-		if !isempty(EV)
-			push!(boundary,model)
-		else
-			@show i
-		end
+		push!(boundary,model)
 	end
 	return boundary
 end
@@ -34,5 +30,5 @@ boundary_models = get_boundary_models(folders)
 # model = boundary_models[2]
 GL.VIEW([
 #	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates))),
-	[GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),model[1]),model[2],GL.COLORS[1],0.8) for model in boundary_models[3:3]]...,
+	[GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),model[1]),model[2],GL.COLORS[1],0.8) for model in boundary_models]...,
 ])
