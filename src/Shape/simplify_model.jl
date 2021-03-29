@@ -53,24 +53,18 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 	end
 	P3D = Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))'))
 
-	### components closure
-	# points = Int64[]
-	# graph = Common.model2graph_edge2edge(P3D,EV)
-	# comps = LightGraphs.connected_components(graph)
-	# for comp in comps
-	# 	ext = Common.get_boundary_points(V,EV[comp])
-	# 	if length(ext) == 2
-	# 		push!(points,ext...)
-	# 		# push!(EV,ext)
-	# 	end
-	# end
-	# T = P[:,points]
-	# kdtree = Common.KDTree(T)
-	# for p in 1:length(points)
-	# 	@show p
-	# 	idxs,dists = Common.knn(kdtree, T[:,p], 1, true, i -> i == p)
-	# 	push!(EV,[points[p],points[idxs[1]]])
-	# end
+	graph = Common.model2graph_edge2edge(P3D,EV)
+	comps = LightGraphs.connected_components(graph)
+	for comp in comps
+		if length(comp)>=2
+			ext = Common.get_boundary_points(V,EV[comp])
+			if length(ext) == 2
+				#push!(points,ext...)
+				push!(EV,ext)
+			end
+		end
+	end
+
 	return P3D, EV
 end
 

@@ -47,18 +47,17 @@ model = (W,EW)
 
 V, EV = Detection.simplify_model(model; par = 0.01, angle = pi/8)
 
+GL.VIEW([
+	#	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V))),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],0.8),
+])
+
+## components closure
 # model = boundary_models[2]
 # GL.VIEW([
 # 	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W))),
 # 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W),EW,GL.COLORS[1],0.8),
 # ])
-
-
-GL.VIEW([
-#	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V))),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],0.8),
-])
-
 
 ##############################################################################
 # GL.VIEW([
