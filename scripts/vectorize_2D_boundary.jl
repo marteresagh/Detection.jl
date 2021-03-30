@@ -5,7 +5,7 @@ using Detection
 using Common
 using OrthographicProjection
 using AlphaStructures
-using Visualization
+
 println("packages OK")
 
 # function boundary_shape
@@ -106,10 +106,6 @@ function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Ar
 			FileManager.save_points_txt(joinpath(folders[i],"boundary_points3D.txt"), V)
 			FileManager.save_connected_components(joinpath(folders[i],"boundary_edges.txt"), V, EV)
 			FileManager.successful(true, folders[i])
-			GL.VIEW([
-				GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V)...),V),EV,GL.COLORS[1],0.8),
-			])
-
 		end
 		Detection.flushprintln("Done")
 		Detection.flushprintln()

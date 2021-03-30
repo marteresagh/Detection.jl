@@ -2,7 +2,7 @@
 
 [[AlphaStructures]]
 deps = ["Combinatorics", "DataStructures", "Delaunay", "Distributed", "LinearAlgebra", "SharedArrays"]
-git-tree-sha1 = "fc0f74f1f4e967cb0de85a7e2acbf433eb0fbd6f"
+git-tree-sha1 = "dd7de169ee59391d5552c41e7ae1636232f3fcf3"
 repo-rev = "master"
 repo-url = "https://github.com/eOnofri04/AlphaStructures.jl"
 uuid = "b34a2d8f-0989-4844-9314-dd3cff8ff09b"
@@ -78,7 +78,7 @@ version = "1.0.2"
 
 [[Common]]
 deps = ["Delaunay", "LightGraphs", "LinearAlgebraicRepresentation", "NearestNeighbors", "QHull", "SparseArrays", "Statistics", "Triangulate"]
-git-tree-sha1 = "386d841f31e260df4f9e8122fc652949034c18f3"
+git-tree-sha1 = "3aa3bbb01070ff09422627d7cd8d7a04d2c63414"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/Common.jl"
 uuid = "1e120bc2-2bd2-483a-9663-793997b3971f"
@@ -174,7 +174,7 @@ version = "1.4.5"
 
 [[FileManager]]
 deps = ["Common", "DataStructures", "Dates", "JSON", "LasIO", "LazIO", "PlyIO", "Printf"]
-git-tree-sha1 = "9606f663a403059380297369571e97b7001af8ec"
+git-tree-sha1 = "f73e3e8bd8e01b8d226f5c53a540a8e434710f61"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/FileManager.jl"
 uuid = "0bd84659-c0f7-4690-a84b-0a06eabf7473"
