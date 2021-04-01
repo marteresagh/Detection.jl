@@ -2,59 +2,121 @@ using Common
 using FileManager
 using Visualization
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/LACONTEA"
-INPUT_PC = FileManager.source2pc(source,1)
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/COLONNA"
+INPUT_PC = FileManager.source2pc(source,0)
 
 centroid = Common.centroid(INPUT_PC.coordinates)
 
-NAME_PROJ = "LA_CONTEA_LOD3"
-folder = "C:/Users/marte/Documents/GEOWEB/TEST"
+NAME_PROJ = "COLONNA_LOD2"
+folder_proj = "C:/Users/marte/Documents/GEOWEB/TEST"
 
-function read_data(folder,NAME_PROJ)
-	hyperplanes = Hyperplane[]
-	out = Array{Lar.Struct,1}()
-	for (root, dirs, files) in walkdir(joinpath(folder,NAME_PROJ))
-		for dir in dirs
-			folder_plane = joinpath(root,dir)
+folders = FileManager.get_plane_folders(folder_proj,NAME_PROJ)
 
-			inliers = FileManager.load_points(joinpath(folder_plane,"inliers.txt"))[1:3,:]
+# hyperplanes, _ = FileManager.get_hyperplanes(folders)
+# V,EV,FV = Common.DrawPlanes(hyperplanes; box_oriented=false)
+#
+# GL.VIEW([
+# #	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+# 	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8)
+# ])
+#
+# GL.VIEW([
+# 	Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+# ])
 
-			io = open(joinpath(folder_plane,"finite_plane.txt"), "r")
-			point = readlines(io)
-			close(io)
-			b = [tryparse.(Float64,split(point[i], " ")) for i in 1:length(point)]
-			plane = b[1]
-			normal = [plane[1],plane[2],plane[3]]
 
-			hyperplane = Hyperplane(PointCloud(inliers), normal, plane[4]*normal)
-			push!(hyperplanes,hyperplane)
-
-			W = FileManager.load_points(joinpath(folder_plane,"boundary_points.txt"))
-			EW = FileManager.load_connected_components(joinpath(folder_plane,"boundary_edges.txt"))
-			out = push!(out, Lar.Struct([(W, EW)]))
+function get_boundary_models(folders)
+	n_planes = length(folders)
+	boundary = Lar.LAR[]
+	for i in 1:n_planes
+	#	println("$i of $n_planes")
+		if isfile(joinpath(folders[i],"execution.probe"))
+			V = FileManager.load_points(joinpath(folders[i],"boundary_points3D.txt"))
+			EV = FileManager.load_connected_components(joinpath(folders[i],"boundary_edges.txt"))
+			model = (V,EV)
+			push!(boundary,model)
 		end
 	end
-	out = Lar.Struct(out)
-	W,EW = Lar.struct2lar(out)
-	return hyperplanes, W, EW
+	return boundary
 end
 
-hyperplanes, W, EW = read_data(folder,NAME_PROJ)
+boundary_models = get_boundary_models(folders)
 
 GL.VIEW([
-	Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+	#GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates))),
+	[GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),model[1]),model[2],GL.COLORS[rand(1:1)],0.8) for model in boundary_models]...,
 ])
 
 
-V,EV,FV = Common.DrawPlanes(hyperplanes; box_oriented=true)
+s = 0
+for model in boundary_models
+	global s
+	s += size(model[1],2)
+end
 
-GL.VIEW([
-	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8),
-	# GL.GLGrid(W,EW,GL.COLORS[1],1.0),
-])
 
-GL.VIEW([
-	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),W)')),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.0),
-])
+# #############################  MERGE PLANE  ##################################################
+# output_folder = "C:/Users/marte/Documents/GEOWEB/TEST/CASALETTO_MERGE"
+#
+# function merge_plane(folders, output_folder)
+#
+# 	function point_cloud_distance(source::Lar.Points, target::Lar.Points)
+# 		kdtree = Common.KDTree(target)
+# 		idxs, dists = Common.NearestNeighbors.nn(kdtree, source)
+# 		return idxs,dists
+# 	end
+#
+# 	n_planes = length(folders)
+# 	hyperplanes, _ = FileManager.get_hyperplanes(folders)
+# 	dict = DataStructures.Dict()
+# 	for i in 1:n_planes
+# 		@show "giro",i
+# 		hyperplane = hyperplanes[i]
+# 		dir = hyperplane.direction
+# 		cen = Common.centroid(hyperplane.inliers.coordinates)
+# 		inliers = hyperplane.inliers.coordinates
+#
+# 		key_ = (dir,cen)
+# 		for key in keys(dict)
+#
+# 			test_angle = Common.angle_between_directions(dir,key[1]) < pi/8
+# 			test_dist_centroid = Common.Dist_Point2Plane(cen,Hyperplane(key...)) < 0.01
+# 			idxs,dists = point_cloud_distance(inliers,dict[key])
+# 			test_dist_pcs = min(dists...) < 0.1
+# 		# 	@show test_angle
+# 		# #	@show test_dist_centroid
+# 		# 	@show test_dist_pcs
+# 			if test_angle && test_dist_centroid && test_dist_pcs
+# 				key_ = key
+# 				break
+# 			end
+# 		end
+#
+# 		if !haskey(dict,key_)
+# 			dict[key_] = inliers
+# 		else
+# 			dict[key_] = hcat(dict[key_],inliers)
+# 		end
+#
+# 	end
+# 	return dict
+# end
+#
+# dict = merge_plane(folders, output_folder)
+#
+# hyperplanes = Hyperplane[]
+# for key in keys(dict)
+# 	inliers = dict[key]
+# 	params = Common.Fit_Plane(inliers)
+# 	push!(hyperplanes, Hyperplane(PointCloud(inliers), params...))
+# end
+#
+#
+# V,FV = Common.DrawPlanes(hyperplanes; box_oriented = false)
+#
+# GL.VIEW([
+# #	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+# 	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8)
+# ])
+#
+# ###############################################################################

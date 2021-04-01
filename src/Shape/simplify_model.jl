@@ -41,7 +41,7 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)::Lar.LAR
 			#optimize!(P_original, P, EV; par = par)
 
 			#* unisco i vertici molto vicini
-			P,EV = remove_some_edges!(P,EV; par = par, angle = angle)  # nuovo modello da riutilizzare
+			#P,EV = remove_some_edges!(P,EV; par = par, angle = angle)  # nuovo modello da riutilizzare
 		else # altrimenti mi fermo
 			break
 		end
@@ -94,7 +94,7 @@ function get_cluster_edges(model::Lar.LAR, subgraph; par = 0.01, angle = pi/8)::
 		p_star = v - Lar.dot(direction,v)*direction
 		dist2 = Lar.norm(p_star)
 
-		return dist1<par && dist2<par
+		return dist1<=par && dist2<=par
 	end
 
 

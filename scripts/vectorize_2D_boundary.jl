@@ -23,13 +23,10 @@ function parse_commandline()
 	"--output", "-o"
 		help = "Output folder"
 		required = true
-	"--thickness"
-		help = "Thickness"
-		arg_type = Float64
 	"--par"
 		help = "Parameter"
 		arg_type = Float64
-		default = 0.01
+		default = 0.02
 	"--angle"
 		help = "Angle"
 		arg_type = Float64
@@ -37,7 +34,7 @@ function parse_commandline()
 	"--k"
 		help = "number of neighbors"
 		arg_type = Int64
-		default = 30
+		default = 40
 	end
 
 	return parse_args(s)
@@ -45,25 +42,13 @@ end
 
 
 
-function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Array{Hyperplane,1}, thickness::Float64, par::Float64, angle::Float64, k::Int64)
+function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Array{Hyperplane,1}, par::Float64, angle::Float64, k::Int64)
 	n_planes = length(folders)
 	Threads.@threads for i in 1:n_planes
 		Detection.flushprintln()
 		Detection.flushprintln("==========================================================")
 		Detection.flushprintln("=================== $i of $n_planes ======================")
 		Detection.flushprintln("==========================================================")
-
-		# segmentation: to extract all inliers
-		Detection.flushprintln()
-		Detection.flushprintln("Segmentation....")
-		Detection.flushprintln("-----------------------------------------------------------")
-		inliers_points = hyperplanes[i].inliers.coordinates
-		aabb = Common.boundingbox(inliers_points)
-		plane = Plane(hyperplanes[i].direction,hyperplanes[i].centroid)
-		model = Common.getmodel(plane, thickness, aabb)
-		OrthographicProjection.segment(potree, joinpath(folders[i],"full_inliers.las"), model)
-		Detection.flushprintln("-----------------------------------------------------------")
-		Detection.flushprintln("Segmentation.... Done")
 
 		# alpha shape of full inliers
 		Detection.flushprintln()
@@ -72,10 +57,25 @@ function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Ar
 		#######################################
 		# se troppi punti si possono decimare #
 		#######################################
+		function outliers(points, par)
+			outliers = Int64[]
+			tree = Common.KDTree(points)
+			idxs = Common.inrange(tree, points, par)
+			for i in 1:length(idxs)
+				if length(idxs[i])<3
+					push!(outliers,i)
+				end
+			end
+			return outliers
+		end
+
 		PC = FileManager.las2pointcloud(file)
 		points = PC.coordinates
 		plane = Plane(points)
-		V = Common.apply_matrix(plane.matrix,points)[1:2,:]
+		T = Common.apply_matrix(plane.matrix,points)[1:2,:]
+
+		out = outliers(T, par) #Common.outliers(PC, collect(1:PC.n_points), 30)
+		V = T[:, setdiff( collect(1:PC.n_points), out)]
 
 		DT = Common.delaunay_triangulation(V)
 		filtration = AlphaStructures.alphaFilter(V,DT);
@@ -120,7 +120,6 @@ function main()
 	source = args["source"]
 	project_name = args["projectname"]
 	output_folder = args["output"]
-	thickness = args["thickness"]
 	par = args["par"]
 	angle = args["angle"]
 	k = args["k"]
@@ -129,14 +128,13 @@ function main()
 	Detection.flushprintln("Source  =>  $source")
 	Detection.flushprintln("Output folder  =>  $output_folder")
 	Detection.flushprintln("Project name  =>  $project_name")
-	Detection.flushprintln("Thickness  =>  $thickness")
 	Detection.flushprintln("Parameter  =>  $par")
 	Detection.flushprintln("Angle  =>  $angle")
 
 	folders = FileManager.get_plane_folders(output_folder, project_name)
 	hyperplanes, OBBs = FileManager.get_hyperplanes(folders)
 
-	save_boundary(source, folders, hyperplanes, thickness, par, angle, k)
+	save_boundary(source, folders, hyperplanes, par, angle, k)
 
 end
 

@@ -6,6 +6,8 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 	# model = V,EV in 3D space
 	V,EV = model
 	EV = unique(sort.(EV)) # per togliere un problema nel salvataggio delle componenti. Poi da eliminare
+	EV = filter(ev -> length(ev) > 1, EV)
+
 	nedges = length(EV)
 	diff_nedges = nedges
 
@@ -14,14 +16,12 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 	plane = Plane(V)
 	P = Common.apply_matrix(plane.matrix,V)[1:2,:]
 
+	# init dict
 	for i in 1:length(EV)
-		dict[EV[i]] = P[:,EV[i]]
+		dict[i] = P[:,union(EV[i]...)]
 	end
 
 	while diff_nedges!=0
-		@show "giro"
-		@show "1"
-
 		all_clusters_in_model = Array{Array{Int64,1},1}[] #tutti i cluster di spigoli nel modello
 
 		# grafo riferito agli spigoli
@@ -38,39 +38,23 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 		end
 
 		cluss = union(all_clusters_in_model...)
-		# dict = update_dict!(P, EV, cluss, dict)
 		# costruisco i nuovi spigoli eliminando i punti interni della catena
 		EV, dict = simplify_edges(EV, cluss, dict)
-		@show "2"
+
 		optimize!(P::Lar.Points, EV::Lar.Cells, dict)
-		#* unisco i vertici molto vicini
 
+		# #* unisco i vertici molto vicini
+		EV, dict  = remove_some_edges!(P, EV, dict; par = par, angle = angle)  # nuovo modello da riutilizzare
 
-		#EV,dict = remove_some_edges!(P, EV, dict; par = par, angle = angle)  # nuovo modello da riutilizzare
-		@show "3"
+		# @show "3"
 		# per la condizione di uscita dal loop
 		diff_nedges = nedges - length(EV)
 		nedges = length(EV)
 	end
 #	P,EV = Lar.simplifyCells(P,EV)
-	return P, EV, dict #semplifico il modello eliminando i punti non usati
-#	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))')), EV ,dict
+#	return P, EV, dict #semplifico il modello eliminando i punti non usati
+	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))')), EV ,dict
 end
-
-# function update_dict!(P, EV, cluss, dict)
-# 	if isempty(dict)
-# 		for i in 1:length(cluss)
-# 			dict[i] = P[:,union(EV[cluss[i]]...)]
-# 		end
-# 		return dict
-# 	else
-# 		dict_tmp = Dict()
-# 		for i in 1:length(cluss)
-# 			dict_tmp[i] = hcat([dict[j] for j in cluss[i]]...)
-# 		end
-# 		return dict_tmp
-# 	end
-# end
 
 """
 cerco i clusters nel sottografo corrente (una componente connessa)
@@ -101,7 +85,6 @@ function get_cluster_edges(model::Lar.LAR, subgraph; par = 0.01, angle = pi/8)::
 		return dist1<par && dist2<par
 	end
 
-
 	seen = zeros(Bool,LightGraphs.nv(grph))
 	current_ind = [1:LightGraphs.nv(grph)...]
 	clusters_found = Array{Int64,1}[]
@@ -117,7 +100,6 @@ function get_cluster_edges(model::Lar.LAR, subgraph; par = 0.01, angle = pi/8)::
 		centroid = V[:,EV[vmap[e1]][1]]
 
 		while !isempty(S)
-
 			e = pop!(S)
 			neighbors = LightGraphs.neighborhood(grph,e,1)
 			for neighbor in neighbors
@@ -149,18 +131,19 @@ function optimize!(P::Lar.Points, EV::Lar.Cells, dict)
 	I,J,VAL = Lar.findnz(cop)
 	for vertice in vertici
 		dove = I[Lar.nzrange(cop, vertice)]
-		@show EV[dove]
 		intersection_clusters = [dict[i] for i in dove]
 		if length(intersection_clusters)==2
 			dir1,cen1 = Common.LinearFit(intersection_clusters[1])
 			dir2,cen2 = Common.LinearFit(intersection_clusters[2])
 
-			line1 = [cen1,cen1+dir1]
-			line2 = [cen2,cen2+dir2]
+			if Common.angle_between_directions(dir1,dir2) >= pi/8
+				line1 = [cen1,cen1+dir1]
+				line2 = [cen2,cen2+dir2]
 
-			new_point = Common.lines_intersection(line1,line2)
-			@assert !isnothing(new_point) "impossible"
-			P[:,vertice] = new_point
+				new_point = Common.lines_intersection(line1,line2)
+				@assert !isnothing(new_point) "impossible"
+				P[:,vertice] = new_point
+			end
 		end
 	end
 end
@@ -175,28 +158,27 @@ function simplify_edges(EV::Lar.Cells, cluss::Array{Array{Int64,1},1},dict)
 
 		S1 = sum(M_2',dims=2)
 
-		inner = [k for k=1:length(S1) if S1[k]==2]
-		outer = setdiff(union(EV...), inner)
+		outer = [k for k=1:length(S1) if S1[k]==1]
 		return outer
 	end
 
-	new_EV = Array{Int64,1}[] # nuovo modello di spigoli
+	new_EV = Array{Int64,1}[]#Array{Array{Int64,1},1}(undef,length(cluss)) # nuovo modello di spigoli
 
 	# per ogni componente  nella componente connessa
+	i = 0
 	for cluster in cluss
 		# catena di spigoli presi in riferimento
 		EV_current = EV[cluster]
 		# vertici estremi
 		verts_extrema = boundary_chain(EV_current)
 		if length(verts_extrema)==2
+			i+=1
 			# nuovo spigolo cotruito
-			dict_tmp[verts_extrema] = hcat([dict[ev] for ev in EV_current]...)
-			union!(new_EV,[verts_extrema])
+			dict_tmp[i] = hcat([dict[ev] for ev in cluster]...)
+			push!(new_EV, verts_extrema)
 		end
 	end
-
-	dict = dict_tmp
-	return new_EV, dict
+	return new_EV[filter(x-> !isdefined(new_EV,x),1:length(new_EV))],  dict_tmp
 end
 
 """
@@ -259,7 +241,7 @@ rimuove spigoli con una certa caratteristica
 """
 function remove_some_edges!(P::Lar.Points, EP::Lar.Cells, dict; par=1e-4, angle = pi/8)
 	graph = Common.model2graph_edge2edge(P,EP)
-	dict_tmp = copy(dict)
+	dict_tmp = Dict()
 	EV = copy(EP)
 
 	function direction(e)
@@ -282,7 +264,7 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells, dict; par=1e-4, angle 
 		return dist1, dist2
 	end
 
-	todel = Int64[]
+	clusters = [[i] for i in 1:length(EP)]#Array{Int64,1}[]
 	for i in 1:length(EP)
 		ep = EP[i] # attenzione che questi cambiano
 		N = setdiff(LightGraphs.neighborhood(graph,i,1),i)
@@ -304,38 +286,18 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells, dict; par=1e-4, angle 
 				#dist = Lar.norm(P[:,ep[1]]-P[:,ep[2]])
 
 				if dist_ortho1 <= par && dist_ortho2 <= par
-					push!(todel, i)
-					centroid = Common.centroid(P[:,ep])
-					P[:,ep[1]] = centroid
-					P[:,ep[2]] = centroid
-					dict[EP[N[1]]] = hcat(dict[EP[N[1]]],dict[ep])
-					dict[EP[N[2]]] = hcat(dict[EP[N[2]]],dict[ep])
+					push!(clusters, [i,n1,n2])
 				end
 			end
 		end
 	end
-
-	del = []
-	graph = Common.model2graph_edge2edge(P,EV)
-	for i in todel
-		ep = EP[i]
-		delete!(dict_tmp,ep)
-		N = setdiff(LightGraphs.neighborhood(graph,i,1),i)
-		for n in N
-			EV[n][EV[n].==ep[1]] .= ep[2]
-			push!(del,n)
-			if !haskey(dict_tmp,EV[n])
-				dict_tmp[EV[n]] = dict[EP[n]]
-			end
-		end
-		graph = Common.model2graph_edge2edge(P,EV)
+	for i in 1:length(EP)
+		filtro = issubset.([i],clusters)
+		daunire = clusters[filtro]
+		deleteat!(clusters,filtro)
+		push!(clusters,union(daunire...))
 	end
-
-	EV = EV[ filter(x->!(x in todel), eachindex(EV)) ]
-	for i in del
-		delete!(dict_tmp,EP[i])
-	end
-
-	return EV, dict_tmp
+	return simplify_edges(EP, clusters, dict)
+#	return EV, dict_tmp
 	#return  merge_vertices!(P, EP; err=par)
 end

@@ -4,13 +4,13 @@ using Detection
 using Visualization
 using AlphaStructures
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASALETTO"
-INPUT_PC = FileManager.source2pc(source,0)
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/COLONNA"
+INPUT_PC = FileManager.source2pc(source,1)
 
 # user parameters
-par = 0.05
+par = 0.07
 failed = 100
-N = 30
+N = 40
 k = 30
 
 # threshold estimation
@@ -21,9 +21,9 @@ normals = Common.compute_normals(INPUT_PC.coordinates, threshold, k)
 INPUT_PC.normals = normals
 
 # seeds indices
-masterseeds = "C:/Users/marte/Documents/GEOWEB/wrapper_file/JSON/seeds_COLOMBELLA.txt"
-given_seeds = FileManager.load_points(masterseeds)
-seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
+# masterseeds = "C:/Users/marte/Documents/GEOWEB/wrapper_file/JSON/seeds_COLOMBELLA.txt"
+# given_seeds = FileManager.load_points(masterseeds)
+# seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 
 seeds = Int64[]
 # outliers
@@ -37,7 +37,7 @@ hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)
 #hyperplane, cluster, all_visited_verts = Detection.get_hyperplane(params; given_seed = seeds[1])
 centroid = Common.centroid(INPUT_PC.coordinates)
 
-V,FV = Common.DrawPlanes(hyperplanes, Common.boundingbox(INPUT_PC.coordinates))
+V,FV = Common.DrawPlanes(hyperplanes; box_oriented = false)
 
 GL.VIEW([
 	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
