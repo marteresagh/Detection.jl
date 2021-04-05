@@ -2,12 +2,12 @@ using Common
 using FileManager
 using Visualization
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/COLONNA"
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASALETTO"
 INPUT_PC = FileManager.source2pc(source,0)
 
 centroid = Common.centroid(INPUT_PC.coordinates)
 
-NAME_PROJ = "COLONNA_LOD2"
+NAME_PROJ = "CASALETTO_LOD3"
 folder_proj = "C:/Users/marte/Documents/GEOWEB/TEST"
 
 folders = FileManager.get_plane_folders(folder_proj,NAME_PROJ)

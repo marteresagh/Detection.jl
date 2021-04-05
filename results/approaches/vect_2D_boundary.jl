@@ -49,7 +49,7 @@ source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
 INPUT_PC = FileManager.source2pc(source,0)
 centroid = Common.centroid(INPUT_PC.coordinates)
 
-folder = "C:/Users/marte/Documents/GEOWEB/TEST/MURI_FULL/plane_63783370976493"
+folder = "C:/Users/marte/Documents/GEOWEB/TEST/CASALETTO_LOD3/plane_63784432028543"
 PC = FileManager.source2pc(joinpath(folder,"full_inliers.las"),0)
 
 
@@ -62,11 +62,11 @@ GL.VIEW([
 ])
 
 #
-V, EV = Detection.simplify_model(model; par = 0.01, angle = pi/8)
+V, EV, dict = Detection.simplify_model(model; par = 0.01, angle = pi/8)
 
 plane = Plane(V)
 V2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
-W2D = Common.apply_matrix(plane.matrix,W)[1:2,:]
+W2D = Common.apply_matrix(plane.matrix,PC.coordinates)[1:2,:]
 # FileManager.save_connected_components("prova.txt",V,EV)
 # EV = FileManager.load_connected_components("prova.txt")
 GL.VIEW([
@@ -75,27 +75,17 @@ GL.VIEW([
 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D),EV,GL.COLORS[1],0.8),
 ])
 
-#######################################  DEBUG ###################################################
-V,EV,dict = simplify_model(model; par = 0.01, angle = pi/8)
-plane = Plane(V)
-V2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
-W2D = Common.apply_matrix(plane.matrix,W)[1:2,:]
-FileManager.save_connected_components("prova.txt",V,EV)
-EV = FileManager.load_connected_components("prova.txt")
-GL.VIEW([
-	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),W2D))),
-	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D))),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D),EV,GL.COLORS[1],0.8),
-])
-
-# FileManager.save_connected_components("prova.txt",V,EV)
-# EV = FileManager.load_connected_components("prova.txt")
-GL.VIEW([
-	#GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(P)...),W2D))),
-	#GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(P)...),P))),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(P)...),P),EV,GL.COLORS[1],0.8),
-])
-
-GL.VIEW([
-	[GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),dict[i])), GL.COLORS[i-12]) for i in 13:24]...,
-])
+# GL.VIEW([
+# #	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),W2D))),
+# 	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),dict[5])), GL.COLORS[rand(1:12)]),
+# 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D),EV,GL.COLORS[1],0.8),
+# ])
+#
+# p = dict[1]
+# params = Common.LinearFit(p)
+# hyperplane = Hyperplane(PointCloud(p),params...)
+# V,EV = Common.DrawLines(hyperplane)
+# GL.VIEW([
+# 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(p)...),p)'),GL.RED),
+# 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(p)...),V),EV,GL.COLORS[1],1.0)
+# ])

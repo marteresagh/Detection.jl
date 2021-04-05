@@ -51,7 +51,7 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 		diff_nedges = nedges - length(EV)
 		nedges = length(EV)
 	end
-#	P,EV = Lar.simplifyCells(P,EV)
+	P,EV = Lar.simplifyCells(P,EV)
 #	return P, EV, dict #semplifico il modello eliminando i punti non usati
 	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(P,zeros(size(P,2))')), EV ,dict
 end
@@ -133,16 +133,20 @@ function optimize!(P::Lar.Points, EV::Lar.Cells, dict)
 		dove = I[Lar.nzrange(cop, vertice)]
 		intersection_clusters = [dict[i] for i in dove]
 		if length(intersection_clusters)==2
+
+
 			dir1,cen1 = Common.LinearFit(intersection_clusters[1])
 			dir2,cen2 = Common.LinearFit(intersection_clusters[2])
 
 			if Common.angle_between_directions(dir1,dir2) >= pi/8
+
 				line1 = [cen1,cen1+dir1]
 				line2 = [cen2,cen2+dir2]
 
 				new_point = Common.lines_intersection(line1,line2)
 				@assert !isnothing(new_point) "impossible"
 				P[:,vertice] = new_point
+
 			end
 		end
 	end
