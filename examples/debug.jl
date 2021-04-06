@@ -1,63 +1,70 @@
 using Common
 using FileManager
-using Detection
-using LightGraphs
-using AlphaStructures
 using Visualization
+using Detection
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
-INPUT_PC = FileManager.source2pc(source,1)
-
-centroid = Common.centroid(INPUT_PC.coordinates)
-
-NAME_PROJ = "MURI"
-folder = "C:/Users/marte/Documents/GEOWEB/TEST"
-
-function read_data(folder,NAME_PROJ)
-	hyperplanes = Hyperplane[]
-	out = Array{Lar.Struct,1}()
-	for (root, dirs, files) in walkdir(joinpath(folder,NAME_PROJ))
-		for dir in dirs
-			folder_plane = joinpath(root,dir)
-
-			inliers = FileManager.load_points(joinpath(folder_plane,"inliers.txt"))[1:3,:]
-
-			io = open(joinpath(folder_plane,"finite_plane.txt"), "r")
-			point = readlines(io)
-			close(io)
-			b = [tryparse.(Float64,split(point[i], " ")) for i in 1:length(point)]
-			plane = b[1]
-			normal = [plane[1],plane[2],plane[3]]
-
-			hyperplane = Hyperplane(PointCloud(inliers), normal, plane[4]*normal)
-			push!(hyperplanes,hyperplane)
-
-			W = FileManager.load_points(joinpath(folder_plane,"boundary_points.txt"))
-			EW = FileManager.load_connected_components(joinpath(folder_plane,"boundary_edges.txt"))
-			out = push!(out, Lar.Struct([(W, EW)]))
-		end
-	end
-	out = Lar.Struct(out)
-	W,EW = Lar.struct2lar(out)
-	return hyperplanes, W, EW
-end
-
-hyperplanes, W, EW = read_data(folder,NAME_PROJ)
+W = FileManager.load_points("points.txt")
+EW = FileManager.load_cells("edges.txt")
 
 GL.VIEW([
-	Visualization.mesh_planes(hyperplanes,Lar.t(-centroid...))...,
+	#GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W))),
+	GL.GLGrid(W,EW,GL.COLORS[1],0.8),
+	GL.GLFrame2
+])
+
+###################### debug
+graph = Common.model2graph_edge2edge(W,EW)
+conn_comps = LightGraphs.connected_components(graph)
+subgraph = LightGraphs.induced_subgraph(graph, conn_comps[1])
+# estraggo catene lineari come collezioni di indici
+all_clusters_in_model = Array{Array{Int64,1},1}[]
+cl_edges = Detection.get_cluster_edges((W,EW), subgraph; par = 0.02, angle = pi/8)
+push!(all_clusters_in_model, cl_edges)
+
+GL.VIEW([
+	GL.GLGrid(W,EW,GL.COLORS[1],0.8),
+	[GL.GLGrid(W,EW[cl_edges[i]],GL.COLORS[rand(1:12)],0.8) for i in 1:length(cl_edges)]...,
 ])
 
 
-V,FV = Common.DrawPlanes(hyperplanes; box_oriented=false)
+cluss = union(all_clusters_in_model...)
 
+# costruisco i nuovi spigoli eliminando i punti interni della catena costruita
+EV, dict = Detection.simplify_edges(EV, cluss, dict)
+
+# calcolo nuovi punti di intersezione (e modifico P forse non devo modificare P?)
+# optimize!(P, EV, dict)
+
+# rimuovo alcuni spigoli non necessari
+EV, dict  = remove_some_edges!(P, EV, dict; par = par, angle = angle)  
+
+
+V, EV, dict = Detection.simplify_model(model; par = 0.02, angle = pi/8)
+
+plane = Plane(V)
+V2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
+W2D = Common.apply_matrix(plane.matrix,W)[1:2,:]
+PC2D = Common.apply_matrix(plane.matrix,PC.coordinates)[1:2,:]
+# FileManager.save_connected_components("prova.txt",V,EV)
+# EV = FileManager.load_connected_components("prova.txt")
 GL.VIEW([
-	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8),
-	# GL.GLGrid(W,EW,GL.COLORS[1],1.0),
+
+	# GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),PC2D))),
+	# GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D))),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D),EV[[5]],GL.COLORS[1],0.8),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),W2D),EW,GL.COLORS[2],0.8),
 ])
 
 GL.VIEW([
-	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-centroid...),W)')),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),W),EW,GL.COLORS[1],1.0),
+	[GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),dict[k])), GL.COLORS[rand(1:12)]) for k in keys(dict)]...,
 ])
+# #
+# p = dict[1]
+# params = Common.LinearFit(p)
+# hyperplane = Hyperplane(PointCloud(p),params...)
+# Z,EZ = Common.DrawLines(hyperplane)
+# GL.VIEW([
+# 	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(p)...),W2D))),
+# 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(p)...),p)'),GL.RED),
+# 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(p)...),Z),EZ,GL.COLORS[1],1.0)
+# ])

@@ -18,20 +18,20 @@ function modello_bordo(PC::PointCloud)
 	end
 	points = PC.coordinates
 	plane = Plane(points)
-	T = Common.apply_matrix(plane.matrix,points)[1:2,:]
+	V = Common.apply_matrix(plane.matrix,points)[1:2,:]
 
-	GL.VIEW([
-		GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(T)...),T))),
-	])
-
-
-	out = outliers(T) #Common.outliers(PC, collect(1:PC.n_points), 30)
-	V = T[:, setdiff( collect(1:PC.n_points), out)]
-
-	GL.VIEW([
-		GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(T)...),T))),
-		GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(T)...),T[:,out])), GL.COLORS[2]),
-	])
+	# GL.VIEW([
+	# 	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(T)...),T))),
+	# ])
+	#
+	#
+	# out = outliers(T)#Common.outliers(PC, collect(1:PC.n_points), 100) #
+	# V = T[:, setdiff( collect(1:PC.n_points), out)]
+	#
+	# GL.VIEW([
+	# 	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(T)...),T))),
+	# 	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(T)...),T[:,out])), GL.COLORS[2]),
+	# ])
 
 	DT = Common.delaunay_triangulation(V)
 	filtration = AlphaStructures.alphaFilter(V,DT);
@@ -45,16 +45,17 @@ function modello_bordo(PC::PointCloud)
 end
 
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/COLONNA"
 INPUT_PC = FileManager.source2pc(source,0)
 centroid = Common.centroid(INPUT_PC.coordinates)
 
-folder = "C:/Users/marte/Documents/GEOWEB/TEST/CASALETTO_LOD3/plane_63784432028543"
+folder = "C:/Users/marte/Documents/GEOWEB/TEST/COLONNA_LOD2/plane_63784419548214"
 PC = FileManager.source2pc(joinpath(folder,"full_inliers.las"),0)
 
 
 model = modello_bordo(PC)
 W,EW = model
+
 
 GL.VIEW([
 	#GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(W)...),W))),
@@ -62,30 +63,18 @@ GL.VIEW([
 ])
 
 #
-V, EV, dict = Detection.simplify_model(model; par = 0.01, angle = pi/8)
+V, EV, dict = Detection.simplify_model(model; par = 0.02, angle = pi/8)
 
 plane = Plane(V)
 V2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
-W2D = Common.apply_matrix(plane.matrix,PC.coordinates)[1:2,:]
-# FileManager.save_connected_components("prova.txt",V,EV)
-# EV = FileManager.load_connected_components("prova.txt")
-GL.VIEW([
-	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),W2D))),
-	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D))),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D),EV,GL.COLORS[1],0.8),
-])
+W2D = Common.apply_matrix(plane.matrix,W)[1:2,:]
+PC2D = Common.apply_matrix(plane.matrix,PC.coordinates)[1:2,:]
 
-# GL.VIEW([
-# #	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),W2D))),
-# 	GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),dict[5])), GL.COLORS[rand(1:12)]),
-# 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D),EV,GL.COLORS[1],0.8),
-# ])
-#
-# p = dict[1]
-# params = Common.LinearFit(p)
-# hyperplane = Hyperplane(PointCloud(p),params...)
-# V,EV = Common.DrawLines(hyperplane)
-# GL.VIEW([
-# 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(p)...),p)'),GL.RED),
-# 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(p)...),V),EV,GL.COLORS[1],1.0)
-# ])
+
+GL.VIEW([
+
+	# GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),PC2D))),
+	# GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D))),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D),EV,GL.COLORS[1],0.8),
+	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),W2D),EW,GL.COLORS[2],0.8),
+])
