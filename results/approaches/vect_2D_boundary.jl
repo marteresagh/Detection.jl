@@ -63,7 +63,7 @@ GL.VIEW([
 ])
 
 #
-V, EV, dict = Detection.simplify_model(model; par = 0.02, angle = pi/8)
+V, EV, dict = Detection.simplify_model(model; par = 0.04, angle = pi/8)
 
 plane = Plane(V)
 V2D = Common.apply_matrix(plane.matrix,V)[1:2,:]
@@ -76,5 +76,5 @@ GL.VIEW([
 	# GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),PC2D))),
 	# GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D))),
 	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),V2D),EV,GL.COLORS[1],0.8),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),W2D),EW,GL.COLORS[2],0.8),
+	# GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(V2D)...),W2D),EW,GL.COLORS[2],0.8),
 ])

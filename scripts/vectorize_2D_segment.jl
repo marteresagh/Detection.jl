@@ -35,7 +35,7 @@ function save_full_inliers(potree::String, folders::Array{String,1}, hyperplanes
 		Common.flushprintln()
 		Common.flushprintln("==========================================================")
 		Common.flushprintln("=================== $i of $n_planes ======================")
-		DeteCommonction.flushprintln("==========================================================")
+		Common.flushprintln("==========================================================")
 
 		# segmentation: to extract all inliers
 		Common.flushprintln()

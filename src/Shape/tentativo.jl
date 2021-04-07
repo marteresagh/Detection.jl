@@ -1,4 +1,4 @@
-using Visualization
+# using Visualization
 """
 linearizazzione della patch planare 3D.
 """
@@ -21,9 +21,9 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 	for i in 1:length(EV)
 		dict[i] = P[:,union(EV[i]...)]
 	end
-	Common.flushprintln("================START============")
+
+	# Common.flushprintln("================START============")
 	while diff_nedges != 0
-		Common.flushprintln(" ")
 		# Common.flushprintln("GIRO------------------")
 		all_clusters_in_model = Array{Array{Int64,1},1}[] # tutti i cluster di spigoli nel modello
 
@@ -48,10 +48,11 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 		# 	GL.GLGrid(P,EV,GL.COLORS[1],0.8),
 		# 	[GL.GLPoints(permutedims(dict[k]), GL.COLORS[rand(1:12)]) for k in keys(dict)]...,
 		# ])
+
 		# calcolo nuovi punti di intersezione (e modifico P forse non devo modificare P?)
 		optimize!(P, EV, dict)
 
-		# rimuovo alcuni spigoli non necessari
+		# rimuovo alcuni spigoli non necessari #TODO da rivedere
 	#	EV, dict  = remove_some_edges!(P, EV, dict; par = par, angle = angle)  # nuovo modello da riutilizzare
 
 		# per la condizione di uscita dal loop
@@ -61,7 +62,7 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 
 	#semplifico il modello tenendo solo i punti degli spigoli
 	Z,EZ = Lar.simplifyCells(P,EV)
-	EZ = filter(ev -> length(ev) > 1, EZ)
+	EZ = filter(ev -> length(ev) > 1, EZ) # controllo
 
 	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(Z,zeros(size(Z,2))')), EZ ,dict
 end
@@ -100,7 +101,6 @@ function get_cluster_edges(model::Lar.LAR, subgraph; par = 0.01, angle = pi/8)::
 	clusters_found = Array{Int64,1}[]
 
 	while !isempty(current_ind)
-		# Common.flushprintln("CLUSTER and SEED------------------")
 		e1 = rand(current_ind)
 		seen[e1] = true
 		cluster = [vmap[e1]]
@@ -130,13 +130,6 @@ function get_cluster_edges(model::Lar.LAR, subgraph; par = 0.01, angle = pi/8)::
 
 		push!(clusters_found, cluster)
 		setdiff!(current_ind,visited)
-		# Common.flushprintln("seed: $([vmap[e1]])")
-		# GL.VIEW([
-		# 	GL.GLGrid(V,EV,GL.COLORS[1],0.8),
-		# 	[GL.GLGrid(V,EV[cluster], GL.COLORS[rand(2:11)]) for cluster in clusters_found]...,
-		# 	GL.GLGrid(V,EV[[vmap[e1]]],GL.COLORS[12],1.0)
-		# ])
-
 	end
 
 	return clusters_found
@@ -146,7 +139,6 @@ end
 calcolo punto di intersezione tra cluster
 """
 function optimize!(P::Lar.Points, EV::Lar.Cells, dict)
-	# Common.flushprintln("-------------OPTIMIZE------------------")
 	vertici = union(EV...)
 	cop = Lar.characteristicMatrix(EV)
 	I,J,VAL = Lar.findnz(cop)
@@ -165,17 +157,10 @@ function optimize!(P::Lar.Points, EV::Lar.Cells, dict)
 				line2 = [cen2,cen2+dir2]
 
 				new_point = Common.lines_intersection(line1,line2)
-				# GL.VIEW([
-				# 	GL.GLGrid(P,EV,GL.COLORS[1],0.8),
-				# 	GL.GLGrid(P,EV[dove],GL.COLORS[2],1.0),
-				# 	GL.GLPoints(permutedims(new_point),GL.COLORS[12]),
-				# ])
+
 				@assert !isnothing(new_point) "impossible"
 				P[:,vertice] = new_point
-				# GL.VIEW([
-				# 	GL.GLGrid(P,EV,GL.COLORS[1],0.8),
-				# 	GL.GLPoints(permutedims(new_point),GL.COLORS[12]),
-				# ])
+
 			end
 		end
 	end
@@ -218,7 +203,7 @@ end
 rimuove spigoli con una certa caratteristica
 """
 function remove_some_edges!(P::Lar.Points, EP::Lar.Cells, dict; par=1e-4, angle = pi/8)
-	Common.flushprintln("-------------REMOVE SOME EDGES------------------")
+	# Common.flushprintln("-------------REMOVE SOME EDGES------------------")
 	graph = Common.model2graph_edge2edge(P,EP)
 	dict_tmp = Dict()
 	EV = copy(EP)
