@@ -10,7 +10,7 @@ function parse_commandline()
 
 	@add_arg_table! s begin
 	"source"
-		help = "Potree directory"
+		help = "Potree project or .las file"
 		required = true
 	"--output", "-o"
 		help = "Output folder"
