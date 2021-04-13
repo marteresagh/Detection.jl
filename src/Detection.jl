@@ -2,9 +2,7 @@ module Detection
 
     using Common
     using FileManager
-    using LightGraphs
     using DataStructures
-    using AlphaStructures
 
     # struct
     include("struct.jl")
@@ -26,5 +24,5 @@ module Detection
     # include("Shape/tentativo.jl")
     include("Shape/simplify_model.jl")
 
-    export Initializer, Common, FileManager, LightGraphs
+    export Initializer, Common, FileManager
 end # module
