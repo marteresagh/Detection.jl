@@ -11,7 +11,8 @@ module Detection
     # hyperplane detection
     include("Detection/detection.jl")
     include("Detection/cluster.jl")
-    include("Detection/util.jl")
+    #include("Detection/util.jl")
+
     # lines
     include("Detection/Lines/detection.jl")
     include("Detection/Lines/main.jl")
@@ -19,7 +20,8 @@ module Detection
     # planes
     include("Detection/Planes/detection.jl")
     include("Detection/Planes/main.jl")
-    include("Detection/Planes/util.jl")
+    include("Detection/Planes/fileIO.jl")
+    #include("Detection/Planes/util.jl")
     # flat shape detection
     # include("Shape/tentativo.jl")
     include("Shape/simplify_model.jl")

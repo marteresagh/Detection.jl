@@ -21,8 +21,8 @@ tight_bb = cloudmetadata.tightBoundingBox
 PC = FileManager.source2pc(potree,0)
 centroid = Common.centroid(PC.coordinates)
 
-folders = FileManager.get_plane_folders(folder_proj,NAME_PROJ)
-hyperplanes, OBBs = FileManager.get_hyperplanes(folders)
+folders = get_plane_folders(folder_proj,NAME_PROJ)
+hyperplanes, OBBs = get_hyperplanes(folders)
 
 V_p, EV_p, FV_p = Common.DrawPlanes(hyperplanes; box_oriented=false)
 GL.VIEW([
@@ -136,7 +136,7 @@ GL.VIEW(mesh_models(full_boundary, centroid))
 # 3.
 # Dato il bordo di ogni patch, provare con la linearizzazione
 ################################################################################
-# 
+#
 # function linearized_boundary(models)
 # 	out = Array{Lar.Struct,1}()
 # 	i = 1

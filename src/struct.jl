@@ -33,7 +33,7 @@ mutable struct Initializer
 			flushprintln("Compute normals")
 			INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
 		end
-		
+
 		flushprintln("= Remove points from possible seeds =")
 		flushprintln("Search of possible outliers: ")
 		outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
@@ -82,28 +82,28 @@ struct Vect_1D_Dirs
 	end
 end
 
-
-"""
-
-"""
-struct PlaneDirs
-	output_folder::String
-	PLANE::String
-	A_SHAPES::String
-	LINES::String
-
-	function PlaneDirs(folder::String, project_name::String)
-		output_folder = FileManager.mkdir_project(folder, project_name)
-
-		PLANE = joinpath(output_folder,"PLANE")
-		FileManager.mkdir_if(PLANE)
-
-		A_SHAPES =  joinpath(output_folder,"A_SHAPES")
-		FileManager.mkdir_if(A_SHAPES)
-
-		LINES = joinpath(output_folder,"LINES")
-		FileManager.mkdir_if(LINES)
-
-		new(output_folder,PLANE,A_SHAPES,LINES)
-	end
-end
+#
+# """
+#
+# """
+# struct PlaneDirs
+# 	output_folder::String
+# 	PLANE::String
+# 	A_SHAPES::String
+# 	LINES::String
+#
+# 	function PlaneDirs(folder::String, project_name::String)
+# 		output_folder = FileManager.mkdir_project(folder, project_name)
+#
+# 		PLANE = joinpath(output_folder,"PLANE")
+# 		FileManager.mkdir_if(PLANE)
+#
+# 		A_SHAPES =  joinpath(output_folder,"A_SHAPES")
+# 		FileManager.mkdir_if(A_SHAPES)
+#
+# 		LINES = joinpath(output_folder,"LINES")
+# 		FileManager.mkdir_if(LINES)
+#
+# 		new(output_folder,PLANE,A_SHAPES,LINES)
+# 	end
+# end

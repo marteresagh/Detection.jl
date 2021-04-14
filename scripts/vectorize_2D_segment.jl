@@ -66,8 +66,8 @@ function main()
 	Common.flushprintln("Project name  =>  $project_name")
 	Common.flushprintln("Thickness  =>  $thickness")
 
-	folders = FileManager.get_plane_folders(output_folder, project_name)
-	hyperplanes, OBBs = FileManager.get_hyperplanes(folders)
+	folders = get_plane_folders(output_folder, project_name)
+	hyperplanes, OBBs = get_hyperplanes(folders)
 
 	save_full_inliers(source, folders, hyperplanes, thickness)
 

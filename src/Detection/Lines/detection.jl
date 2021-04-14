@@ -52,7 +52,7 @@ function iterate_lines_detection(
 			i = i+1
 			flushprintln("$i of $(length(seeds))")
 
-			FileManager.write_line(s_2d, s_3d, hyperplane, affine_matrix)
+			write_line(s_2d, s_3d, hyperplane, affine_matrix)
 
 			union!(params.fitted,cluster)
 			union!(params.visited,all_visited_verts)
@@ -89,7 +89,7 @@ function iterate_lines_detection(
 				flushprintln("$i lines detected")
 			end
 
-			FileManager.write_line(s_2d, s_3d, hyperplane, affine_matrix)
+			write_line(s_2d, s_3d, hyperplane, affine_matrix)
 
 			union!(params.fitted,cluster)
 			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed
