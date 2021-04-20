@@ -1,6 +1,7 @@
 using Common
 using FileManager
 using Visualization
+using Detection
 
 function load_connected_components(filename::String)::Lar.Cells
 	EV = Array{Int64,1}[]
@@ -41,7 +42,7 @@ centroid = Common.centroid(INPUT_PC.coordinates)
 NAME_PROJ = "COLONNA_LOD2"
 folder_proj = "C:/Users/marte/Documents/GEOWEB/TEST"
 
-folders = get_plane_folders(folder_proj,NAME_PROJ)
+folders = Detection.get_plane_folders(folder_proj,NAME_PROJ)
 
 # hyperplanes, _ = get_hyperplanes(folders)
 # V,EV,FV = Common.DrawPlanes(hyperplanes; box_oriented=false)
@@ -62,9 +63,9 @@ GL.VIEW([
 	[GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),model[1]),model[2],GL.COLORS[rand(1:1)],0.8) for model in boundary_models]...,
 ])
 
-
-s = 0
-for model in boundary_models
-	global s
-	s += size(model[1],2)
-end
+#
+# s = 0
+# for model in boundary_models
+# 	global s
+# 	s += size(model[1],2)
+# end

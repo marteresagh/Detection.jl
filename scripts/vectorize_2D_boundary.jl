@@ -42,6 +42,19 @@ end
 
 
 function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Array{Hyperplane,1}, par::Float64, angle::Float64, k::Int64)
+
+	function outliers(points, par)
+		outliers = Int64[]
+		tree = Common.KDTree(points)
+		idxs = Common.inrange(tree, points, par)
+		for i in 1:length(idxs)
+			if length(idxs[i])<3
+				push!(outliers,i)
+			end
+		end
+		return outliers
+	end
+
 	n_planes = length(folders)
 	Threads.@threads for i in 1:n_planes
 		Detection.flushprintln()
@@ -53,23 +66,23 @@ function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Ar
 		Detection.flushprintln()
 		Detection.flushprint("Alpha shapes....")
 		file = joinpath(folders[i],"full_inliers.las")
+
+
+
+		PC = FileManager.las2pointcloud(file)
+
 		#######################################
 		# se troppi punti si possono decimare #
 		#######################################
-		function outliers(points, par)
-			outliers = Int64[]
-			tree = Common.KDTree(points)
-			idxs = Common.inrange(tree, points, par)
-			for i in 1:length(idxs)
-				if length(idxs[i])<3
-					push!(outliers,i)
-				end
-			end
-			return outliers
+		if PC.n_points > 1000000
+			points = Common.subsample_poisson_disk(PC.coordinates)
+			Detection.flushprintln("Decimation: $(size(points,2)) of $(PC.n_points)")
+		else
+			points = PC.coordinates
 		end
+		#######################################
+		#######################################
 
-		PC = FileManager.las2pointcloud(file)
-		points = PC.coordinates
 		plane = Plane(points)
 		T = Common.apply_matrix(plane.matrix,points)[1:2,:]
 
