@@ -4,6 +4,7 @@
 Return all plane folders.
 """
 function get_plane_folders(folder::String,NAME_PROJ::String)
+	flushprintln("leggo le cartelle")
 	folders = String[]
 	for (root, dirs, files) in walkdir(joinpath(folder,NAME_PROJ))
 		for dir in dirs
@@ -20,10 +21,12 @@ end
 Return all hyperplanes described in `folders`.
 """
 function get_hyperplanes(folders::Array{String,1})
+	flushprintln("leggo le cartelle")
 	hyperplanes = Hyperplane[]
 	n_planes = length(folders)
 	OBBs = Volume[]
 	for i in 1:n_planes
+		@show i
 		io = open(joinpath(folders[i],"finite_plane.txt"), "r")
 		lines = readlines(io)
 		close(io)

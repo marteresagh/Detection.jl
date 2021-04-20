@@ -146,8 +146,8 @@ function main()
 	Detection.flushprintln("Parameter  =>  $par")
 	Detection.flushprintln("Angle  =>  $angle")
 
-	folders = get_plane_folders(output_folder, project_name)
-	hyperplanes, OBBs = get_hyperplanes(folders)
+	folders = Detection.get_plane_folders(output_folder, project_name)
+	hyperplanes, OBBs = Detection.get_hyperplanes(folders)
 
 	save_boundary(source, folders, hyperplanes, par, angle, k)
 
