@@ -62,9 +62,6 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 		Detection.flushprintln("=================== $i of $n_planes ======================")
 		Detection.flushprintln("==========================================================")
 
-		# alpha shape of full inliers
-		Detection.flushprintln()
-		Detection.flushprint("Alpha shapes....")
 		file = joinpath(folders[i],"full_inliers.las")
 
 
@@ -75,7 +72,7 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 		# se troppi punti si possono decimare #
 		#######################################
 		if PC.n_points > 3000000
-			points = Common.subsample_poisson_disk(PC.coordinates)
+			points = Common.subsample_poisson_disk(PC.coordinates, 0.05)
 			Detection.flushprintln("Decimation: $(size(points,2)) of $(PC.n_points)")
 		else
 			points = PC.coordinates
@@ -84,11 +81,14 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 		#######################################
 
 		plane = Plane(points)
-		T = Common.apply_matrix(plane.matrix,points)[1:2,:]
+		V = Common.apply_matrix(plane.matrix,points)[1:2,:]
 
-		out = outliers(T, par) #Common.outliers(PC, collect(1:PC.n_points), 30)
-		V = T[:, setdiff( collect(1:PC.n_points), out)]
+		# out = outliers(T, par) #Common.outliers(PC, collect(1:PC.n_points), 30)
+		# V = T[:, setdiff( collect(1:PC.n_points), out)]
 
+		# alpha shape
+		Detection.flushprintln()
+		Detection.flushprint("Alpha shapes....")
 		DT = Common.delaunay_triangulation(V)
 		filtration = AlphaStructures.alphaFilter(V,DT);
 		threshold = Common.estimate_threshold(V,k)
