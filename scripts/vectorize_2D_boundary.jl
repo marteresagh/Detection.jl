@@ -41,7 +41,7 @@ end
 
 
 
-function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Array{Hyperplane,1}, par::Float64, angle::Float64, k::Int64)
+function save_boundary(potree::String, folders::Array{String,1}, par::Float64, angle::Float64, k::Int64)
 
 	function outliers(points, par)
 		outliers = Int64[]
@@ -74,7 +74,7 @@ function save_boundary(potree::String, folders::Array{String,1}, hyperplanes::Ar
 		#######################################
 		# se troppi punti si possono decimare #
 		#######################################
-		if PC.n_points > 1000000
+		if PC.n_points > 3000000
 			points = Common.subsample_poisson_disk(PC.coordinates)
 			Detection.flushprintln("Decimation: $(size(points,2)) of $(PC.n_points)")
 		else
@@ -147,9 +147,7 @@ function main()
 	Detection.flushprintln("Angle  =>  $angle")
 
 	folders = Detection.get_plane_folders(output_folder, project_name)
-	hyperplanes, OBBs = Detection.get_hyperplanes(folders)
-
-	save_boundary(source, folders, hyperplanes, par, angle, k)
+	save_boundary(source, folders, par, angle, k)
 
 end
 
