@@ -71,3 +71,27 @@ function save_finite_plane(folder::String, hyperplane::Hyperplane)
 	FileManager.save_points_rgbs_txt(joinpath(folder,"inliers.txt"), hyperplane.inliers)
 
 end
+
+
+
+"""
+	 save_cycles(filename::String, V::Lar.Points, EV::Lar.Cells)
+
+Saves connected components of model by row.
+"""
+function save_cycles(filename::String, V::Lar.Points, EV::Lar.Cells)
+
+	io = open(filename,"w")
+
+	graph = Common.model2graph(V,EV)
+	cycles = LightGraphs.cycle_basis(graph)
+
+	for cycle in cycles
+		for i in 1:length(cycle)-1
+			write(io,"$(cycle[i]) ")
+		end
+		write(io,"$(cycle[end])\n")
+	end
+
+	close(io)
+end

@@ -1,10 +1,12 @@
 # using Visualization
+
+
 """
-linearizazzione della patch planare 3D.
+ Modello 2D in input
 """
 function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
-	# model = V,EV in 3D space
-	V,EV = model
+	# model = V,EV in 2D space
+	P,EV = model
 	EV = unique(sort.(EV)) 					# \_ alcuni controlli per avere un modello coerente
 	EV = filter(ev -> length(ev) > 1, EV)	# |
 
@@ -13,24 +15,19 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 
 	dict = Dict()
 
-	# porto i punti sul piano 2D
-	plane = Plane(V) # piano identificato dai punti
-	P = Common.apply_matrix(plane.matrix,V)[1:2,:]
-
 	# init dict
 	for i in 1:length(EV)
 		dict[i] = P[:,union(EV[i]...)]
 	end
 
-	# Common.flushprintln("================START============")
 	while diff_nedges != 0
-		# Common.flushprintln("GIRO------------------")
 		all_clusters_in_model = Array{Array{Int64,1},1}[] # tutti i cluster di spigoli nel modello
 
 		# grafo riferito agli spigoli
 	    graph = Common.model2graph_edge2edge(P,EV)
-	    conn_comps = LightGraphs.connected_components(graph)
-
+	    # conn_comps = LightGraphs.connected_components(graph)
+		# conn_comps = Common.biconnected_comps(P,EV)
+		conn_comps = Common.get_cycles(P,EV)  #migliore soluzione
 		# per ogni componente connessa
 	    for comp in conn_comps
 			# calcolo il sottografo indotto dalla componente connessa
@@ -44,16 +41,8 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 
 		# costruisco i nuovi spigoli eliminando i punti interni della catena costruita
 		EV, dict = simplify_edges(EV, cluss, dict)
-		# GL.VIEW([
-		# 	GL.GLGrid(P,EV,GL.COLORS[1],0.8),
-		# 	[GL.GLPoints(permutedims(dict[k]), GL.COLORS[rand(1:12)]) for k in keys(dict)]...,
-		# ])
-
 		# calcolo nuovi punti di intersezione (e modifico P forse non devo modificare P?)
 		optimize!(P, EV, dict)
-
-		# rimuovo alcuni spigoli non necessari #TODO da rivedere
-	#	EV, dict  = remove_some_edges!(P, EV, dict; par = par, angle = angle)  # nuovo modello da riutilizzare
 
 		# per la condizione di uscita dal loop
 		diff_nedges = nedges - length(EV)
@@ -64,7 +53,7 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 	Z,EZ = Lar.simplifyCells(P,EV)
 	EZ = filter(ev -> length(ev) > 1, EZ) # controllo
 
-	return Common.apply_matrix(Lar.inv(plane.matrix),vcat(Z,zeros(size(Z,2))')), EZ ,dict
+	return Z,EZ
 end
 
 """

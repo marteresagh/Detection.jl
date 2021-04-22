@@ -27,8 +27,12 @@ function get_boundary_models(folders)
 		if isfile(joinpath(folders[i],"execution.probe"))
 			V = FileManager.load_points(joinpath(folders[i],"boundary_points3D.txt"))
 			EV = load_connected_components(joinpath(folders[i],"boundary_edges.txt"))
-			model = (V,EV)
-			push!(boundary,model)
+			if length(EV)==0
+				@show i,folders[i]
+			else
+				model = (V,EV)
+				push!(boundary,model)
+			end
 		end
 	end
 	return boundary
@@ -43,18 +47,18 @@ NAME_PROJ = "NAVVIS_LOD4"
 folder_proj = "C:/Users/marte/Documents/GEOWEB/TEST"
 
 folders = Detection.get_plane_folders(folder_proj,NAME_PROJ)
-
-hyperplanes, _ = Detection.get_hyperplanes(folders)
-V,EV,FV = Common.DrawPlanes(hyperplanes; box_oriented=false)
-
-GL.VIEW([
-#	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8)
-])
-
-GL.VIEW([
-	Visualization.planes(hyperplanes,false; affine_matrix = Lar.t(-centroid...))...,
-])
+#
+# hyperplanes, _ = Detection.get_hyperplanes(folders)
+# V,EV,FV = Common.DrawPlanes(hyperplanes; box_oriented=false)
+#
+# GL.VIEW([
+# #	Visualization.points_color_from_rgb(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+# 	GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),V),FV,GL.COLORS[1],0.8)
+# ])
+#
+# GL.VIEW([
+# 	Visualization.planes(hyperplanes,false; affine_matrix = Lar.t(-centroid...))...,
+# ])
 
 boundary_models = get_boundary_models(folders)
 
@@ -69,3 +73,7 @@ for model in boundary_models
 	global s
 	s += size(model[1],2)
 end
+
+folder = "C:/Users/marte/Documents/GEOWEB/TEST\\NAVVIS_LOD4\\plane_1283\\full_inliers.las"
+folder = "C:/Users/marte/Documents/GEOWEB/TEST\\NAVVIS_LOD4\\plane_1657\\full_inliers.las"
+folder = "C:/Users/marte/Documents/GEOWEB/TEST\\NAVVIS_LOD4\\plane_423\\full_inliers.las"

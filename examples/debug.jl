@@ -2,34 +2,43 @@ using Common
 using FileManager
 using Visualization
 using Detection
+using AlphaStructures
 
-file = "C:/Users/marte/Documents/GEOWEB/TEST/NAVVIS_LOD3/plane_63784339927897/full_inliers.las"
+
+file = "C:/Users/marte/Documents/GEOWEB/TEST\\NAVVIS_LOD4\\plane_1283\\full_inliers.las"
+file = "C:/Users/marte/Documents/GEOWEB/TEST\\NAVVIS_LOD4\\plane_1657\\full_inliers.las"
+file = "C:/Users/marte/Documents/GEOWEB/TEST\\MURI_FULL\\plane_63783370976493\\full_inliers.las"
 PC = FileManager.las2pointcloud(file)
-function outliers(points, par)
-	outliers = Int64[]
-	tree = Common.KDTree(points)
-	idxs = Common.inrange(tree, points, par)
-	for i in 1:length(idxs)
-		if length(idxs[i])<3
-			push!(outliers,i)
-		end
-	end
-	return outliers
-end
-#######################################
-# se troppi punti si possono decimare #
-#######################################
-if PC.n_points > 3000000
-	points = Common.subsample_poisson_disk(PC.coordinates)
-	Detection.flushprintln("Decimation: $(size(points,2)) of $(PC.n_points)")
-else
-	points = PC.coordinates
-end
-#######################################
-#######################################
-
+points = PC.coordinates
 plane = Plane(points)
-T = Common.apply_matrix(plane.matrix,points)[1:2,:]
+V = Common.apply_matrix(plane.matrix,points)[1:2,:]
+DT = Common.delaunay_triangulation(V)
+filtration = AlphaStructures.alphaFilter(V,DT);
+threshold = Common.estimate_threshold(V,40)
+_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
+EV_boundary = Common.get_boundary_edges(V,FV)
+w,EW = Lar.simplifyCells(V,EV_boundary)
 
-out = outliers(T, 0.02) #Common.outliers(PC, collect(1:PC.n_points), 30)
-V = T[:, setdiff( collect(1:PC.n_points), out)]
+GL.VIEW([
+	GL.GLGrid(w,EW)
+])
+
+
+GL.VIEW([
+	[GL.GLGrid(w,EW[comp], GL.COLORS[rand(1:12)]) for comp in conn_comps]...
+])
+
+model = (w,EW)
+w_,ew_ = Detection.simplify_model(model; par = 0.01, angle = pi/8)
+GL.VIEW([
+	GL.GLGrid(w_,ew_)
+])
+
+graph = Common.model2graph_edge2edge(w_,ew_)
+# conn_comps = LightGraphs.connected_components(graph)
+conn_comps = cycle(w_,ew_)
+GL.VIEW([
+	GL.GLGrid(w_,ew_[conn_comps[3]])
+])
+
+w3D_ = Common.apply_matrix(Lar.inv(plane.matrix), vcat(w_,zeros(size(w_,2))'))
