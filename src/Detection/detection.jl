@@ -31,7 +31,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 			hyperplane, cluster, all_visited_verts = get_hyperplane(params; given_seed = seed)
 			found = true
 		catch y
-
+		
 		end
 
 		if found

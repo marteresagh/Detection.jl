@@ -37,7 +37,7 @@ function pc2plane(
 	if !isnothing(masterseeds) # if seeds are provided
 		flushprintln("Read seeds from file")
 		given_seeds = FileManager.load_points(masterseeds)
-		seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
+		seeds = Search.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 	end
 
 	params = Initializer(INPUT_PC, par, failed,	N, k)
@@ -45,7 +45,7 @@ function pc2plane(
 	# 2. Detection
 	flushprintln()
 	flushprintln("=========== PROCESSING =============")
-	i = Detection.iterate_planes_detection(params, output_folder; seeds = seeds)
+	i = iterate_planes_detection(params, output_folder; seeds = seeds)
 
 	# 3. Saves
 	flushprintln()

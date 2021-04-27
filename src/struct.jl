@@ -25,18 +25,18 @@ mutable struct Initializer
 			k::Int64)
 
 		# threashold estimation
-		threshold = Common.estimate_threshold(INPUT_PC,2*k)
+		threshold = Features.estimate_threshold(INPUT_PC,2*k)
 		flushprintln("Compute threshold: $threshold")
 
 		# normals
 		if INPUT_PC.dimension == 3
 			flushprintln("Compute normals")
-			INPUT_PC.normals = Common.compute_normals(INPUT_PC.coordinates,threshold,k)
+			INPUT_PC.normals = Features.compute_normals(INPUT_PC.coordinates,threshold,k)
 		end
 
 		flushprintln("= Remove points from possible seeds =")
 		flushprintln("Search of possible outliers: ")
-		outliers = Common.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
+		outliers = Features.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 		flushprintln("$(length(outliers)) outliers")
 
 		# flushprintln("Search of points with high curvature")
@@ -81,6 +81,72 @@ struct Vect_1D_Dirs
 		new(output_folder,POINTCLOUDS,FULL,PARTITIONS,DXF,RAW)
 	end
 end
+
+
+"""
+Dataset for line and plane
+ - inliers:	points on hyperplane
+ - direction: versor
+ - centroid: point
+
+# Constructors
+```jldoctest
+Hyperplane(inliers,direction,centroid)
+Hyperplane(direction,centroid)
+```
+
+# Fields
+```jldoctest
+inliers		::PointCloud
+direction	::Array{Float64,1}
+centroid	::Array{Float64,1}
+```
+"""
+mutable struct Hyperplane
+	inliers::PointCloud
+    direction::Array{Float64,1}
+    centroid::Point
+
+	# with inliers
+	Hyperplane(inliers,direction,centroid) = new(inliers,direction,centroid)
+
+	# without inliers
+	Hyperplane(direction,centroid) = new(PointCloud(),direction,centroid)
+end
+
+
+"""
+Dataset for hypersphere
+ - inliers:	points on hypersphere
+ - center: center of hypersphere
+ - radius: radius of hypersphere
+
+# Constructors
+```jldoctest
+Hypersphere(inliers,center,radius) = new(inliers,center,radius)
+Hypersphere(center,radius) = new(PointCloud(),center,radius)
+```
+
+# Fields
+```jldoctest
+inliers		::PointCloud
+center		::Array{Float64,1}
+radius		::Float64
+```
+"""
+mutable struct Hypersphere
+	inliers::PointCloud
+    center::Point
+	radius::Float64
+
+	# with inliers
+	Hypersphere(inliers,center,radius) = new(inliers,center,radius)
+
+	# without inliers
+	Hypersphere(center,radius) = new(PointCloud(),center,radius)
+end
+
+
 
 #
 # """

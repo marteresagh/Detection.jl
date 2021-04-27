@@ -4,7 +4,7 @@
 """
  Modello 2D in input
 """
-function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
+function simplify_model(model::LAR; par = 0.01, angle = pi/8)#::LAR
 	# model = V,EV in 2D space
 	P,EV = model
 	EV = unique(sort.(EV)) 					# \_ alcuni controlli per avere un modello coerente
@@ -50,7 +50,7 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 	end
 
 	#semplifico il modello tenendo solo i punti degli spigoli
-	Z,EZ = Lar.simplifyCells(P,EV)
+	Z,EZ = Common.simplifyCells(P,EV)
 	EZ = filter(ev -> length(ev) > 1, EZ) # controllo
 
 	return Z,EZ
@@ -59,7 +59,7 @@ end
 """
 cerco i clusters nel sottografo corrente (una componente connessa)
 """
-function get_cluster_edges(model::Lar.LAR, subgraph; par = 0.01, angle = pi/8)::Array{Array{Int64,1},1}
+function get_cluster_edges(model::LAR, subgraph; par = 0.01, angle = pi/8)::Array{Array{Int64,1},1}
 	# model = V,EV in 2D space
 	V, EV = model
 	grph, vmap = subgraph
@@ -67,7 +67,7 @@ function get_cluster_edges(model::Lar.LAR, subgraph; par = 0.01, angle = pi/8)::
 	function direction(e)
 		inds = EV[vmap[e]]
 		dir = V[:, inds[1]] - V[:, inds[2]]
-		dir /= Lar.norm(dir)
+		dir /= Common.norm(dir)
 		return dir
 	end
 
@@ -75,12 +75,12 @@ function get_cluster_edges(model::Lar.LAR, subgraph; par = 0.01, angle = pi/8)::
 		inds = EV[vmap[e]]
 
 		v = V[:,inds[1]] - centroid
-		p_star = v - Lar.dot(direction,v)*direction
-		dist1 = Lar.norm(p_star)
+		p_star = v - Common.dot(direction,v)*direction
+		dist1 = Common.norm(p_star)
 
 		v = V[:,inds[2]] - centroid
-		p_star = v - Lar.dot(direction,v)*direction
-		dist2 = Lar.norm(p_star)
+		p_star = v - Common.dot(direction,v)*direction
+		dist2 = Common.norm(p_star)
 
 		return dist1<par && dist2<par
 	end
@@ -127,12 +127,12 @@ end
 """
 calcolo punto di intersezione tra cluster
 """
-function optimize!(P::Lar.Points, EV::Lar.Cells, dict)
+function optimize!(P::Points, EV::Cells, dict)
 	vertici = union(EV...)
-	cop = Lar.characteristicMatrix(EV)
-	I,J,VAL = Lar.findnz(cop)
+	cop = Common.characteristicMatrix(EV)
+	I,J,VAL = Common.findnz(cop)
 	for vertice in vertici
-		dove = I[Lar.nzrange(cop, vertice)]
+		dove = I[Common.nzrange(cop, vertice)]
 		intersection_clusters = [dict[i] for i in dove]
 		if length(intersection_clusters)==2
 
@@ -158,9 +158,9 @@ end
 """
 crea i nuovi spigoli eliminando i vertici interni della catena e creando un unico spigolo che collega i due vertici estremi
 """
-function simplify_edges(EV::Lar.Cells, cluss::Array{Array{Int64,1},1},dict)
+function simplify_edges(EV::Cells, cluss::Array{Array{Int64,1},1},dict)
 	dict_tmp = Dict()
-	function boundary_chain(EV::Lar.Cells)
+	function boundary_chain(EV::Cells)
 		M_2 = Common.K(EV)
 
 		S1 = sum(M_2',dims=2)
@@ -191,7 +191,7 @@ end
 """
 rimuove spigoli con una certa caratteristica
 """
-function remove_some_edges!(P::Lar.Points, EP::Lar.Cells, dict; par=1e-4, angle = pi/8)
+function remove_some_edges!(P::Points, EP::Cells, dict; par=1e-4, angle = pi/8)
 	# Common.flushprintln("-------------REMOVE SOME EDGES------------------")
 	graph = Common.model2graph_edge2edge(P,EP)
 	dict_tmp = Dict()
@@ -200,19 +200,19 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells, dict; par=1e-4, angle 
 	function direction(e)
 		inds = EP[e]
 		dir = P[:, inds[1]] - P[:, inds[2]]
-		dir /= Lar.norm(dir)
+		dir /= Common.norm(dir)
 		return dir
 	end
 
 	function dist_ortho(e, direction, centroid)
 		inds = EP[e]
 		v = P[:,inds[1]] - centroid
-		p_star = v - Lar.dot(direction,v)*direction
-		dist1 = Lar.norm(p_star)
+		p_star = v - Common.dot(direction,v)*direction
+		dist1 = Common.norm(p_star)
 
 		v = P[:,inds[2]] - centroid
-		p_star = v - Lar.dot(direction,v)*direction
-		dist2 = Lar.norm(p_star)
+		p_star = v - Common.dot(direction,v)*direction
+		dist2 = Common.norm(p_star)
 
 		return dist1, dist2
 	end
@@ -225,8 +225,8 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells, dict; par=1e-4, angle 
 		if length(N)==2
 			n1 = N[1]
 			n2 = N[2]
-			dist1 = Lar.norm(P[:,EP[n1][1]]-P[:,EP[n1][2]])
-			dist2 = Lar.norm(P[:,EP[n2][1]]-P[:,EP[n2][2]])
+			dist1 = Common.norm(P[:,EP[n1][1]]-P[:,EP[n1][2]])
+			dist2 = Common.norm(P[:,EP[n2][1]]-P[:,EP[n2][2]])
 			dir1 = direction(n1)
 			dir2 = direction(n2)
 
@@ -236,7 +236,7 @@ function remove_some_edges!(P::Lar.Points, EP::Lar.Cells, dict; par=1e-4, angle 
 				# dir_ref, cent = Common.LinearFit(P[:,union(EP[N]...)])
 
 				dist_ortho1, dist_ortho2 = dist_ortho(i, dir_ref, cent)
-				#dist = Lar.norm(P[:,ep[1]]-P[:,ep[2]])
+				#dist = Common.norm(P[:,ep[1]]-P[:,ep[2]])
 
 				if dist_ortho1 <= par && dist_ortho2 <= par
 					# GL.VIEW([

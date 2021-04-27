@@ -38,13 +38,13 @@ function get_boundary_models(folders)
 	return boundary
 end
 
-source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/NAVVIS"
+source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/MURI"
 INPUT_PC = FileManager.source2pc(source,0)
 
 centroid = Common.centroid(INPUT_PC.coordinates)
 
-NAME_PROJ = "NAVVIS_LOD4"
-folder_proj = "C:/Users/marte/Documents/GEOWEB/TEST"
+NAME_PROJ = "MURI_PLANE"
+folder_proj = "C:/Users/marte/Documents/Julia_package/package_test/TEST/VECT_2D" #"C:/Users/marte/Documents/GEOWEB/TEST"
 
 folders = Detection.get_plane_folders(folder_proj,NAME_PROJ)
 #
@@ -64,7 +64,7 @@ boundary_models = get_boundary_models(folders)
 
 GL.VIEW([
 	#GL.GLPoints(permutedims(Common.apply_matrix(Lar.t(-centroid...),INPUT_PC.coordinates))),
-	[GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),model[1]),model[2],GL.COLORS[rand(1:1)],0.8) for model in boundary_models]...,
+	[GL.GLGrid(Common.apply_matrix(Lar.t(-centroid...),model[1]),model[2],GL.COLORS[rand(1:1)],0.8) for model in boundary_models[16:16]]...,
 ])
 
 #
@@ -74,6 +74,6 @@ for model in boundary_models
 	s += size(model[1],2)
 end
 
-folder = "C:/Users/marte/Documents/GEOWEB/TEST\\NAVVIS_LOD4\\plane_1283\\full_inliers.las"
-folder = "C:/Users/marte/Documents/GEOWEB/TEST\\NAVVIS_LOD4\\plane_1657\\full_inliers.las"
-folder = "C:/Users/marte/Documents/GEOWEB/TEST\\NAVVIS_LOD4\\plane_423\\full_inliers.las"
+# folder = "C:/Users/marte/Documents/GEOWEB/TEST//NAVVIS_LOD4//plane_1283//full_inliers.las"
+# folder = "C:/Users/marte/Documents/GEOWEB/TEST//NAVVIS_LOD4//plane_1657//full_inliers.las"
+# folder = "C:/Users/marte/Documents/GEOWEB/TEST//NAVVIS_LOD4//plane_423//full_inliers.las"

@@ -43,14 +43,14 @@ function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplan
 		normals = params.PC.normals[:,params.current_inds]
 	end
 
-	kdtree = Common.KDTree(points)
+	kdtree = Search.KDTree(points)
 	seeds = copy(R)
 	visitedverts = copy(R)
 	listPoint = nothing
 
 	while !isempty(seeds)
 		tmp = Int[] # new seeds
-		N = Common.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k)
+		N = Search.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k)
 		union!(visitedverts,N)
 
 		for i in N
@@ -59,14 +59,14 @@ function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplan
 			# if plane -> check normals
 			if PC.dimension == 3
 				# change direction change surface
-				test_dist = Common.residual(hyperplane)(p) < params.par
+				test_dist = residual(hyperplane)(p) < params.par
 				test_normals = Common.angle_between_directions(hyperplane.direction,normals[:,i]) <= pi/4
 				if test_dist && test_normals
 					push!(tmp,i)
 					push!(R,i)
 				end
 			else
-				if Common.residual(hyperplane)(p) < params.par
+				if residual(hyperplane)(p) < params.par
 					push!(tmp,i)
 					push!(R,i)
 				end
@@ -84,13 +84,13 @@ function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplan
 end
 
 """
-	optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
+	optimize!(points::Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
 
 Optimize hyperplane direction.
 """
-function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
+function optimize!(points::Points, R::Array{Int64,1}, hyperplane::Hyperplane, par::Float64)
 	# mean and std
-	res = Common.residual(hyperplane).([points[:,i] for i in R])
+	res = residual(hyperplane).([points[:,i] for i in R])
 	mu = Statistics.mean(res)
 	rho = Statistics.std(res)
 
@@ -106,7 +106,7 @@ function optimize!(points::Lar.Points, R::Array{Int64,1}, hyperplane::Hyperplane
 	hyperplane.centroid = centroid
 
 	# elimino i punti che sono troppo distanti.
-	res = Common.residual(hyperplane).([points[:,i] for i in R])
+	res = residual(hyperplane).([points[:,i] for i in R])
 	todel = [ res[i] > par/2 for i in 1:length(res) ]
 	to_del = R[todel]
 	setdiff!(R,to_del)
@@ -116,20 +116,20 @@ end
 
 
 """
-	seedpoint(points::Lar.Points, params::Initializer; given_seed = rand(1:size(points,2))::Int64)
+	seedpoint(points::Points, params::Initializer; given_seed = rand(1:size(points,2))::Int64)
 
 Return consinstent seed and fitted hyperplane.
 """
 # init_seed = findall(x->x == given_seed, params.current_inds)[1] # se dato
-function seedpoint(points::Lar.Points, params::Initializer; given_seed = rand(1:size(points,2))::Int64)
+function seedpoint(points::Points, params::Initializer; given_seed = rand(1:size(points,2))::Int64)
 
-	kdtree = Common.KDTree(points)
-	idxseeds = Common.neighborhood(kdtree,points,[given_seed],Int64[],params.threshold,params.k)
+	kdtree = Search.KDTree(points)
+	idxseeds = Search.neighborhood(kdtree,points,[given_seed],Int64[],params.threshold,params.k)
 	seeds = points[:,idxseeds]
 	direction, centroid = Common.LinearFit(seeds)
 
 	hyperplane = Hyperplane(direction,centroid)
-	min_index = Common.minresidual(seeds,hyperplane)
+	min_index = minresidual(seeds,hyperplane)
 	seed = idxseeds[min_index]
 
 	return seed, hyperplane
@@ -154,9 +154,34 @@ function validity(hyperplane::Hyperplane, params::Initializer)
 	pc_on_hyperplane = hyperplane.inliers
 	@assert  pc_on_hyperplane.n_points > params.N "not valid"
 
-	res = Common.residual(hyperplane).([c[:] for c in eachcol(pc_on_hyperplane.coordinates)])
+	res = residual(hyperplane).([c[:] for c in eachcol(pc_on_hyperplane.coordinates)])
 	mu = Statistics.mean(res)# prova moda
 	rho = Statistics.std(res)
 	@assert mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005 "not valid"  #0.005 che valore è?? come generalizzare??
 
+end
+
+
+"""
+	residual(hyperplane::Union{Plane,Line})(point::Point)
+
+Orthogonal distance `point` to `hyperplane`.
+"""
+function residual(hyperplane::Hyperplane)
+	function residual0(point::Point)
+		if length(point) == 2
+			return Common.distance_point2line(hyperplane.centroid,hyperplane.direction)(point)
+		elseif length(point) == 3
+			return Common.distance_point2plane(hyperplane.centroid,hyperplane.normal)(point)
+		end
+	end
+	return residual0
+end
+
+"""
+Return index of point in points with minor residual.
+"""
+function minresidual(points::Points, hyperplane::Hyperplane)
+	res = residual(hyperplane).( [c[:] for c in eachcol(points)])
+	return findmin(res)[2]
 end

@@ -1,9 +1,9 @@
-using Common
+using Geometry
 using FileManager
 using Visualization
 using Detection
 using AlphaStructures
-
+using Features
 
 file = "C:/Users/marte/Documents/GEOWEB/TEST\\NAVVIS_LOD4\\plane_1283\\full_inliers.las"
 file = "C:/Users/marte/Documents/GEOWEB/TEST\\NAVVIS_LOD4\\plane_1657\\full_inliers.las"
@@ -11,13 +11,13 @@ file = "C:/Users/marte/Documents/GEOWEB/TEST\\MURI_FULL\\plane_63783370976493\\f
 PC = FileManager.las2pointcloud(file)
 points = PC.coordinates
 plane = Plane(points)
-V = Common.apply_matrix(plane.matrix,points)[1:2,:]
-DT = Common.delaunay_triangulation(V)
+V = Geometry.apply_matrix(plane.matrix,points)[1:2,:]
+DT = Geometry.delaunay_triangulation(V)
 filtration = AlphaStructures.alphaFilter(V,DT);
-threshold = Common.estimate_threshold(V,40)
+threshold = Features.estimate_threshold(V,40)
 _, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
-EV_boundary = Common.get_boundary_edges(V,FV)
-w,EW = Lar.simplifyCells(V,EV_boundary)
+EV_boundary = Geometry.get_boundary_edges(V,FV)
+w,EW = Geometry.simplifyCells(V,EV_boundary)
 
 GL.VIEW([
 	GL.GLGrid(w,EW)

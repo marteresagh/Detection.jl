@@ -48,7 +48,7 @@ function pc2lines(
 		flushprintln("Read seeds from file")
 		given_seeds = FileManager.load_points(masterseeds)
 		given_seeds_2D = Common.apply_matrix(affine_matrix,given_seeds)[1:2,:]
-		seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds_2D)])
+		seeds = Search.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds_2D)])
 	end
 
 	# 2. Detection
@@ -59,7 +59,7 @@ function pc2lines(
 	s_2d = open(joinpath(dirs.RAW,"segment2D.ext"), "w")
 	s_3d = open(joinpath(dirs.RAW,"segment3D.ext"), "w")
 
-	i = Detection.iterate_lines_detection(params, Lar.inv(affine_matrix), s_2d, s_3d; seeds = seeds)
+	i = iterate_lines_detection(params, Common.inv(affine_matrix), s_2d, s_3d; seeds = seeds)
 
 	close(s_2d)
 	close(s_3d)
@@ -68,7 +68,7 @@ function pc2lines(
 	flushprintln()
 	flushprintln("=========== RESULTS =============")
 	flushprintln("$i lines detected")
-	save_partitions(PC, params, Lar.inv(affine_matrix), dirs)
+	save_partitions(PC, params, Common.inv(affine_matrix), dirs)
 	FileManager.successful(i!=0, dirs.output_folder)
 
 end

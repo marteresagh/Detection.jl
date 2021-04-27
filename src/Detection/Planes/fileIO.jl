@@ -75,16 +75,16 @@ end
 
 
 """
-	 save_cycles(filename::String, V::Lar.Points, EV::Lar.Cells)
+	 save_cycles(filename::String, V::Points, EV::Cells)
 
 Saves connected components of model by row.
 """
-function save_cycles(filename::String, V::Lar.Points, EV::Lar.Cells)
+function save_cycles(filename::String, V::Points, EV::Cells)
 
 	io = open(filename,"w")
 
-	graph = Common.model2graph(V,EV)
-	cycles = LightGraphs.cycle_basis(graph)
+	graph = Search.model2graph(V,EV)
+	cycles = Search.LightGraphs.cycle_basis(graph)
 
 	for cycle in cycles
 		for i in 1:length(cycle)-1
