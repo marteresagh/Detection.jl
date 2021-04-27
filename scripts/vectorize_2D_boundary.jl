@@ -43,17 +43,17 @@ end
 
 function save_boundary(potree::String, folders::Array{String,1}, par::Float64, angle::Float64, k::Int64)
 
-	function outliers(points, par)
-		outliers = Int64[]
-		tree = Common.KDTree(points)
-		idxs = Common.inrange(tree, points, par)
-		for i in 1:length(idxs)
-			if length(idxs[i])<3
-				push!(outliers,i)
-			end
-		end
-		return outliers
-	end
+	# function outliers(points, par)
+	# 	outliers = Int64[]
+	# 	tree = Common.KDTree(points)
+	# 	idxs = Common.inrange(tree, points, par)
+	# 	for i in 1:length(idxs)
+	# 		if length(idxs[i])<3
+	# 			push!(outliers,i)
+	# 		end
+	# 	end
+	# 	return outliers
+	# end
 
 	n_planes = length(folders)
 	Threads.@threads for i in 1:n_planes
@@ -72,7 +72,7 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 			# ----------------> da qui coordinate sempre 2D
 			#decimazione
 			if size(V,2) > 3000000
-				V = Common.subsample_poisson_disk(V, 0.05)
+				V = Features.subsample_poisson_disk(V, 0.05)
 				Detection.flushprintln("Decimation: $(size(V,2)) of $(PC.n_points)")
 			end
 
@@ -85,7 +85,7 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 				Detection.flushprint("Alpha shapes....")
 				DT = Common.delaunay_triangulation(V)
 				filtration = AlphaStructures.alphaFilter(V,DT);
-				threshold = Common.estimate_threshold(V,k)
+				threshold = Features.estimate_threshold(V,k)
 				_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
 				Detection.flushprintln("Done")
 
@@ -93,7 +93,7 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 				Detection.flushprintln()
 				Detection.flushprint("Boundary extraction....")
 				EV_boundary = Common.get_boundary_edges(V,FV)
-				W,EW = Lar.simplifyCells(V,EV_boundary)
+				W,EW = Common.simplifyCells(V,EV_boundary)
 				model = (W,EW)
 				Detection.flushprintln("Done")
 

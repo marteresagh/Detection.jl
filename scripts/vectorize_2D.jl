@@ -2,7 +2,6 @@ println("loading packages... ")
 
 using ArgParse
 using Detection
-using Common
 
 println("packages OK")
 
@@ -50,8 +49,6 @@ function parse_commandline()
 end
 
 
-
-
 function main()
 	args = parse_commandline()
 
@@ -66,7 +63,7 @@ function main()
 	masterseeds = args["masterseeds"]
 
 	# input point cloud
-	PC = Detection.FileManager.source2pc(source, lod)
+	PC = FileManager.source2pc(source, lod)
 
 	Detection.flushprintln("== Parameters ==")
 	Detection.flushprintln("Source  =>  $source")

@@ -32,10 +32,10 @@ end
 function save_full_inliers(potree::String, folders::Array{String,1}, thickness::Float64)
 	n_planes = length(folders)
 	Threads.@threads for i in 1:n_planes
-		Common.flushprintln()
-		Common.flushprintln("==========================================================")
-		Common.flushprintln("=================== $i of $n_planes ======================")
-		Common.flushprintln("==========================================================")
+		flushprintln()
+		flushprintln("==========================================================")
+		flushprintln("=================== $i of $n_planes ======================")
+		flushprintln("==========================================================")
 
 		io = open(joinpath(folders[i],"finite_plane.txt"), "r")
 		lines = readlines(io)
@@ -44,14 +44,14 @@ function save_full_inliers(potree::String, folders::Array{String,1}, thickness::
 		b = [tryparse.(Float64,split(lines[i], " ")) for i in 1:length(lines)]
 		normal = [b[1][1],b[1][2],b[1][3]]
 		centroid = normal*b[1][4]
-		inliers = Detection.FileManager.load_points(joinpath(folders[i],"inliers.txt"))
+		inliers = FileManager.load_points(joinpath(folders[i],"inliers.txt"))
 
 		hyperplane = Hyperplane(PointCloud(inliers[1:3,:],inliers[4:6,:]), normal, centroid)
 
 		# segmentation: to extract all inliers
-		Common.flushprintln()
-		Common.flushprintln("Segmentation....")
-		Common.flushprintln("-----------------------------------------------------------")
+		flushprintln()
+		flushprintln("Segmentation....")
+		flushprintln("-----------------------------------------------------------")
 		inliers_points = hyperplane.inliers.coordinates
 		aabb = Common.boundingbox(inliers_points)
 		plane = Plane(hyperplane.direction,hyperplane.centroid)

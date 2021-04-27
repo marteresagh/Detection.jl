@@ -28,5 +28,5 @@ module Detection
     # # flat shape detection
     # # include("Shape/tentativo.jl")
     #
-    export Initializer, Common, FileManager
+    export Initializer, Common, FileManager, Features
 end # module
