@@ -41,9 +41,9 @@ version = "0.5.1"
 
 [[ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "42e3c181483fbd2c416087a0a93838803e358358"
+git-tree-sha1 = "5402b5674b3068ca570771c11da9a57bfa70acd4"
 uuid = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-version = "0.9.38"
+version = "0.9.39"
 
 [[CodecBzip2]]
 deps = ["Bzip2_jll", "Libdl", "TranscodingStreams"]
@@ -62,6 +62,14 @@ deps = ["FixedPointNumbers", "Random"]
 git-tree-sha1 = "32a2b8af383f11cbb65803883837a149d10dfe8a"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
 version = "0.10.12"
+
+[[Common]]
+deps = ["Delaunay", "LinearAlgebra", "QHull", "SparseArrays"]
+git-tree-sha1 = "199866d41203b9b54ec814e9711e3ad061c86686"
+repo-rev = "master"
+repo-url = "https://github.com/marteresagh/Common.jl"
+uuid = "1e120bc2-2bd2-483a-9663-793997b3971f"
+version = "0.1.0"
 
 [[CommonSubexpressions]]
 deps = ["MacroTools", "Test"]
@@ -148,20 +156,24 @@ uuid = "5ae413db-bbd1-5e63-b57d-d24a61df00f5"
 version = "2.1.5+1"
 
 [[Features]]
-deps = ["DataStructures", "Geometry", "Search", "Statistics"]
-path = "../Features.jl"
+deps = ["Common", "DataStructures", "Search", "Statistics"]
+git-tree-sha1 = "2c3681c927bb5e64469922f55cb06c493772805d"
+repo-rev = "master"
+repo-url = "https://github.com/marteresagh/Features.jl"
 uuid = "a126c2c6-2eda-4948-b40c-a494a421c8a7"
 version = "0.1.0"
 
 [[FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
-git-tree-sha1 = "c72c8977c378c4aacb52664f96253d7b7e97558b"
+git-tree-sha1 = "b647ed22f176a4f12eabe2afd90d19a95af2e8ca"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-version = "1.7.0"
+version = "1.8.0"
 
 [[FileManager]]
-deps = ["DataStructures", "Dates", "Geometry", "JSON", "LasIO", "LazIO", "PlyIO", "Printf"]
-path = "../FileManager.jl"
+deps = ["Common", "DataStructures", "Dates", "JSON", "LasIO", "LazIO", "PlyIO", "Printf"]
+git-tree-sha1 = "7c184d5fd9f5edf8e8f431f61dc303ca08ace464"
+repo-rev = "master"
+repo-url = "https://github.com/marteresagh/FileManager.jl"
 uuid = "3a9936d4-fe09-4749-8918-4a4e7c2073da"
 version = "0.1.0"
 
@@ -183,12 +195,6 @@ git-tree-sha1 = "ff291c1827030ffaacaf53e3c83ed92d4d5e6fb6"
 uuid = "14197337-ba66-59df-a3e3-ca00e7dcff7a"
 version = "0.2.5"
 
-[[Geometry]]
-deps = ["Delaunay", "LinearAlgebra", "QHull", "SparseArrays"]
-path = "../Geometry.jl"
-uuid = "a6da75dc-ee3f-471b-9b83-a57479b9787d"
-version = "0.1.0"
-
 [[GeometryBasics]]
 deps = ["EarCut_jll", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
 git-tree-sha1 = "4136b8a5668341e58398bb472754bff4ba0456ff"
@@ -203,9 +209,9 @@ version = "0.8.4"
 
 [[HTTP]]
 deps = ["Base64", "Dates", "IniFile", "MbedTLS", "NetworkOptions", "Sockets", "URIs"]
-git-tree-sha1 = "c9f380c76d8aaa1fa7ea9cf97bddbc0d5b15adc2"
+git-tree-sha1 = "dc076fd92090242237cfbd5d7c76f52fb157fda5"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "0.9.5"
+version = "0.9.6"
 
 [[Inflate]]
 git-tree-sha1 = "f5fc07d4e706b84f72d54eedcc1c13d92fb0871c"
@@ -360,9 +366,9 @@ uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 
 [[OpenSpecFun_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "9db77584158d0ab52307f8c04f8e7c08ca76b5b3"
+git-tree-sha1 = "b9b8b8ed236998f91143938a760c2112dceeb2b4"
 uuid = "efe28fd5-8261-553b-a9e1-b2916fc3738e"
-version = "0.5.3+4"
+version = "0.5.4+0"
 
 [[OrderedCollections]]
 git-tree-sha1 = "4fa2ba51070ec13fcc7517db714445b4ab986bdf"
@@ -441,8 +447,10 @@ version = "1.1.3"
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 
 [[Search]]
-deps = ["Geometry", "LightGraphs", "NearestNeighbors"]
-path = "../Search.jl"
+deps = ["Common", "LightGraphs", "NearestNeighbors"]
+git-tree-sha1 = "bfb25991655059978704067f64c486b67c5d80aa"
+repo-rev = "master"
+repo-url = "https://github.com/marteresagh/Search.jl"
 uuid = "747819b4-c676-4122-9f3c-fea06ae3fbba"
 version = "0.1.0"
 

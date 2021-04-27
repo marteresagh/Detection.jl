@@ -11,13 +11,13 @@ file = "C:/Users/marte/Documents/GEOWEB/TEST\\MURI_FULL\\plane_63783370976493\\f
 PC = FileManager.las2pointcloud(file)
 points = PC.coordinates
 plane = Plane(points)
-V = Geometry.apply_matrix(plane.matrix,points)[1:2,:]
-DT = Geometry.delaunay_triangulation(V)
+V = Common.apply_matrix(plane.matrix,points)[1:2,:]
+DT = Common.delaunay_triangulation(V)
 filtration = AlphaStructures.alphaFilter(V,DT);
 threshold = Features.estimate_threshold(V,40)
 _, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
-EV_boundary = Geometry.get_boundary_edges(V,FV)
-w,EW = Geometry.simplifyCells(V,EV_boundary)
+EV_boundary = Common.get_boundary_edges(V,FV)
+w,EW = Common.simplifyCells(V,EV_boundary)
 
 GL.VIEW([
 	GL.GLGrid(w,EW)
