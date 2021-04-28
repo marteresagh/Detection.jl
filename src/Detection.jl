@@ -25,7 +25,7 @@ module Detection
     include("Detection/Planes/main.jl")
     include("Detection/Planes/fileIO.jl")
     include("Detection/Planes/simplify_model.jl")
-    # #include("Detection/Planes/util.jl")
+    include("Detection/Planes/util.jl")
     # # flat shape detection
     # # include("Shape/tentativo.jl")
     #
