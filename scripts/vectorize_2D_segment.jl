@@ -46,7 +46,7 @@ function save_full_inliers(potree::String, folders::Array{String,1}, thickness::
 		centroid = normal*b[1][4]
 		inliers = FileManager.load_points(joinpath(folders[i],"inliers.txt"))
 
-		hyperplane = Hyperplane(PointCloud(inliers[1:3,:],inliers[4:6,:]), normal, centroid)
+		hyperplane = Detection.Hyperplane(PointCloud(inliers[1:3,:],inliers[4:6,:]), normal, centroid)
 
 		# segmentation: to extract all inliers
 		flushprintln()

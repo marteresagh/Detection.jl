@@ -172,7 +172,7 @@ function residual(hyperplane::Hyperplane)
 		if length(point) == 2
 			return Common.distance_point2line(hyperplane.centroid,hyperplane.direction)(point)
 		elseif length(point) == 3
-			return Common.distance_point2plane(hyperplane.centroid,hyperplane.normal)(point)
+			return Common.distance_point2plane(hyperplane.centroid,hyperplane.direction)(point)
 		end
 	end
 	return residual0
