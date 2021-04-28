@@ -25,7 +25,7 @@ function simplify_model(model::LAR; par = 0.01, angle = pi/8)#::LAR
 
 		# grafo riferito agli spigoli
 	    graph = Search.model2graph_edge2edge(P,EV)
-	    # conn_comps = Search.connected_components(graph)
+	    # conn_comps = LightGraphs.connected_components(graph)
 		# conn_comps = Common.biconnected_comps(P,EV)
 		conn_comps = Search.get_cycles(P,EV)  #migliore soluzione
 		# per ogni componente connessa
@@ -101,7 +101,7 @@ function get_cluster_edges(model::LAR, subgraph; par = 0.01, angle = pi/8)::Arra
 
 		while !isempty(S)
 			e = pop!(S)
-			neighbors = Search.neighborhood(grph,e,1)
+			neighbors = Search.LightGraphs.neighborhood(grph,e,1)
 			for neighbor in neighbors
 				if !seen[neighbor]
 					dir = direction(neighbor)
@@ -220,7 +220,7 @@ function remove_some_edges!(P::Points, EP::Cells, dict; par=1e-4, angle = pi/8)
 	clusters = [[i] for i in 1:length(EP)]
 	for i in 1:length(EP)
 		ep = EP[i]
-		N = setdiff(Search.neighborhood(graph,i,1),i)
+		N = setdiff(Search.LightGraphs.neighborhood(graph,i,1),i)
 
 		if length(N)==2
 			n1 = N[1]
