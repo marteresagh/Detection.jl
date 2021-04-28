@@ -8,6 +8,7 @@ module Detection
 
     # struct
     include("struct.jl")
+    include("keyboard_event.jl")
 
     # # code
     # # hyperplane detection
