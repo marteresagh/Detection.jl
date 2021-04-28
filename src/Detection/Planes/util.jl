@@ -9,7 +9,7 @@ PRECISION number of significant digits.
 """
 function simplifyCells(V,CV)
 	PRECISION = 5
-	vertDict = DefaultDict{Array{Float64,1}, Int64}(0)
+	vertDict = Dict{Array{Float64,1}, Int64}(0)
 	index = 0
 	W = Array{Float64,1}[]
 	FW = Array{Int64,1}[]
