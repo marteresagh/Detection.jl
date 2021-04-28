@@ -161,7 +161,7 @@ crea i nuovi spigoli eliminando i vertici interni della catena e creando un unic
 function simplify_edges(EV::Cells, cluss::Array{Array{Int64,1},1},dict)
 	dict_tmp = Dict()
 	function boundary_chain(EV::Cells)
-		M_2 = Common.K(EV)
+		M_2 = Common.characteristicMatrix(EV)
 
 		S1 = sum(M_2',dims=2)
 
