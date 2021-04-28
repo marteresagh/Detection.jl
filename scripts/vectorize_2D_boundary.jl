@@ -93,7 +93,7 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 				Detection.flushprintln()
 				Detection.flushprint("Boundary extraction....")
 				EV_boundary = Common.get_boundary_edges(V,FV)
-				W,EW = Common.simplifyCells(V,EV_boundary)
+				W,EW = Detection.simplifyCells(V,EV_boundary)
 				model = (W,EW)
 				Detection.flushprintln("Done")
 
