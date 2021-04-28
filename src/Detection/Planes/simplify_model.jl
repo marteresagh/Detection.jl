@@ -24,14 +24,14 @@ function simplify_model(model::LAR; par = 0.01, angle = pi/8)#::LAR
 		all_clusters_in_model = Array{Array{Int64,1},1}[] # tutti i cluster di spigoli nel modello
 
 		# grafo riferito agli spigoli
-	    graph = Common.model2graph_edge2edge(P,EV)
-	    # conn_comps = LightGraphs.connected_components(graph)
+	    graph = Search.model2graph_edge2edge(P,EV)
+	    # conn_comps = Search.connected_components(graph)
 		# conn_comps = Common.biconnected_comps(P,EV)
-		conn_comps = Common.get_cycles(P,EV)  #migliore soluzione
+		conn_comps = Search.get_cycles(P,EV)  #migliore soluzione
 		# per ogni componente connessa
 	    for comp in conn_comps
 			# calcolo il sottografo indotto dalla componente connessa
-	        subgraph = LightGraphs.induced_subgraph(graph, comp)
+	        subgraph = Search.induced_subgraph(graph, comp)
 			# estraggo catene lineari come collezioni di indici
 	        cl_edges = get_cluster_edges((P,EV), subgraph; par=par, angle=angle)
 			push!(all_clusters_in_model, cl_edges)
@@ -50,7 +50,7 @@ function simplify_model(model::LAR; par = 0.01, angle = pi/8)#::LAR
 	end
 
 	#semplifico il modello tenendo solo i punti degli spigoli
-	Z,EZ = Common.simplifyCells(P,EV)
+	Z,EZ = simplifyCells(P,EV)
 	EZ = filter(ev -> length(ev) > 1, EZ) # controllo
 
 	return Z,EZ
@@ -85,8 +85,8 @@ function get_cluster_edges(model::LAR, subgraph; par = 0.01, angle = pi/8)::Arra
 		return dist1<par && dist2<par
 	end
 
-	seen = zeros(Bool,LightGraphs.nv(grph))
-	current_ind = [1:LightGraphs.nv(grph)...]
+	seen = zeros(Bool,Search.nv(grph))
+	current_ind = [1:Search.nv(grph)...]
 	clusters_found = Array{Int64,1}[]
 
 	while !isempty(current_ind)
@@ -101,7 +101,7 @@ function get_cluster_edges(model::LAR, subgraph; par = 0.01, angle = pi/8)::Arra
 
 		while !isempty(S)
 			e = pop!(S)
-			neighbors = LightGraphs.neighborhood(grph,e,1)
+			neighbors = Search.neighborhood(grph,e,1)
 			for neighbor in neighbors
 				if !seen[neighbor]
 					dir = direction(neighbor)
@@ -220,7 +220,7 @@ function remove_some_edges!(P::Points, EP::Cells, dict; par=1e-4, angle = pi/8)
 	clusters = [[i] for i in 1:length(EP)]
 	for i in 1:length(EP)
 		ep = EP[i]
-		N = setdiff(LightGraphs.neighborhood(graph,i,1),i)
+		N = setdiff(Search.neighborhood(graph,i,1),i)
 
 		if length(N)==2
 			n1 = N[1]

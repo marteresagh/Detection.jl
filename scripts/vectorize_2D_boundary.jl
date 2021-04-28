@@ -98,7 +98,7 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 				Detection.flushprintln("Done")
 
 				# boundary semplification
-				try
+			#	try
 					Detection.flushprint("Boundary semplification....")
 					V2D, EV = Detection.simplify_model(model; par = par, angle = angle)
 					Detection.flushprintln("Done")
@@ -116,9 +116,9 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 
 					Detection.flushprintln("Done")
 					Detection.flushprintln()
-				catch y
+			#	catch y
 					Detection.flushprintln("NOT FOUND")
-				end
+				#end
 			end
 		end
 	end
