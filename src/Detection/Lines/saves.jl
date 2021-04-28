@@ -53,7 +53,7 @@ function extrema_line(line::Hyperplane)::Points
 	points = line.inliers
 	for i in 1:points.n_points
 		p = points.coordinates[:,i] - line.centroid
-		value = LinearAlgebra.dot(line.direction,p)
+		value = Common.dot(line.direction,p)
 		if value > max_value
 			max_value = value
 		end
