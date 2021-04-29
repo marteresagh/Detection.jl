@@ -157,7 +157,7 @@ version = "2.1.5+1"
 
 [[Features]]
 deps = ["Common", "DataStructures", "Search", "Statistics"]
-git-tree-sha1 = "63623f18a1dbc6388f3e841141753ff3739bfce2"
+git-tree-sha1 = "2ececf30a25052e22d9f8c853187d6a34c9257ad"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/Features.jl"
 uuid = "a126c2c6-2eda-4948-b40c-a494a421c8a7"
@@ -165,13 +165,13 @@ version = "0.1.0"
 
 [[FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
-git-tree-sha1 = "b647ed22f176a4f12eabe2afd90d19a95af2e8ca"
+git-tree-sha1 = "9ce1309b1fa7fec0ef9e7c4f14f3be2cabf9bb73"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-version = "1.8.0"
+version = "1.8.1"
 
 [[FileManager]]
 deps = ["Common", "DataStructures", "Dates", "JSON", "LasIO", "LazIO", "PlyIO", "Printf"]
-git-tree-sha1 = "2ed6ee091e8f8b86cd6ad8802a84affd6bf45a5e"
+git-tree-sha1 = "d3c7bc13469c955d4b1dac5d4346ae73724bc3cb"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/FileManager.jl"
 uuid = "3a9936d4-fe09-4749-8918-4a4e7c2073da"
@@ -448,7 +448,7 @@ uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 
 [[Search]]
 deps = ["Common", "LightGraphs", "NearestNeighbors"]
-git-tree-sha1 = "7f2f87f583fe4d392b16c7f664e7d9263ba4515d"
+git-tree-sha1 = "0653a596aec75c26d6dd3e584b0f4de4892a2a19"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/Search.jl"
 uuid = "747819b4-c676-4122-9f3c-fea06ae3fbba"
