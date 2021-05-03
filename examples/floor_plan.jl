@@ -1,11 +1,11 @@
 using Detection
 using Visualization
-using Geometry
+using Common
 using FileManager
 using Features
 # using Statistics
-# fname = "examples/las/wall.las"
-fname = "examples/las/polyline.las"
+fname = "examples/las/wall.las"
+# fname = "examples/las/polyline.las"
 # fname = "examples/las/full.las"
 # fname = "examples/las/square.las"
 # fname = "C:/Users/marte/Documents/GEOWEB/wrapper_file/sezioni/Sezione_z650.las"
@@ -40,8 +40,16 @@ seeds = Int64[]
 @time hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)
 
 # hyperplanes,_,_ = Detection.get_hyperplane(params)
-
-V,EV = Common.DrawLines(hyperplanes)
+function get_lines(hyperplanes)
+	lines = Common.Line[]
+	for line in hyperplanes
+		V = Detection.extrema_line(line)
+		push!(lines,Common.Line(V[:,1],V[:,2]))
+	end
+	return lines
+end
+lines = get_lines(hyperplanes)
+V,EV = Common.DrawLines(lines)
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,:])'),GL.RED),
 	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,params.outliers])'),GL.GREEN),

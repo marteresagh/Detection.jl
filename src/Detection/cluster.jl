@@ -43,14 +43,16 @@ function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplan
 		normals = params.PC.normals[:,params.current_inds]
 	end
 
-	kdtree = Search.KDTree(points)
+	kdtree = Search.BallTree(points)
+	# kdtree = Search.KDTree(points) !!
 	seeds = copy(R)
 	visitedverts = copy(R)
 	listPoint = nothing
 
 	while !isempty(seeds)
 		tmp = Int[] # new seeds
-		N = Search.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k)
+		N = Search.n_inrange(kdtree,points,seeds,visitedverts,params.threshold)
+		#N = Search.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k) !!
 		union!(visitedverts,N)
 
 		for i in N
