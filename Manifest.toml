@@ -65,7 +65,7 @@ version = "0.10.12"
 
 [[Common]]
 deps = ["Delaunay", "LinearAlgebra", "QHull", "SparseArrays"]
-git-tree-sha1 = "96d878592e8aa8fa8dade790e3e81f12443d7fa8"
+git-tree-sha1 = "a85e8c2b4132deea5abe58a5ac2a0dac6568b509"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/Common.jl"
 uuid = "1e120bc2-2bd2-483a-9663-793997b3971f"
@@ -157,7 +157,7 @@ version = "2.1.5+1"
 
 [[Features]]
 deps = ["Common", "DataStructures", "Search", "Statistics"]
-git-tree-sha1 = "15a4e9228dd72287ddd75f32383ce9b17ec51289"
+git-tree-sha1 = "884635cb2ccd04fddb42a59ee76cc3e5b2185d55"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/Features.jl"
 uuid = "a126c2c6-2eda-4948-b40c-a494a421c8a7"
@@ -171,7 +171,7 @@ version = "1.8.2"
 
 [[FileManager]]
 deps = ["Common", "DataStructures", "Dates", "JSON", "LasIO", "LazIO", "PlyIO", "Printf"]
-git-tree-sha1 = "517a6d58d273acdd661c4e5e7e18fe0450b7f14c"
+git-tree-sha1 = "e887ef920d152e63083e45566bc99c38f49c347a"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/FileManager.jl"
 uuid = "3a9936d4-fe09-4749-8918-4a4e7c2073da"
@@ -448,7 +448,7 @@ uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 
 [[Search]]
 deps = ["Common", "LightGraphs", "NearestNeighbors"]
-git-tree-sha1 = "2fb58db29728d393ae9ba77b4526f3940b328327"
+git-tree-sha1 = "fa32e1b900c001fa6a0a6ebad7ea63d944c790bc"
 repo-rev = "master"
 repo-url = "https://github.com/marteresagh/Search.jl"
 uuid = "747819b4-c676-4122-9f3c-fea06ae3fbba"

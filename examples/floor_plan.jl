@@ -50,11 +50,11 @@ function get_lines(hyperplanes)
 end
 lines = get_lines(hyperplanes)
 V,EV = Common.DrawLines(lines)
-GL.VIEW([
-	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,:])'),GL.RED),
-	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,params.outliers])'),GL.GREEN),
-	GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,params.fitted])'),GL.BLACK),
-	GL.GLGrid(Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),V),EV,GL.COLORS[1],1.0)
+Visualization.VIEW([
+	Visualization.points(Common.apply_matrix(Common.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,:]); color = Visualization.RED),
+	Visualization.points(Common.apply_matrix(Common.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,outliers]); color = Visualization.GREEN),
+	Visualization.points(Common.apply_matrix(Common.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,fitted]); color = Visualization.BLACK),
+	Visualization.GLGrid(Common.apply_matrix(Common.t(-Common.centroid(INPUT_PC.coordinates)...),V),EV,Visualization.COLORS[1],1.0)
 ])
 #
 #
@@ -62,5 +62,3 @@ GL.VIEW([
 # 	#GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates)'),GL.COLORS[2]),
 # 	Visualization.mesh_lines(hyperplanes)...
 # ])
-
-ret = GL.GLPoints(convert(Lar.Points,Common.apply_matrix(Lar.t(-Common.centroid(INPUT_PC.coordinates)...),INPUT_PC.coordinates[:,:])'),GL.COLORS[2])
