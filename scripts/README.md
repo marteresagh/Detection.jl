@@ -198,7 +198,6 @@ optional arguments:
 Return a simplify model of boundary edges of flat shapes.
 
 #### Input parameters description:
- - source: Potree project
  - output: output folder (as first step)
  - projectname: name of project (as first step)
  - par: minimum distance from edge (clustering)
@@ -217,9 +216,6 @@ $ julia vectorize_2D_boundary.jl -h
 usage: vectorize_2D_boundary.jl -p PROJECTNAME -o OUTPUT [--par PAR]
                         [--angle ANGLE] [--k K] [-h] source
 
-positional arguments:
-  source                Input Potree
-
 optional arguments:
   -p, --projectname PROJECTNAME
                         Project name
@@ -233,4 +229,4 @@ optional arguments:
 #### Examples:
 
     # segmentation
-    julia vectorize_2D_segment.jl "C:/POTREE_PROJECT" -o "C:/MY_PROJS" -p "PLANES"
+    julia vectorize_2D_boundary.jl -o "C:/MY_PROJS" -p "PLANES"

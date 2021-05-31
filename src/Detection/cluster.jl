@@ -21,7 +21,7 @@ function get_hyperplane(params::Initializer; given_seed=nothing::Union{Nothing,I
 	end
 
 	# 2. criterio di crescita
-	all_visited_verts = search_cluster(params.PC, R, hyperplane, params) #punti che non devono far parte dei mie seeds
+	all_visited_verts = search_cluster(R, hyperplane, params) #punti che non devono far parte dei mie seeds
 	listPoint = params.PC.coordinates[:,params.current_inds[R]]
 	listRGB = params.PC.rgbs[:,params.current_inds[R]]
 	hyperplane.inliers = PointCloud(listPoint,listRGB)
@@ -35,24 +35,25 @@ end
 
 Search of all points belonging to the cluster `R`.
 """
-function search_cluster(PC::PointCloud, R::Array{Int64,1}, hyperplane::Hyperplane, params::Initializer)
+function search_cluster(R::Array{Int64,1}, hyperplane::Hyperplane, params::Initializer)
 
-	points = params.PC.coordinates[:,params.current_inds]
+	PC = params.PC
+	points = PC.coordinates[:,params.current_inds]
 	normals = nothing
 	if PC.dimension == 3
-		normals = params.PC.normals[:,params.current_inds]
+		normals = PC.normals[:,params.current_inds]
 	end
 
-	kdtree = Search.BallTree(points)
-	# kdtree = Search.KDTree(points) !!
+	#kdtree = Search.BallTree(points)
+	kdtree = Search.KDTree(points)
 	seeds = copy(R)
 	visitedverts = copy(R)
 	listPoint = nothing
 
 	while !isempty(seeds)
 		tmp = Int[] # new seeds
-		N = Search.n_inrange(kdtree,points,seeds,visitedverts,params.threshold)
-		#N = Search.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k) !!
+		#N = Search.n_inrange(kdtree,points,seeds,visitedverts,params.threshold)
+		N = Search.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k)
 		union!(visitedverts,N)
 
 		for i in N

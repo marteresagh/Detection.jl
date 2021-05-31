@@ -13,9 +13,6 @@ function parse_commandline()
 	s = ArgParseSettings()
 
 	@add_arg_table! s begin
-	"source"
-		help = "Input Potree"
-		required = true
 	"--projectname", "-p"
 		help = "Project name"
 		required = true
@@ -41,7 +38,7 @@ end
 
 
 
-function save_boundary(potree::String, folders::Array{String,1}, par::Float64, angle::Float64, k::Int64)
+function save_boundary(folders::Array{String,1}, par::Float64, angle::Float64, k::Int64)
 
 	# function outliers(points, par)
 	# 	outliers = Int64[]
@@ -57,10 +54,11 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 
 	n_planes = length(folders)
 	Threads.@threads for i in 1:n_planes
-		if !isfile(joinpath(folders[i],"execution.probe")) # eventualmente da togliere
+		# if !isfile(joinpath(folders[i],"execution.probe")) # eventualmente da togliere
 			Detection.flushprintln()
 			Detection.flushprintln("==========================================================")
-			Detection.flushprintln("= $(folders[i]) = $i of $n_planes =")
+			Detection.flushprintln("= $(folders[i]) =")
+			Detection.flushprintln("= $i of $n_planes =")
 			Detection.flushprintln("==========================================================")
 
 			file = joinpath(folders[i],"full_inliers.las")
@@ -111,7 +109,7 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 						FileManager.save_points_txt(joinpath(folders[i],"boundary_points2D.txt"), V2D)
 						FileManager.save_points_txt(joinpath(folders[i],"boundary_points3D.txt"), V3D)
 						Detection.save_cycles(joinpath(folders[i],"boundary_edges.txt"), V3D, EV)
-						FileManager.successful(true, folders[i])
+						FileManager.successful(true, folders[i]; filename = "vectorize_2D_boundary.probe")
 					end
 
 					Detection.flushprintln("Done")
@@ -120,7 +118,7 @@ function save_boundary(potree::String, folders::Array{String,1}, par::Float64, a
 					Detection.flushprintln("NOT FOUND")
 				end
 			end
-		end
+		# end
 	end
 end
 
@@ -128,7 +126,6 @@ end
 function main()
 	args = parse_commandline()
 
-	source = args["source"]
 	project_name = args["projectname"]
 	output_folder = args["output"]
 	par = args["par"]
@@ -136,14 +133,13 @@ function main()
 	k = args["k"]
 
 	Detection.flushprintln("== Parameters ==")
-	Detection.flushprintln("Source  =>  $source")
 	Detection.flushprintln("Output folder  =>  $output_folder")
 	Detection.flushprintln("Project name  =>  $project_name")
 	Detection.flushprintln("Parameter  =>  $par")
 	Detection.flushprintln("Angle  =>  $angle")
 
 	folders = Detection.get_plane_folders(output_folder, project_name)
-	save_boundary(source, folders, par, angle, k)
+	save_boundary(folders, par, angle, k)
 
 end
 

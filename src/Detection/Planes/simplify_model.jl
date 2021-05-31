@@ -1,6 +1,3 @@
-# using Visualization
-
-
 """
  Modello 2D in input
 """

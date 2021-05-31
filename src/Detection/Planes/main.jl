@@ -51,6 +51,6 @@ function pc2plane(
 	flushprintln()
 	flushprintln("=========== RESULTS =============")
 	flushprintln("$i planes detected")
-	FileManager.successful(i!=0, output_folder)
+	FileManager.successful(i!=0, output_folder; filename = "vectorize_2D.probe")
 
 end

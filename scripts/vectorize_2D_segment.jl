@@ -59,6 +59,7 @@ function save_full_inliers(potree::String, folders::Array{String,1}, thickness::
 		OrthographicProjection.segment(potree, joinpath(folders[i],"full_inliers.las"), model)
 		Common.flushprintln("-----------------------------------------------------------")
 		Common.flushprintln("Segmentation.... Done")
+		FileManager.successful(true, folders[i]; filename = "vectorize_2D_segment.probe")
 	end
 end
 
@@ -81,7 +82,6 @@ function main()
 #	hyperplanes, OBBs = Detection.get_hyperplanes(folders)
 
 	save_full_inliers(source, folders, thickness)
-
 end
 
 @time main()
