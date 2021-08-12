@@ -31,8 +31,8 @@ function planes(PLANES::Array{Detection.Hyperplane,1}, box_oriented = true; affi
 		pc = plane.inliers
 		V,EV,FV = DrawPlanes([plane]; box_oriented=box_oriented)
 		col = Visualization.COLORS[rand(1:12)]
-		push!(mesh, Visualization.GLGrid(Common.apply_matrix(affine_matrix,V),FV,col,0.08));
-		push!(mesh,	Visualization.points(Common.apply_matrix(affine_matrix,pc.coordinates);color = col));
+		push!(mesh, Visualization.GLGrid(Common.apply_matrix(affine_matrix,V),FV,col,0.5));
+		push!(mesh,	Visualization.points(Common.apply_matrix(affine_matrix,pc.coordinates);color = col,alpha=0.8));
 	end
 
 	return mesh
@@ -77,29 +77,29 @@ function get_boundary_models(folders)
 	return boundary
 end
 
-NAME_PROJ = "CASTEL_LOD5"; source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASTEL"
+# NAME_PROJ = "CASTEL_LOD5"; source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASTEL"
 # NAME_PROJ = "NAVVIS_LOD4"; source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/NAVVIS"
-# NAME_PROJ = "LA_CONTEA_LOD3"; source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/LACONTEA"
+NAME_PROJ = "LA_CONTEA_LOD3"; source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/LACONTEA"
 
 
 folder_proj = "C:/Users/marte/Documents/GEOWEB/TEST"
-INPUT_PC = FileManager.source2pc(source,0)
+INPUT_PC = FileManager.source2pc(source,4)
 centroid = Common.centroid(INPUT_PC.coordinates)
 
 folders = Detection.get_plane_folders(folder_proj,NAME_PROJ)
 
-# hyperplanes, _ = Detection.get_hyperplanes(folders)
-#
-# V,EV,FV = DrawPlanes(hyperplanes; box_oriented=false)
-#
+hyperplanes, _ = Detection.get_hyperplanes(folders)
+
+V,EV,FV = DrawPlanes(hyperplanes; box_oriented=false)
+
+Visualization.VIEW([
+	Visualization.points(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+	Visualization.GLGrid(Common.apply_matrix(Common.t(-centroid...),V),FV,Visualization.COLORS[1],0.8)
+])
+
 # Visualization.VIEW([
-# 	Visualization.points(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
-# 	Visualization.GLGrid(Common.apply_matrix(Common.t(-centroid...),V),FV,Visualization.COLORS[1],0.8)
+# 	planes(hyperplanes,false; affine_matrix = Common.t(-centroid...))...,
 # ])
-#
-# # Visualization.VIEW([
-# # 	planes(hyperplanes,false; affine_matrix = Common.t(-centroid...))...,
-# # ])
 
 boundary_models = get_boundary_models(folders)
 
@@ -108,29 +108,32 @@ Visualization.VIEW([
 	[Visualization.GLGrid(Common.apply_matrix(Common.t(-centroid...),model[1]),model[2],Visualization.COLORS[rand(1:1)],0.8) for model in boundary_models]...,
 ])
 
+
+
+Visualization.VIEW([planes(hyperplanes, false; affine_matrix = Common.t(-centroid...))...])
 #
-s = 0
-for model in boundary_models
-	global s
-	s += size(model[1],2)
-end
-
-
-out = Array{Common.Struct,1}()
-for model in boundary_models
-	push!(out, Common.Struct([model]))
-end
-out = Common.Struct( out )
-V, EV = Common.struct2lar(out)
-
-Visualization.VIEW([
-	#Visualization.GLPoints(permutedims(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates))),
-	Visualization.GLGrid(V,EV)
-])
-
-# open("lar_castelferretti.txt","w") do f
-# 	write(f, "V = $V\n\n")
-# 	write(f, "EV = $EV\n\n")
+# s = 0
+# for model in boundary_models
+# 	global s
+# 	s += size(model[1],2)
 # end
-
-include("../lar_castelferretti.txt")
+#
+#
+# out = Array{Common.Struct,1}()
+# for model in boundary_models
+# 	push!(out, Common.Struct([model]))
+# end
+# out = Common.Struct( out )
+# V, EV = Common.struct2lar(out)
+#
+# Visualization.VIEW([
+# 	#Visualization.GLPoints(permutedims(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates))),
+# 	Visualization.GLGrid(V,EV)
+# ])
+#
+# # open("lar_castelferretti.txt","w") do f
+# # 	write(f, "V = $V\n\n")
+# # 	write(f, "EV = $EV\n\n")
+# # end
+#
+# include("../lar_castelferretti.txt")

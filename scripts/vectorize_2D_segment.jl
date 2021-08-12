@@ -2,7 +2,7 @@ println("loading packages... ")
 
 using ArgParse
 using Common
-using OrthographicProjection
+using Clipping
 using Detection
 
 println("packages OK")
@@ -56,7 +56,7 @@ function save_full_inliers(potree::String, folders::Array{String,1}, thickness::
 		aabb = Common.boundingbox(inliers_points)
 		plane = Plane(hyperplane.direction,hyperplane.centroid)
 		model = Common.getmodel(plane, thickness, aabb)
-		OrthographicProjection.segment(potree, joinpath(folders[i],"full_inliers.las"), model)
+		Clipping.clip(potree, joinpath(folders[i],"full_inliers.las"), model, nothing)
 		Common.flushprintln("-----------------------------------------------------------")
 		Common.flushprintln("Segmentation.... Done")
 		FileManager.successful(true, folders[i]; filename = "vectorize_2D_segment.probe")
