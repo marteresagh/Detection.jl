@@ -7,7 +7,7 @@ function save_partitions(PC::PointCloud, params::Initializer, affine_matrix::Mat
 	PC_fitted_3D = PointCloud(PC.coordinates[:,params.fitted],PC.rgbs[:,params.fitted])
 
 	# fitted
-	flushprintln("Fitted $(length(params.fitted)) points")
+	println("Fitted $(length(params.fitted)) points")
 	# POINTCLOUDS/PARTITIONS
 	FileManager.save_pointcloud(joinpath(dirs.PARTITIONS,"fitted.las"), PC_fitted_3D, "VECTORIZATION" )
 	# DXF/RAW
@@ -19,7 +19,7 @@ function save_partitions(PC::PointCloud, params::Initializer, affine_matrix::Mat
 	if !isempty(points_unfitted)
 		PC_unfitted_2D = PointCloud(Common.apply_matrix(Common.inv(affine_matrix),PC.coordinates)[1:2,points_unfitted],PC.rgbs[:,points_unfitted])
 		PC_unfitted_3D = PointCloud(PC.coordinates[:,points_unfitted],PC.rgbs[:,points_unfitted])
-		flushprintln("Unfitted $(length(points_unfitted)) points")
+		println("Unfitted $(length(points_unfitted)) points")
 		# POINTCLOUDS/PARTITIONS
 		FileManager.save_pointcloud(joinpath(dirs.PARTITIONS,"unfitted.las"), PC_unfitted_3D, "VECTORIZATION" )
 		# DXF/RAW
@@ -37,7 +37,7 @@ Save line detected in 2D and 3D space.
 function write_line(s_2d::IOStream, s_3d::IOStream, line::Hyperplane, affine_matrix::Matrix)
 	V = extrema_line(line)
 	write(s_2d, "$(V[1,1]) $(V[2,1]) $(V[1,2]) $(V[2,2])\n")
-	V1 = vcat(V,(zeros(size(V,2)))')
+	V1 = Common.add_zeta_coordinates(V, 0.0)
 	V3D = Common.apply_matrix(affine_matrix,V1)
 	write(s_3d, "$(V3D[1,1]) $(V3D[2,1]) $(V3D[3,1]) $(V3D[1,2]) $(V3D[2,2]) $(V3D[3,2])\n")
 end

@@ -22,9 +22,9 @@ function simplify_model(model::Lar.LAR; par = 0.01, angle = pi/8)#::Lar.LAR
 		dict[i] = P[:,union(EV[i]...)]
 	end
 
-	# Common.flushprintln("================START============")
+	# println("================START============")
 	while diff_nedges != 0
-		# Common.flushprintln("GIRO------------------")
+		# println("GIRO------------------")
 		all_clusters_in_model = Array{Array{Int64,1},1}[] # tutti i cluster di spigoli nel modello
 
 		# grafo riferito agli spigoli
@@ -203,7 +203,7 @@ end
 rimuove spigoli con una certa caratteristica
 """
 function remove_some_edges!(P::Lar.Points, EP::Lar.Cells, dict; par=1e-4, angle = pi/8)
-	# Common.flushprintln("-------------REMOVE SOME EDGES------------------")
+	# println("-------------REMOVE SOME EDGES------------------")
 	graph = Common.model2graph_edge2edge(P,EP)
 	dict_tmp = Dict()
 	EV = copy(EP)

@@ -37,7 +37,7 @@ function iterate_lines_detection(
 	i = 0 # number of hyperplane found
 
 	# 2. - Main loop
-	flushprintln("= Start search =")
+	println("= Start search =")
 
 	for seed in seeds
 		found = false
@@ -50,7 +50,7 @@ function iterate_lines_detection(
 
 		if found
 			i = i+1
-			flushprintln("$i of $(length(seeds))")
+			println("$i of $(length(seeds))")
 
 			write_line(s_2d, s_3d, hyperplane, affine_matrix)
 
@@ -59,6 +59,8 @@ function iterate_lines_detection(
 
 		end
 	end
+
+	flush(stdout)
 
 	search = true
 	while search
@@ -77,7 +79,7 @@ function iterate_lines_detection(
 			catch y
 				f = f+1
 				if f%10 == 0
-					flushprintln("failed = $f")
+					println("failed = $f")				
 				end
 			end
 		end
@@ -86,7 +88,8 @@ function iterate_lines_detection(
 			f = 0
 			i = i+1
 			if i%10 == 0
-				flushprintln("$i lines detected")
+				println("$i lines detected")
+				flush(stdout)
 			end
 
 			write_line(s_2d, s_3d, hyperplane, affine_matrix)
@@ -104,7 +107,7 @@ function iterate_lines_detection(
 		try
 			Base.throwto(task, InterruptException())
 		catch y
-			flushprintln("STOPPED")
+			println("STOPPED")
 		end
 	end
 

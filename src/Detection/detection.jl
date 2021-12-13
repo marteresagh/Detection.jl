@@ -23,7 +23,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 	i = 0 # number of hyperplane found
 
 	# 2. - Main loop
-	flushprintln("= Start search =")
+	println("= Start search =")
 
 	for seed in seeds
 		found = false
@@ -31,12 +31,12 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 			hyperplane, cluster, all_visited_verts = get_hyperplane(params; given_seed = seed)
 			found = true
 		catch y
-		
+
 		end
 
 		if found
 			i = i+1
-			flushprintln("$i of $(length(seeds))")
+			println("$i of $(length(seeds))")
 			push!(hyperplanes,hyperplane)
 			union!(params.fitted,cluster)
 
@@ -69,7 +69,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 			catch y
 				f = f+1
 				if f%10 == 0
-					flushprintln("failed = $f")
+					println("failed = $f")
 				end
 			end
 		end
@@ -80,7 +80,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 			f = 0
 			i = i+1
 			if i%10 == 0
-				flushprintln("$i shapes found")
+				println("$i shapes found")
 			end
 			push!(hyperplanes,hyperplane)
 			union!(params.fitted,cluster)

@@ -32,10 +32,10 @@ end
 function save_full_inliers(potree::String, folders::Array{String,1}, thickness::Float64)
 	n_planes = length(folders)
 	Threads.@threads for i in 1:n_planes
-		flushprintln()
-		flushprintln("==========================================================")
-		flushprintln("=================== $i of $n_planes ======================")
-		flushprintln("==========================================================")
+		println()
+		println("==========================================================")
+		println("=================== $i of $n_planes ======================")
+		println("==========================================================")
 
 		io = open(joinpath(folders[i],"finite_plane.txt"), "r")
 		lines = readlines(io)
@@ -49,16 +49,16 @@ function save_full_inliers(potree::String, folders::Array{String,1}, thickness::
 		hyperplane = Detection.Hyperplane(PointCloud(inliers[1:3,:],inliers[4:6,:]), normal, centroid)
 
 		# segmentation: to extract all inliers
-		flushprintln()
-		flushprintln("Segmentation....")
-		flushprintln("-----------------------------------------------------------")
+		println()
+		println("Segmentation....")
+		println("-----------------------------------------------------------")
 		inliers_points = hyperplane.inliers.coordinates
 		aabb = Common.boundingbox(inliers_points)
 		plane = Plane(hyperplane.direction,hyperplane.centroid)
 		model = Common.getmodel(plane, thickness, aabb)
 		Clipping.clip(potree, joinpath(folders[i],"full_inliers.las"), model, nothing)
-		Common.flushprintln("-----------------------------------------------------------")
-		Common.flushprintln("Segmentation.... Done")
+		println("-----------------------------------------------------------")
+		println("Segmentation.... Done")
 		FileManager.successful(true, folders[i]; filename = "vectorize_2D_segment.probe")
 	end
 end
@@ -72,11 +72,11 @@ function main()
 	output_folder = args["output"]
 	thickness = args["thickness"]
 
-	Common.flushprintln("== Parameters ==")
-	Common.flushprintln("Source  =>  $source")
-	Common.flushprintln("Output folder  =>  $output_folder")
-	Common.flushprintln("Project name  =>  $project_name")
-	Common.flushprintln("Thickness  =>  $thickness")
+	println("== Parameters ==")
+	println("Source  =>  $source")
+	println("Output folder  =>  $output_folder")
+	println("Project name  =>  $project_name")
+	println("Thickness  =>  $thickness")
 
 	folders = Detection.get_plane_folders(output_folder, project_name)
 #	hyperplanes, OBBs = Detection.get_hyperplanes(folders)

@@ -26,22 +26,22 @@ mutable struct Initializer
 
 		# threashold estimation
 		threshold = Features.estimate_threshold(INPUT_PC,2*k)
-		flushprintln("Compute threshold: $threshold")
+		println("Compute threshold: $threshold")
 
 		# normals
 		if INPUT_PC.dimension == 3
-			flushprintln("Compute normals")
+			println("Compute normals")
 			INPUT_PC.normals = Features.compute_normals(INPUT_PC.coordinates,threshold,k)
 		end
 
-		flushprintln("= Remove points from possible seeds =")
-		flushprintln("Search of possible outliers: ")
+		println("= Remove points from possible seeds =")
+		println("Search of possible outliers: ")
 		outliers = Features.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
-		flushprintln("$(length(outliers)) outliers")
+		println("$(length(outliers)) outliers")
 
-		# flushprintln("Search of points with high curvature")
+		# println("Search of points with high curvature")
 		# corners = Detection.corners_detection(INPUT_PC, par, threshold)
-		# flushprintln("$(length(corners)) points on corners")
+		# println("$(length(corners)) points on corners")
 
 		return Initializer(INPUT_PC, par, threshold, failed, N, k, outliers)
 	end

@@ -1,7 +1,9 @@
-println("loading packages... ")
+println("loading packages...")
 
 using ArgParse
 using Detection
+using FileManager
+using Search
 
 println("packages OK")
 
@@ -77,9 +79,30 @@ function main()
 
 	flush(stdout)
 
-	# detection
-	Detection.pc2plane(output_folder, project_name, PC, par, failed, N, k; masterseeds = masterseeds)
+	println("=========== INIT =============")
+	# output directory
+	project_folder = FileManager.mkdir_project(output_folder,project_name)
 
+	# seeds
+	seeds = Int64[]
+	if !isnothing(masterseeds) # if seeds are provided
+		println("Read seeds from file")
+		given_seeds = FileManager.load_points(masterseeds)
+		seeds = Search.consistent_seeds(PC).([c[:] for c in eachcol(given_seeds)])
+	end
+
+	params = Detection.Initializer(PC, par, failed,	N, k)
+
+	# 2. Detection
+	println()
+	println("=========== PROCESSING =============")
+	i = Detection.iterate_planes_detection(params, project_folder; seeds = masterseeds, save_ply = true)
+
+	# 3. Saves
+	println()
+	println("=========== RESULTS =============")
+	println("$i planes detected")
+	FileManager.successful(i!=0, project_folder; filename = "vectorize_2D.probe")
 end
 
 @time main()

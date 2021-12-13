@@ -27,14 +27,14 @@ function pc2lines(
 	)
 
 	# 1. Initialization
-	flushprintln()
-	flushprintln("=========== INIT =============")
+	println()
+	println("=========== INIT =============")
 
 	# output directory
 	dirs = Vect_1D_Dirs(folder, project_name)
 
 	# POINTCLOUDS/FULL
-	flushprintln("Slice: $(PC.n_points) points in slice")
+	println("Slice: $(PC.n_points) points in slice")
 	FileManager.save_pointcloud(joinpath(dirs.FULL,"slice.las"), PC, "VECTORIZATION_1D" )
 
 	INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
@@ -45,15 +45,15 @@ function pc2lines(
 	seeds = Int64[]
 	if !isnothing(masterseeds) # if seeds are provided
 		# seeds indices
-		flushprintln("Read seeds from file")
+		println("Read seeds from file")
 		given_seeds = FileManager.load_points(masterseeds)
 		given_seeds_2D = Common.apply_matrix(affine_matrix,given_seeds)[1:2,:]
 		seeds = Search.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds_2D)])
 	end
 
 	# 2. Detection
-	flushprintln()
-	flushprintln("=========== PROCESSING =============")
+	println()
+	println("=========== PROCESSING =============")
 
 	# qui devo aprire segment 2d e segment 3d
 	s_2d = open(joinpath(dirs.RAW,"segment2D.ext"), "w")
@@ -65,9 +65,9 @@ function pc2lines(
 	close(s_3d)
 
 	# 3. Saves
-	flushprintln()
-	flushprintln("=========== RESULTS =============")
-	flushprintln("$i lines detected")
+	println()
+	println("=========== RESULTS =============")
+	println("$i lines detected")
 	save_partitions(PC, params, Common.inv(affine_matrix), dirs)
 	FileManager.successful(i!=0, dirs.output_folder)
 

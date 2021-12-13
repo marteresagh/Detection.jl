@@ -17,7 +17,7 @@ Algorithm description:
  - If not found, repeats the detection
  - Search terminates if the detection failed a number of times in a row
 """
-function iterate_planes_detection(params::Initializer, output_folder::String; seeds = Int64[]::Array{Int64,1}, debug = false)
+function iterate_planes_detection(params::Initializer, output_folder::String; seeds = Int64[]::Array{Int64,1}, debug = false, save_ply = false)
 	inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
 
 	# 1. - Initialization
@@ -29,7 +29,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 	i = 0 # number of hyperplane found
 
 	# 2. - Main loop
-	flushprintln("= Start search =")
+	println("= Start search =")
 
 	for seed in seeds
 		found = false
@@ -48,15 +48,17 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			folder = joinpath(output_folder,"plane_$timestamp")
 			FileManager.mkdir_if(folder)
 			save_finite_plane(folder, hyperplane)
-		#	Detection.save_boundary_shape(folder,hyperplane)
+
 			####################################
 
-			flushprintln("$i of $(length(seeds))")
+			println("$i of $(length(seeds))")
 			union!(params.fitted,cluster)
 			remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
 			union!(params.visited,all_visited_verts)
 		end
 	end
+
+	flush(stdout)
 
 	search = true
 	while search
@@ -75,7 +77,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			catch y
 				f = f+1
 				if f%10 == 0
-					flushprintln("failed = $f")
+					println("failed = $f")
 				end
 			end
 		end
@@ -84,7 +86,8 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			f = 0
 			i = i+1
 			if i%10 == 0
-				flushprintln("$i shapes found")
+				println("$i shapes found")
+				flush(stdout)
 			end
 
 			####################################
@@ -92,7 +95,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			folder = joinpath(output_folder,"plane_$timestamp")
 			FileManager.mkdir_if(folder)
 			save_finite_plane(folder, hyperplane)
-		#	Detection.save_boundary_shape(folder,hyperplane)
+
 			####################################
 
 			union!(params.fitted,cluster)
@@ -104,11 +107,15 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 
 	end
 
+	if save_ply
+		save_plane_segments_in_ply(hyperplanes, joinpath(output_folder,"segments.ply"))
+	end
+
 	if debug # interrompe il task per la lettura da tastiera
 		try
 			Base.throwto(task, InterruptException())
 		catch y
-			flushprintln("STOPPED")
+			println("STOPPED")
 		end
 	end
 

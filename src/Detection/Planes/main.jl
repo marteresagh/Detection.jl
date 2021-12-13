@@ -25,7 +25,7 @@ function pc2plane(
 	)
 
 	# 1. Initialization
-	flushprintln("=========== INIT =============")
+	println("=========== INIT =============")
 	# output directory
 	output_folder = FileManager.mkdir_project(folder,project_name)
 
@@ -35,7 +35,7 @@ function pc2plane(
 	# seeds
 	seeds = Int64[]
 	if !isnothing(masterseeds) # if seeds are provided
-		flushprintln("Read seeds from file")
+		println("Read seeds from file")
 		given_seeds = FileManager.load_points(masterseeds)
 		seeds = Search.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 	end
@@ -43,14 +43,14 @@ function pc2plane(
 	params = Initializer(INPUT_PC, par, failed,	N, k)
 
 	# 2. Detection
-	flushprintln()
-	flushprintln("=========== PROCESSING =============")
+	println()
+	println("=========== PROCESSING =============")
 	i = iterate_planes_detection(params, output_folder; seeds = seeds)
 
 	# 3. Saves
-	flushprintln()
-	flushprintln("=========== RESULTS =============")
-	flushprintln("$i planes detected")
+	println()
+	println("=========== RESULTS =============")
+	println("$i planes detected")
 	FileManager.successful(i!=0, output_folder; filename = "vectorize_2D.probe")
 
 end

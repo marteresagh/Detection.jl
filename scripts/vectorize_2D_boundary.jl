@@ -55,11 +55,11 @@ function save_boundary(folders::Array{String,1}, par::Float64, angle::Float64, k
 	n_planes = length(folders)
 	Threads.@threads for i in 1:n_planes
 		# if !isfile(joinpath(folders[i],"execution.probe")) # eventualmente da togliere
-			Detection.flushprintln()
-			Detection.flushprintln("==========================================================")
-			Detection.flushprintln("= $(folders[i]) =")
-			Detection.flushprintln("= $i of $n_planes =")
-			Detection.flushprintln("==========================================================")
+			println()
+			println("==========================================================")
+			println("= $(folders[i]) =")
+			println("= $i of $n_planes =")
+			println("==========================================================")
 
 			file = joinpath(folders[i],"full_inliers.las")
 			PC = FileManager.las2pointcloud(file)
@@ -71,7 +71,7 @@ function save_boundary(folders::Array{String,1}, par::Float64, angle::Float64, k
 			#decimazione
 			if size(V,2) > 3000000
 				V = Features.subsample_poisson_disk(V, 0.05)
-				Detection.flushprintln("Decimation: $(size(V,2)) of $(PC.n_points)")
+				println("Decimation: $(size(V,2)) of $(PC.n_points)")
 			end
 
 			# out = outliers(T, par) #Common.outliers(PC, collect(1:PC.n_points), 30)
@@ -79,32 +79,32 @@ function save_boundary(folders::Array{String,1}, par::Float64, angle::Float64, k
 
 			# alpha shape
 			if size(V,2) > k
-				Detection.flushprintln()
-				Detection.flushprint("Alpha shapes....")
+				println()
+				print("Alpha shapes....")
 				DT = Common.delaunay_triangulation(V)
 				filtration = AlphaStructures.alphaFilter(V,DT);
 				threshold = Features.estimate_threshold(V,k)
 				_, _, FV = AlphaStructures.alphaSimplex(V, filtration, threshold)
-				Detection.flushprintln("Done")
+				println("Done")
 
 				# boundary extraction
-				Detection.flushprintln()
-				Detection.flushprint("Boundary extraction....")
+				println()
+				print("Boundary extraction....")
 				EV_boundary = Common.get_boundary_edges(V,FV)
 				W,EW = Detection.simplifyCells(V,EV_boundary)
 				model = (W,EW)
-				Detection.flushprintln("Done")
+				println("Done")
 
 				# boundary semplification
 				try
-					Detection.flushprint("Boundary semplification....")
+					print("Boundary semplification....")
 					V2D, EV = Detection.simplify_model(model; par = par, angle = angle)
-					Detection.flushprintln("Done")
+					println("Done")
 					V3D = Common.apply_matrix(Common.inv(plane.matrix), vcat(V2D,zeros(size(V2D,2))'))
 
 					# save data
-					Detection.flushprintln()
-					Detection.flushprint("Saves $(length(EV)) edges....")
+					println()
+					print("Saves $(length(EV)) edges....")
 					if length(EV)>2
 						FileManager.save_points_txt(joinpath(folders[i],"boundary_points2D.txt"), V2D)
 						FileManager.save_points_txt(joinpath(folders[i],"boundary_points3D.txt"), V3D)
@@ -112,10 +112,10 @@ function save_boundary(folders::Array{String,1}, par::Float64, angle::Float64, k
 						FileManager.successful(true, folders[i]; filename = "vectorize_2D_boundary.probe")
 					end
 
-					Detection.flushprintln("Done")
-					Detection.flushprintln()
+					println("Done")
+					println()
 				catch y
-					Detection.flushprintln("NOT FOUND")
+					println("NOT FOUND")
 				end
 			end
 		# end
@@ -132,11 +132,11 @@ function main()
 	angle = args["angle"]
 	k = args["k"]
 
-	Detection.flushprintln("== Parameters ==")
-	Detection.flushprintln("Output folder  =>  $output_folder")
-	Detection.flushprintln("Project name  =>  $project_name")
-	Detection.flushprintln("Parameter  =>  $par")
-	Detection.flushprintln("Angle  =>  $angle")
+	println("== Parameters ==")
+	println("Output folder  =>  $output_folder")
+	println("Project name  =>  $project_name")
+	println("Parameter  =>  $par")
+	println("Angle  =>  $angle")
 
 	folders = Detection.get_plane_folders(output_folder, project_name)
 	save_boundary(folders, par, angle, k)

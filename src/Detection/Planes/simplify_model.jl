@@ -189,7 +189,7 @@ end
 rimuove spigoli con una certa caratteristica
 """
 function remove_some_edges!(P::Points, EP::Cells, dict; par=1e-4, angle = pi/8)
-	# Common.flushprintln("-------------REMOVE SOME EDGES------------------")
+	# println("-------------REMOVE SOME EDGES------------------")
 	graph = Common.model2graph_edge2edge(P,EP)
 	dict_tmp = Dict()
 	EV = copy(EP)

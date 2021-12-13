@@ -79,18 +79,19 @@ function main()
 	affine_matrix = Common.approxVal(16).(Common.matrix4(R)*plane.matrix) # rotation matrix
 
 
-	Detection.flushprintln("== Parameters ==")
-	Detection.flushprintln("Source  =>  $source")
-	Detection.flushprintln("Output folder  =>  $output_folder")
-	Detection.flushprintln("Project name  =>  $project_name")
-	Detection.flushprintln("Parameter  =>  $par")
-	Detection.flushprintln("Seeds =>  $(args["masterseeds"])")
-	Detection.flushprintln("N. of failed  =>  $failed")
-	Detection.flushprintln("N. of inliers  =>  $N")
-	Detection.flushprintln("N. of k-nn  =>  $k")
-	Detection.flushprintln("Affine matrix =>  $affine_matrix")
+	println("== Parameters ==")
+	println("Source  =>  $source")
+	println("Output folder  =>  $output_folder")
+	println("Project name  =>  $project_name")
+	println("Parameter  =>  $par")
+	println("Seeds =>  $(args["masterseeds"])")
+	println("N. of failed  =>  $failed")
+	println("N. of inliers  =>  $N")
+	println("N. of k-nn  =>  $k")
+	println("Affine matrix =>  $affine_matrix")
 
-
+	flush(stdout)
+	
 	Detection.pc2lines(output_folder, project_name, PC, par, failed, N, k, affine_matrix; masterseeds = masterseeds)
 end
 
