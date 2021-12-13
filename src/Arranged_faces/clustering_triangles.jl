@@ -95,7 +95,7 @@ function clustering_faces(V, FV)
         # println("$(sum(visited_triangles)) visited of $(length(triangles))")
     end
 
-    return edges, triangles, dict, regions
+    return edges, triangles, regions
 end
 
 function get_polygons(points, triangles, clusters)
@@ -107,8 +107,8 @@ function get_polygons(points, triangles, clusters)
     return polygons
 end
 
-function save_boundary(folder, points, polygons)
-    
+function save_boundary_polygons(folder, points, polygons)
+
     function lar2cop(CV::Common.Cells)::Common.ChainOp
         I = Int64[]
         J = Int64[]
