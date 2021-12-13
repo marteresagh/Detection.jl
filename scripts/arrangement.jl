@@ -36,7 +36,7 @@ function main()
 	points, total_faces = Detection.read_OFF(joinpath(output_folder, "output_faces.off"))
 	points, candidate_faces = Detection.read_OFF(joinpath(output_folder, "candidate_faces.off"))
 	# remove faces
-	# points,faces = remove_faces(points,total_faces, candidate_faces) # TODO
+	# remove_faces!(potree, points, faces) # TODO
 	# clustering candidate faces
 	edges, triangles, regions = Detection.clustering_faces(points, faces)
 	# get polygons
