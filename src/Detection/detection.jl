@@ -100,7 +100,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 	# 	try
 	# 		Base.throwto(task, InterruptException())
 	# 	catch y
-	# 		flushprintln("STOPPED")
+	# 		println("STOPPED")
 	# 	end
 	# end
 
