@@ -19,12 +19,15 @@ function save_plane_segments_in_ply(hyperplanes, filename)
         for segment_index in 1:length(hyperplanes)
             plane = hyperplanes[segment_index]
             inliers = plane.inliers.coordinates
-            @show plane.inliers.n_points
-            V_plane,_ = Common.remove_double_verts(inliers)
-            @show size(V_plane,2)
-            for j in 1:size(V_plane,2)
-                write(s,"$(V_plane[1,j]) $(V_plane[2,j]) $(V_plane[3,j]) ")
-                write(s,"$(plane.direction[1]) $(plane.direction[2]) $(plane.direction[3]) ")
+            for j in 1:size(inliers,2)
+                x = @sprintf("%f", inliers[1,j])
+                y = @sprintf("%f", inliers[2,j])
+                z = @sprintf("%f", inliers[3,j])
+                a = @sprintf("%f", plane.direction[1])
+                b = @sprintf("%f", plane.direction[2])
+                c = @sprintf("%f", plane.direction[3])
+                write(s,"$x $y $z ")
+                write(s,"$a $b $c ")
                 write(s,"$segment_index\n")
             end
         end

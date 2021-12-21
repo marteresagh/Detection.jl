@@ -85,63 +85,20 @@ function get_boundary_models(folders)
 	return boundary
 end
 
-# NAME_PROJ = "CASTEL_LOD5"; source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CASTEL"
-# NAME_PROJ = "NAVVIS_LOD4"; source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/NAVVIS"
-NAME_PROJ = "PLANES"; source = "C:/Users/marte/Documents/potreeDirectory/pointclouds/STANZA_IDEALE"
-
-
+source = raw"C:\Users\marte\Documents\potreeDirectory\pointclouds\STANZA_IDEALE"
 folder_proj = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\STANZA_ideale"
+NAME_PROJ = "PLANES";
+
+
 INPUT_PC = FileManager.source2pc(source,4)
 centroid = Common.centroid(INPUT_PC.coordinates)
 
 folders = Detection.get_plane_folders(folder_proj,NAME_PROJ)
-
 hyperplanes, _ = Detection.get_hyperplanes(folders)
 
 V,EV,FV = DrawPlanes(hyperplanes; box_oriented=true)
 
 Visualization.VIEW([
-	#Visualization.points(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
+	Visualization.points(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
 	Visualization.GLGrid(Common.apply_matrix(Common.t(-centroid...),V),FV,Visualization.COLORS[1],0.8)
 ])
-
-# Visualization.VIEW([
-# 	planes(hyperplanes,false; affine_matrix = Common.t(-centroid...))...,
-# ])
-
-boundary_models = get_boundary_models(folders)
-
-Visualization.VIEW([
-	#Visualization.GLPoints(permutedims(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates))),
-	[Visualization.GLGrid(Common.apply_matrix(Common.t(-centroid...),model[1]),model[2],Visualization.COLORS[rand(1:1)],0.8) for model in boundary_models]...,
-])
-
-
-
-Visualization.VIEW([planes(hyperplanes, false; affine_matrix = Common.t(-centroid...))...])
-#
-# s = 0
-# for model in boundary_models
-# 	global s
-# 	s += size(model[1],2)
-# end
-#
-#
-# out = Array{Common.Struct,1}()
-# for model in boundary_models
-# 	push!(out, Common.Struct([model]))
-# end
-# out = Common.Struct( out )
-# V, EV = Common.struct2lar(out)
-#
-# Visualization.VIEW([
-# 	#Visualization.GLPoints(permutedims(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates))),
-# 	Visualization.GLGrid(V,EV)
-# ])
-#
-# # open("lar_castelferretti.txt","w") do f
-# # 	write(f, "V = $V\n\n")
-# # 	write(f, "EV = $EV\n\n")
-# # end
-#
-# include("../lar_castelferretti.txt")

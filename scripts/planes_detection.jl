@@ -96,7 +96,7 @@ function main()
 	# 2. Detection
 	println()
 	println("=========== PROCESSING =============")
-	i = Detection.iterate_planes_detection(params, project_folder; seeds = masterseeds, save_ply = true)
+	i = Detection.iterate_planes_detection(params, project_folder; seeds = seeds)
 
 	# 3. Saves
 	println()

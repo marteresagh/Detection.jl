@@ -33,7 +33,7 @@ function clustering_preprocess(V, FV)
 end
 
 function clustering_adjlist_triangles(triangles, edges)
-    copFE = Arrangement.u_coboundary_1(triangles, edges)
+    copFE = Common.u_coboundary_1(triangles, edges)
     list_adj = Vector{Vector{Int}}(undef, copFE.m)
     # quale triangolo sto studiando
     for i = 1:copFE.m

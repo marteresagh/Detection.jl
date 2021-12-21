@@ -1,3 +1,12 @@
+println("loading packages...")
+
+using ArgParse
+using Visualization
+using Common
+
+println("packages OK")
+
+
 function read_OFF(filename::String)
   V = nothing
   FV = nothing
@@ -110,3 +119,33 @@ function faces2triangles(V, FV)
 
   return FVs
 end
+
+function parse_commandline()
+	s = ArgParseSettings()
+
+	@add_arg_table! s begin
+	"source"
+		help = "Input Potree"
+		required = true
+	end
+
+	return parse_args(s)
+end
+
+
+function main()
+	args = parse_commandline()
+
+	source = args["source"]
+	println("== Parameters ==")
+	println("Source  =>  $source")
+
+	flush(stdout)
+
+	V, FV = read_OFF(source)
+	FVs = faces2triangles(V, FV)
+	Visualization.VIEW(Visualization.GLExplode(V,FVs,1.,1.,1.,99,1.))
+
+end
+
+@time main()

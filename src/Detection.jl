@@ -5,6 +5,7 @@ module Detection
     using FileManager
     using Search
     using Features
+    using Printf
 
     # struct
     include("struct.jl")
@@ -30,10 +31,10 @@ module Detection
     # # include("Shape/tentativo.jl")
     #
     # # Arrangement
-    include("Detection/Arranged_faces/clustering_triangles.jl")
-    include("Detection/Arranged_faces/merge_planes.jl")
-    include("Detection/Arranged_faces/read_off.jl")
-    include("Detection/Arranged_faces/save_ply.jl")
-    
+    include("Arranged_faces/clustering_triangles.jl")
+    include("Arranged_faces/merge_planes.jl")
+    include("Arranged_faces/read_off.jl")
+    include("Arranged_faces/save_ply.jl")
+
     export Initializer, Common, FileManager, Features
 end # module

@@ -17,7 +17,7 @@ Algorithm description:
  - If not found, repeats the detection
  - Search terminates if the detection failed a number of times in a row
 """
-function iterate_planes_detection(params::Initializer, output_folder::String; seeds = Int64[]::Array{Int64,1}, debug = false, save_ply = false)
+function iterate_planes_detection(params::Initializer, output_folder::String; seeds = Int64[]::Array{Int64,1}, debug = false)
 	inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
 
 	# 1. - Initialization
@@ -105,10 +105,6 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			search = false
 		end
 
-	end
-
-	if save_ply
-		save_plane_segments_in_ply(hyperplanes, joinpath(output_folder,"segments.ply"))
 	end
 
 	if debug # interrompe il task per la lettura da tastiera
