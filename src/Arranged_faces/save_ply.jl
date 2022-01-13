@@ -28,7 +28,7 @@ function save_plane_segments_in_ply(hyperplanes, filename)
                 c = @sprintf("%f", plane.direction[3])
                 write(s,"$x $y $z ")
                 write(s,"$a $b $c ")
-                write(s,"$segment_index\n")
+                write(s,"$(segment_index-1)\n")
             end
         end
 

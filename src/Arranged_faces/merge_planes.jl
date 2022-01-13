@@ -1,6 +1,3 @@
-using Common
-using Detection
-
 function refine_planes!(hyperplanes::Vector{Hyperplane})
     n_segments = length(hyperplanes)
 
@@ -38,7 +35,7 @@ function refine_planes!(hyperplanes::Vector{Hyperplane})
                 if Common.abs(Common.dot(n1, n2)) > Common.cos(theta)
                     set1on2 = number_of_points_on_plane(s1, s2, avg_max_dist)
                     set2on1 = number_of_points_on_plane(s2, s1, avg_max_dist)
-                    if set1on2 > num_threshold || set2on1 > num_threshold
+                    if set1on2 > num_threshold || set2on1 > num_threshold # TODO posso anche usare la distanza dal centro di massa dei punti e confrontarla con una soglia (distanza)
                         merge(hyperplanes, i, j)
                         merged = true
                         break

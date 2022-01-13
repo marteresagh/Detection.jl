@@ -271,10 +271,17 @@ function parse_commandline()
 	"--output", "-o"
 		help = "Output folder"
 		required = true
-
     "--potree", "-p"
     	help = "Potree"
     	required = true
+    "--extrusion", "-s"
+        help = "size of extrusion"
+        arg_type = Float64
+        default = 0.2
+    "--density", "-d"
+        help = "density parameters"
+        arg_type = Float64
+        default = 10000.
 	end
 
 	return parse_args(s)
@@ -286,27 +293,46 @@ function main()
 
 	output_folder = args["output"]
     potree = args["potree"]
+    size_extrusion = args["extrusion"]
+    par_density = args["density"]
 	println("== Parameters ==")
 	println("Output folder  =>  $output_folder")
     println("Potree  =>  $potree")
+    println("Size extrusion  =>  $size_extrusion")
+    println("Density on faces  =>  $par_density")
 
 
 	flush(stdout)
 
 	# read output CGAL
-	points, final_faces = Detection.read_OFF(joinpath(output_folder, "output_faces.off"))
-	points, candidate_faces = Detection.read_OFF(joinpath(output_folder, "candidate_faces.off"))
+	final_points, final_faces = Detection.read_OFF(joinpath(output_folder, "output_faces.off"))
+	candidate_points, candidate_faces = Detection.read_OFF(joinpath(output_folder, "candidate_faces.off"))
 	# remove faces
-	density_faces = quality_faces(potree, points, final_faces, output_folder; size_extrusion = 0.2)
-	density_indices = findall(x-> x > 10000., density_faces)
-	faces = candidate_faces[density_indices]
-	# clustering candidate faces
-	edges, triangles, regions = Detection.clustering_faces(points, faces)
-	# get polygons
-	polygons = Detection.get_polygons(points, triangles, regions)
-	#save boundary polygons
-	Detection.save_boundary_polygons(output_folder, points, polygons)
+	density_faces = quality_faces(potree, candidate_points, candidate_faces, output_folder; size_extrusion = size_extrusion)
+    @show density_faces
+    ######
+    # TODO dovrei ritornare un dizionario: ogni faccia ha più valori che mi esprimono qualità
+    # densità, quanti punti, faccia utile per la chiusura del modello
+    ######
 
+    density_indices = findall(x-> x > par_density, density_faces)
+    # @show density_indices
+	faces = candidate_faces[density_indices]
+    # @show faces
+	# clustering candidate faces
+	edges, triangles, regions = Detection.clustering_faces(candidate_points, faces)
+	# get polygons
+	polygons = Detection.get_polygons(candidate_points, triangles, regions)
+	#save boundary polygons
+    @show polygons
+	Detection.save_boundary_polygons(output_folder, candidate_points, polygons)
+    FileManager.successful(
+        !isempty(polygons),
+        output_folder;
+        filename = "polygons_boundary.probe",
+    )
+
+    println("salvato tutto")
 end
 
 @time main()

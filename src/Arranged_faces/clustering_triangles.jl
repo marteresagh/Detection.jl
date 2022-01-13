@@ -156,10 +156,5 @@ function save_boundary_polygons(folder, points, polygons)
         )
     end
 
-        FileManager.successful(
-            true,
-            folder;
-            filename = "polygons_boundary.probe",
-        )
 
 end

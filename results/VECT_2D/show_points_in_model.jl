@@ -20,14 +20,18 @@ function faces2triangles(V, FV)
   return FVs
 end
 
-
-project_folder = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\BUILDING\FACES"
-INPUT_PC = FileManager.source2pc(raw"C:\Users\marte\Documents\potreeDirectory\pointclouds\BUILDING",-1)
-V, FV = Detection.read_OFF(joinpath(raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\BUILDING", "output_faces.off"))
+project_folder = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\BALL\FACES"
+INPUT_PC = FileManager.source2pc(raw"C:\Users\marte\Documents\potreeDirectory\pointclouds\BALL",-1)
+V, FV = Detection.read_OFF(joinpath(raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\BALL", "output_faces.off"))
 
 FVs = faces2triangles(V, FV)
+Visualization.VIEW([
+	Visualization.GLExplode(V,FVs,1.2,1.2,1.2,99,0.2)...
+])
 
-for dir in readdir(project_folder)
+dirs = readdir(project_folder)
+for i in 1:10
+	dir = dirs[i]
 	@show dir
 	V_model = FileManager.load_points(joinpath(project_folder,dir,"model.txt"))
 	del = Common.delaunay_triangulation(V_model)
@@ -40,7 +44,7 @@ for dir in readdir(project_folder)
 			Visualization.points(INPUT_PC.coordinates,INPUT_PC.rgbs),
 			Visualization.points(points;color=Visualization.COLORS[2]),
 			Visualization.mesh_color_from_rgb(V_model,del,ones(size(V_model)...);alpha = 0.2),
-			Visualization.GLExplode(V,FVs,1.,1.,1.,99,0.2)...
+			Visualization.GLExplode(V,FVs,1.,1.,1.,98,0.2)...
 		])
 	else
 		Visualization.VIEW([
@@ -52,10 +56,19 @@ for dir in readdir(project_folder)
 
 end
 
-
 ############# TODO ESTRUSIONE DA RIVEDERE
 
-Visualization.VIEW([
-	Visualization.points(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
-	Visualization.GLGrid(Common.apply_matrix(Common.t(-centroid...),V),FV,Visualization.COLORS[1],0.8)
-])
+for i in 30:40
+	face = FV[i]
+	points = V[:,face]
+	face = collect(1:length(face))
+	V_model,_ = extrude(points, face, 0.2)
+	del = py"get_delaunay"([c[:] for c in eachcol(V_model)])
+	tri = [c[:].+1 for c in eachrow(del)]
+	Visualization.VIEW([
+		Visualization.points(INPUT_PC.coordinates,INPUT_PC.rgbs),
+		Visualization.mesh_color_from_rgb(V,FVs[i],ones(size(V)...)),
+		Visualization.mesh_color_from_rgb(V_model,tri,ones(size(V_model)...)),
+		Visualization.GLExplode(V,FVs,1.,1.,1.,99,0.2)...
+	])
+end
