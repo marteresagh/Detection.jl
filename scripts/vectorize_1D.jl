@@ -89,9 +89,10 @@ function main()
 	println("N. of inliers  =>  $N")
 	println("N. of k-nn  =>  $k")
 	println("Affine matrix =>  $affine_matrix")
+	println("Level of detail  =>  $lod")
 
 	flush(stdout)
-	
+
 	Detection.pc2lines(output_folder, project_name, PC, par, failed, N, k, affine_matrix; masterseeds = masterseeds)
 end
 

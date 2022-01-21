@@ -17,11 +17,11 @@ fname = "examples/las/polyline.las"
 
 PC = FileManager.las2pointcloud(fname)
 INPUT_PC = PointCloud(PC.coordinates[1:2,:], PC.rgbs)
-
+Visualization.VIEW([Visualization.points(INPUT_PC.coordinates,INPUT_PC.rgbs)])
 # user - parameters
-par = 0.07
+par = 0.05
 failed = 100
-N = 10
+N = 30
 k = 30
 
 # threshold estimation
@@ -37,7 +37,6 @@ params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 # given_seeds = FileManager.load_points(masterseeds)
 # seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 seeds = Int64[]
-
 @time hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)
 
 # hyperplanes,_,_ = Detection.get_hyperplane(params)

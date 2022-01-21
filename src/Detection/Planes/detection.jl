@@ -1,4 +1,4 @@
-# TODO modificare i salvataggi
+# Salvataggi:
 # per ogni shape creare una cartella_timestamp con :
 # 1. file per descrizione piano infinito : normal e centroide
 # 2. bounding box orientato
@@ -56,6 +56,8 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
 			union!(params.visited,all_visited_verts)
 		end
+
+
 	end
 
 	flush(stdout)
@@ -95,7 +97,6 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			folder = joinpath(output_folder,"plane_$timestamp")
 			FileManager.mkdir_if(folder)
 			save_finite_plane(folder, hyperplane)
-
 			####################################
 
 			union!(params.fitted,cluster)
@@ -114,6 +115,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			println("STOPPED")
 		end
 	end
+
 
 	return i
 end

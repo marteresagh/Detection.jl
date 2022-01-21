@@ -9,11 +9,12 @@ function save_partitions(PC::PointCloud, params::Initializer, affine_matrix::Mat
 	# fitted
 	println("Fitted $(length(params.fitted)) points")
 	# POINTCLOUDS/PARTITIONS
-	FileManager.save_pointcloud(joinpath(dirs.PARTITIONS,"fitted.las"), PC_fitted_3D, "VECTORIZATION" )
-	# DXF/RAW
-	FileManager.save_points_rgbs_txt(joinpath(dirs.RAW,"fitted2D.pnt"), PC_fitted_2D)
-	FileManager.save_points_rgbs_txt(joinpath(dirs.RAW,"fitted3D.pnt"), PC_fitted_3D)
-
+	if !isempty(params.fitted)
+		FileManager.save_pointcloud(joinpath(dirs.PARTITIONS,"fitted.las"), PC_fitted_3D, "VECTORIZATION" )
+		# DXF/RAW
+		FileManager.save_points_rgbs_txt(joinpath(dirs.RAW,"fitted2D.pnt"), PC_fitted_2D)
+		FileManager.save_points_rgbs_txt(joinpath(dirs.RAW,"fitted3D.pnt"), PC_fitted_3D)
+	end
 	# unfitted
 	points_unfitted = setdiff(collect(1:PC.n_points),params.fitted)
 	if !isempty(points_unfitted)

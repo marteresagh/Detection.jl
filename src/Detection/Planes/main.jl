@@ -30,17 +30,17 @@ function pc2plane(
 	output_folder = FileManager.mkdir_project(folder,project_name)
 
 	# Input Point Cloud
-	INPUT_PC = PC
+	println("Pointcloud: $(PC.n_points) points")
 
 	# seeds
 	seeds = Int64[]
 	if !isnothing(masterseeds) # if seeds are provided
 		println("Read seeds from file")
 		given_seeds = FileManager.load_points(masterseeds)
-		seeds = Search.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
+		seeds = Search.consistent_seeds(PC).([c[:] for c in eachcol(given_seeds)])
 	end
 
-	params = Initializer(INPUT_PC, par, failed,	N, k)
+	params = Initializer(PC, par, failed,	N, k)
 
 	# 2. Detection
 	println()
