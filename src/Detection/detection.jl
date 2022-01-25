@@ -28,7 +28,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 	for seed in seeds
 		found = false
 		try
-			hyperplane, cluster, all_visited_verts = get_hyperplane(params; given_seed = seed)
+			hyperplane, cluster, all_visited_verts = no_rand_get_hyperplane(params; given_seed = seed)
 			found = true
 		catch y
 
@@ -60,14 +60,16 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 		# end
 
 		found = false
-		while !found && f < params.failed
-			try
-				hyperplane, cluster, all_visited_verts = get_hyperplane(params)
-				#union!(params.visited,all_visited_verts)
+		while !found && f < params.failed && length(params.current_inds) - length(params.visited) > 50
+			 try
+				@show length(params.visited)
+				hyperplane, cluster, all_visited_verts = no_rand_get_hyperplane(params)
 				validity(hyperplane, params) # test of validity
 				found = true
+				println("FINITO IL TRY")
 			catch y
-				f = f+1
+				println("STO NEL CATCH")
+				# f = f+1
 				if f%10 == 0
 					println("failed = $f")
 				end
@@ -75,6 +77,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 		end
 
 		if found
+			println("TROVATO")
 			# save_plane() |_ save_hyperplane() attenzionecon le linee e con i piani
 			# save_lines() |
 			f = 0
