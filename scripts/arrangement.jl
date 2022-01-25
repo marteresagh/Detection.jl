@@ -1,12 +1,13 @@
 println("loading packages... ")
 
+# using PyCall
 using ArgParse
-using Detection
-using Common
 using Clipping
-using PyCall
-using DataStructures
-using JSON
+using AlphaStructures
+using Detection
+using Features.DataStructures
+using Features.Statistics
+using FileManager.JSON
 
 println("packages OK")
 
@@ -24,7 +25,6 @@ function clip(trie, txtpotreedirs::String, model::Common.LAR, list_points)
         params.numFilesProcessed = 0
         traversal_count(potree, trie, params, list_points)
     end
-
 
     return params.numPointsProcessed
 end
@@ -139,8 +139,7 @@ function countWithControl(
         for laspoint in laspoints # read each point
             #point = FileManager.xyz(laspoint, header)
             point = Clipping.Point(laspoint, header)
-
-            @show point.position
+            # @show point.position
             if Common.point_in_polyhedron(point.position,params.model[1],params.model[2],params.model[3]) # if point in model
                 params.numPointsProcessed = params.numPointsProcessed + 1
                 push!(list_points, point.position)
@@ -189,6 +188,22 @@ function extrude(V, EV, FV, size_extrusion)
     return V_extruded, EV_extruded, FV_extruded
 end
 
+function getAreaFaces(V,FV)
+	function triangle_area(triangle_points)
+        ret = ones(3, 3)
+        ret[:,1:2] = triangle_points'
+        return Common.abs(0.5 * Common.det(ret))
+    end
+
+	area = 0.
+	for face in FV
+		ptri = V[:,face]
+		area += triangle_area(ptri)
+	end
+	return area
+
+end
+
 
 function quality_faces(
     potree,
@@ -214,57 +229,79 @@ function quality_faces(
         face = faces[i]
 
         V = points[:, face]
-        plane = Plane(V)
 
-        vmap = sortperm(face)
+
+        vmap = collect(1:length(face))
         FV = [copy(vmap)]
         edges = edges4faces[i]
         EV = [map(x->vmap[findfirst(y->y==x,face)[1]],edge) for edge in edges]
         # volume = area*size_extrusion
-        model = extrude(V, EV, FV, size_extrusion)
-        @show model[1]
-        @show model[2]
-        @show model[3]
-
+        model_extruded = extrude(V, EV, FV, size_extrusion)
         ###
         open(joinpath(dir, "model.txt"), "w") do s
-            write(s, "V = $(model[1])\n\n")
-            write(s, "EV = $(model[2])\n\n")
-            write(s, "FV = $(model[3])\n\n")
+            write(s, "V = $(model_extruded[1])\n\n")
+            write(s, "EV = $(model_extruded[2])\n\n")
+            write(s, "FV = $(model_extruded[3])\n\n")
         end
         # FileManager.save_points_txt(joinpath(dir, "model.txt"), model[1])
         ###
 
         list_points = Vector{Float64}[]
-        n_points_in_face = clip(trie, potree, model, list_points)
+        n_points_in_volume = clip(trie, potree, model_extruded, list_points)
         points_in_model = hcat(list_points...)
 
-        println("Points in face: $n_points_in_face")
+        println("Points in volume: $n_points_in_volume")
 
-        if n_points_in_face > 3 && Common.rank(points_in_model) == 3
+        if n_points_in_volume > 10 && Common.rank(points_in_model) == 3
+            area = Common.getArea(V)
+
+            ### get only points nearest the plane
+            plane = Common.Plane(V)
+    		points_transformed = Common.apply_matrix(plane.matrix, points_in_model)
+    		z_coords = points_transformed[3,:] # points on plnae XY
+
+        	mu = Statistics.mean(z_coords)
+    		std = Statistics.std(z_coords)
+
+        	tokeep = Int[]
+        	for i in 1:length(z_coords)
+    			if z_coords[i]>mu-2*std && z_coords[i]<mu+2*std
+    				push!(tokeep,i)
+    			end
+    		end
+
             ### Saving
             FileManager.save_points_txt(
                 joinpath(dir, "points_in_model.txt"),
-                points_in_model,
+                points_in_model[:,tokeep],
             )
 
-            area = Common.getArea(V)
-            area_points_in_model = Common.getArea(points_in_model)
+            ### compute covered area with alpha shapes if it is possible
+    		try
+                points2D = points_transformed[1:2,tokeep]
+    			filtration = AlphaStructures.alphaFilter(points2D);
+    			threshold = Features.estimate_threshold(points2D,10)
+    			_,_,FV = AlphaStructures.alphaSimplex(points2D, filtration,threshold)
 
-            dict_params["covered_area"] = area_points_in_model
-            dict_params["covered_area_percent"] =
-                area_points_in_model / area * 100
+    			covered_area = getAreaFaces(points2D,FV)
+    			covered_area_percent = (covered_area / area )*100
+                dict_params["covered_area"] = covered_area
+                dict_params["covered_area_percent"] = covered_area_percent
+    		catch
+    		end
+
+
+            dict_params["n_points"] = length(tokeep)
             dict_params["area"] = area
-            dict_params["density"] = n_points_in_face / area
-            dict_params["face_vertex"] = [c[:] for c in eachcol(V)]
+            dict_params["density"] = length(tokeep) / area
+            dict_params["vertices"] = [c[:] for c in eachcol(V)]
             dict_params["extrusion"] = size_extrusion
-            dict_params["points_in_face"] = joinpath(dir, "points_in_model.txt")
+            dict_params["points_on_face"] = joinpath(dir, "points_in_model.txt")
 
             println("Parameters computed")
 
         end
 
-        dict_params["number_points"] = n_points_in_face
         dict_faces[i] = dict_params
 
         open(joinpath(dir, "faces.js"), "w") do f
@@ -280,10 +317,8 @@ end
 function get_valid_faces(dict)
     tokeep = []
     for (k,v) in dict
-        if v["number_points"] > 10
-            if haskey(v,"covered_area_percent") && v["covered_area_percent"] > 50
-                push!(tokeep,k)
-            end
+        if haskey(v,"covered_area_percent") && v["covered_area_percent"] > 50
+            push!(tokeep,k)
         end
     end
     return tokeep
@@ -330,7 +365,7 @@ function main()
         Detection.read_OFF(joinpath(CGAL_folder, "candidate_faces.off"))
     candidate_edges = Vector{Vector{Int}}[]
     for face in candidate_faces
-        edges = [[face[1],face[end]]]
+        edges = [[face[end],face[1]]]
         for i in 1:length(face)-1
             push!(edges,[face[i],face[i+1]])
         end
@@ -349,18 +384,23 @@ function main()
         size_extrusion = size_extrusion,
     )
 
+    println("")
+    println("=== SAVINGS ===")
     tokeep = get_valid_faces(dict_faces)
 
     # clustering valid candidate faces
+    println("Clustering coplanar faces...")
     faces = candidate_faces[tokeep]
     edges, triangles, regions =
         Detection.clustering_faces(candidate_points, faces)
 
     # get polygons
-    polygons_folder = joinpath(project_folder,"POLYGONS")
+    println("Get polygons...")
+    polygons_folder = joinpath(project_folder, "POLYGONS")
     polygons = Detection.get_polygons(candidate_points, triangles, regions)
 
     #save boundary polygons
+    println("$(lenght(polygons)) polygons found")
     if !isempty(polygons)
         Detection.save_boundary_polygons(
             polygons_folder,
