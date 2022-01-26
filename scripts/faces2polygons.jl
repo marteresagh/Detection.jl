@@ -26,7 +26,7 @@ function faces2dxf(candidate_points, triangles, regions, filename)
 			points_array = [c[:] for c in eachcol(points)]
 			msp.add_3dface(points_array, dxfattribs=py"{'layer': $str_layer}"o)
 		end
-		println("regione $i fatta")
+	
 	end
 
 	doc.saveas(filename)
