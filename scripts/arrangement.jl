@@ -427,6 +427,11 @@ function main()
     #save boundary polygons
     println("$(length(polygons)) polygons found")
     if !isempty(polygons)
+		# DXF
+		filename = joinpath(polygons_folder,"result.dxf")
+		faces2dxf(candidate_points, triangles, regions, filename)
+
+		# bordi poligoni
         Detection.save_boundary_polygons(
             polygons_folder,
             candidate_points,

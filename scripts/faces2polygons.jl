@@ -6,8 +6,32 @@ using Detection
 using Features.DataStructures
 using Features.Statistics
 using FileManager.JSON
+using PyCall
 
 println("packages OK")
+
+function faces2dxf(candidate_points, triangles, regions, filename)
+
+	ezdxf = pyimport("ezdxf")
+	doc = ezdxf.new()
+	msp = doc.modelspace()
+
+	for i in 1:length(regions)
+		str_layer = "PLANE_$i"
+		doc.layers.add(name = "$str_layer", color=rand(1:254))
+		region = regions[i]
+		faces = triangles[region]
+		for face in faces
+			points = candidate_points[:,face]
+			points_array = [c[:] for c in eachcol(points)]
+			msp.add_3dface(points_array, dxfattribs=py"{'layer': $str_layer}"o)
+		end
+		println("regione $i fatta")
+	end
+
+	doc.saveas(filename)
+
+end
 
 function get_valid_faces(dict)
     tokeep = []
@@ -18,38 +42,6 @@ function get_valid_faces(dict)
     end
     return tokeep
 end
-
-
-
-
-faces = candidate_faces[tokeep]
-edges, triangles, regions =
-    Detection.clustering_faces(candidate_points, faces)
-mesh = []
-for i in 1:length(regions)
-	push!(mesh, Visualization.GLGrid(candidate_points,triangles[regions[i]],Visualization.COLORS[rand(1:12)]))
-end
-Visualization.VIEW(mesh)
-# # get polygons
-# polygons_folder = FileManager.mkdir_project(project_folder, "POLYGONS")
-# polygons = Detection.get_polygons(candidate_points, triangles, regions)
-#
-# #save boundary polygons
-# if !isempty(polygons)
-#     Detection.save_boundary_polygons(
-#         polygons_folder,
-#         candidate_points,
-#         polygons,
-#     )
-#     FileManager.successful(
-#         true,
-#         project_folder;
-#         filename = "polygons_boundary.probe",
-#     )
-# end
-#
-#
-#
 
 
 function parse_commandline()
@@ -132,6 +124,10 @@ function main()
     #save boundary polygons
     println("$(length(polygons)) polygons found")
     if !isempty(polygons)
+		# DXF
+		filename = joinpath(polygons_folder,"result.dxf")
+		faces2dxf(candidate_points, triangles, regions, filename)
+
         Detection.save_boundary_polygons(
             polygons_folder,
             candidate_points,
