@@ -5,12 +5,23 @@ using Visualization
 using Statistics
 using AlphaStructures
 using Features
-
-project_folder = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\STANZA_ideale\provaprova"
+function view_face(dir, number)
+	dir_face = joinpath(dir,"FACE_$number")
+	file_model = joinpath(dir_face, "model.txt")
+	include(file_model) #V,EV,FV
+	file_points = joinpath(dir_face, "points_in_model.txt")
+	if isfile(file_points)
+		points_in_model = FileManager.load_points(file_points)
+		Visualization.VIEW([
+		Visualization.GLGrid(V, EV, Visualization.COLORS[12]),
+		Visualization.points(points_in_model; color = Visualization.COLORS[2]),
+		Visualization.points(PC.coordinates;color = Visualization.COLORS[1], alpha = 0.5),
+		])
+	end
+end
+project_folder = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\stanza_handmade"
 potree = raw"C:\Users\marte\Documents\potreeDirectory\pointclouds\STANZA_IDEALE"
-
-
-
+PC = FileManager.source2pc(potree,-1)
 # read output CGAL
 # final_points, final_faces = Detection.read_OFF(joinpath(output_folder, "output_faces.off"))
 CGAL_folder = joinpath(project_folder, "SEGMENTS")
@@ -33,6 +44,7 @@ function get_valid_faces(dict)
         if haskey(v,"covered_area_percent") && v["covered_area_percent"] > 50
             push!(tokeep,k)
         end
+	end
     return tokeep
 end
 
@@ -43,106 +55,73 @@ for dir in readdir(faces_folder)
     idx = parse(Int,split(dir,"_")[2])
     file = joinpath(faces_folder,dir,"faces.js")
 	dict = nothing
-    open(file, "r") do f
-	    dict = JSON.parse(f)  # parse and transform data
+	if isfile(file)
+	    open(file, "r") do f
+		    dict = JSON.parse(f)  # parse and transform data
+		end
+		dict_faces[idx] = dict
 	end
 
-	dict_faces[idx] = dict
 end
-tokeep = get_valid_faces(dict_faces)
-function getArea(V,FV)
-	function triangle_area(triangle_points)
-        ret = ones(3, 3)
-        ret[:,1:2] = triangle_points'
-        return Common.abs(0.5 * Common.det(ret))
-    end
+function get_faces(dict)
+    tokeep = []
+    for (k,v) in dict
+        if haskey(v,"vertices")
+			model = v["vertices"]
+			points = hcat(model...)
+			plane = Common.Plane(points)
+			if Common.abs(Common.dot(plane.normal, [1,0.,0.]))>0.8
 
-	area = 0.
-	for face in FV
-		ptri = V[:,face]
-		area += triangle_area(ptri)
-	end
-	return area
-
-end
-
-
-k = 422
-	if haskey(dict_faces[k], "vertices") && dict_faces[k]["n_points"] > 10
-		model = hcat(dict_faces[k]["vertices"]...)
-		plane = Common.Plane(model)
-		filename = dict_faces[k]["points_on_face"]
-		list_points = FileManager.load_points(filename)
-			Visualization.VIEW([Visualization.points(list_points)])
-		V2D_model = Common.apply_matrix(plane.matrix, model)
-		V2D_points = Common.apply_matrix(plane.matrix, list_points)
-		z = V2D_points[3,:]
-		@show length(z)
-		mu = 0. #Statistics.mean(z)
-		mystd = Statistics.stdm(z,mu)
-		tokeep = Int[]
-		for i in 1:length(z)
-			if z[i]>mu-mystd/2 && z[i]<mu+mystd/2
-				push!(tokeep,i)
+            	push!(tokeep,k)
 			end
-		end
-		points_plane = V2D_points[:,tokeep]
-		Visualization.VIEW([Visualization.points(model)])
-		Visualization.VIEW([Visualization.points(points_plane)])
-		try
-			filtration = AlphaStructures.alphaFilter(points_plane[1:2,:]);
-			threshold = Features.estimate_threshold(points_plane[1:2,:],10)
-			_,_,FV = AlphaStructures.alphaSimplex(points_plane[1:2,:], filtration,threshold)
-			Visualization.VIEW([Visualization.GLGrid(points_plane[1:2,:],FV)])
-			area_covered = getArea(points_plane[1:2,:],FV)
-			covered_area_percent = (area_covered/dict_faces[k]["area"] )*100
-			@show covered_area_percent
-		catch
-		end
-
+        end
 	end
-	# break
+    return tokeep
+end
+tokeep = get_faces(dict_faces)
+tokeep = get_valid_faces(dict_faces)
 
 
-# clustering valid candidate faces
 faces = candidate_faces[tokeep]
 edges, triangles, regions =
     Detection.clustering_faces(candidate_points, faces)
 mesh = []
-for i in 1:21
+for i in 1:length(regions)
 	push!(mesh, Visualization.GLGrid(candidate_points,triangles[regions[i]],Visualization.COLORS[rand(1:12)]))
 end
 Visualization.VIEW(mesh)
-# get polygons
-polygons_folder = FileManager.mkdir_project(project_folder, "POLYGONS")
-polygons = Detection.get_polygons(candidate_points, triangles, regions)
 
-#save boundary polygons
-if !isempty(polygons)
-    Detection.save_boundary_polygons(
-        polygons_folder,
-        candidate_points,
-        polygons,
-    )
-    FileManager.successful(
-        true,
-        project_folder;
-        filename = "polygons_boundary.probe",
-    )
+dir = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\stanza_handmade\tmp\FACES"
+for i = 1:12
+	view_face(dir, i)
 end
 
 
+using PyCall
 
-for dir in readdir(faces_folder)
-    idx = parse(Int,split(dir,"_")[2])
-    file_model = joinpath(faces_folder,dir,"model.txt")
-	include(file_model) #V,EV,FV
-	file_points = joinpath(faces_folder,dir,"points_in_model.txt")
-	if isfile(file_points)
-		points_in_model = FileManager.load_points(file_points)
-		Visualization.VIEW([
-			Visualization.GLGrid(V,EV),
-			Visualization.points(points_in_model)
-		])
+function faces2dxf(candidate_points, triangles, regions, filename)
+
+	ezdxf = pyimport("ezdxf")
+	doc = ezdxf.new()
+	msp = doc.modelspace()
+
+	for i in 1:length(regions)
+		str_layer = "PLANE_$i"
+		doc.layers.add(name = "$str_layer", color=rand(1:254))
+		region = regions[i]
+		faces = triangles[region]
+		for face in faces
+			points = candidate_points[:,face]
+			points_array = [c[:] for c in eachcol(points)]
+			msp.add_3dface(points_array, dxfattribs=py"{'layer': $str_layer}"o)
+		end
+		println("regione $i fatta")
 	end
+
+	doc.saveas(filename)
+
 end
+
+
+filename = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\prova.dxf"
+faces2dxf(candidate_points, triangles, regions, filename)

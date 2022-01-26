@@ -8,8 +8,32 @@ using Detection
 using Features.DataStructures
 using Features.Statistics
 using FileManager.JSON
+using PyCall
 
 println("packages OK")
+
+function faces2dxf(candidate_points, triangles, regions, filename)
+
+	ezdxf = pyimport("ezdxf")
+	doc = ezdxf.new()
+	msp = doc.modelspace()
+
+	for i in 1:length(regions)
+		str_layer = "PLANE_$i"
+		doc.layers.add(name = "$str_layer", color=rand(1:254))
+		region = regions[i]
+		faces = triangles[region]
+		for face in faces
+			points = candidate_points[:,face]
+			points_array = [c[:] for c in eachcol(points)]
+			msp.add_3dface(points_array, dxfattribs=py"{'layer': $str_layer}"o)
+		end
+		println("regione $i fatta")
+	end
+
+	doc.saveas(filename)
+
+end
 
 ############## count points on faces
 
@@ -220,7 +244,7 @@ function quality_faces(
     println("PointCloud stored in: ")
     trie = Clipping.potree2trie(potree)
 
-    for i = 1:length(faces)
+    Threads.@threads for i = 1:length(faces)
         dict_params = Dict{String,Any}()
         dir = FileManager.mkdir_project(folder_faces, "FACE_$i")
 
@@ -256,29 +280,30 @@ function quality_faces(
             area = Common.getArea(V)
 
             ### get only points nearest the plane
-            plane = Common.Plane(V)
+            plane = Common.Plane(V[:,1:3])
     		points_transformed = Common.apply_matrix(plane.matrix, points_in_model)
-    		z_coords = points_transformed[3,:] # points on plnae XY
 
-        	mu = Statistics.mean(z_coords)
-    		std = Statistics.std(z_coords)
-
-        	tokeep = Int[]
-        	for i in 1:length(z_coords)
-    			if z_coords[i]>mu-2*std && z_coords[i]<mu+2*std
-    				push!(tokeep,i)
-    			end
-    		end
+    		# z_coords = points_transformed[3,:] # points on plnae XY
+            #
+        	# mu = Statistics.mean(z_coords)
+    		# std = Statistics.std(z_coords)
+            #
+        	# tokeep = Int[]
+        	# for i in 1:length(z_coords)
+    		# 	if z_coords[i]>mu-2*std && z_coords[i]<mu+2*std
+    		# 		push!(tokeep,i)
+    		# 	end
+    		# end
 
             ### Saving
             FileManager.save_points_txt(
                 joinpath(dir, "points_in_model.txt"),
-                points_in_model[:,tokeep],
+                points_in_model,
             )
 
             ### compute covered area with alpha shapes if it is possible
     		try
-                points2D = points_transformed[1:2,tokeep]
+                points2D = points_transformed[1:2,:]
     			filtration = AlphaStructures.alphaFilter(points2D);
     			threshold = Features.estimate_threshold(points2D,10)
     			_,_,FV = AlphaStructures.alphaSimplex(points2D, filtration,threshold)
@@ -291,9 +316,9 @@ function quality_faces(
     		end
 
 
-            dict_params["n_points"] = length(tokeep)
+            dict_params["n_points"] = n_points_in_volume
             dict_params["area"] = area
-            dict_params["density"] = length(tokeep) / area
+            dict_params["density"] = n_points_in_volume / area
             dict_params["vertices"] = [c[:] for c in eachcol(V)]
             dict_params["extrusion"] = size_extrusion
             dict_params["points_on_face"] = joinpath(dir, "points_in_model.txt")
@@ -396,11 +421,11 @@ function main()
 
     # get polygons
     println("Get polygons...")
-    polygons_folder = joinpath(project_folder, "POLYGONS")
+    polygons_folder = FileManager.mkdir_project(project_folder, "POLYGONS")
     polygons = Detection.get_polygons(candidate_points, triangles, regions)
 
     #save boundary polygons
-    println("$(lenght(polygons)) polygons found")
+    println("$(length(polygons)) polygons found")
     if !isempty(polygons)
         Detection.save_boundary_polygons(
             polygons_folder,

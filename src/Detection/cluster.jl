@@ -11,9 +11,7 @@ function no_rand_get_hyperplane(params::Initializer; given_seed=nothing::Union{N
 		possible_seeds = params.PC.coordinates[:,candidates] 	# qui gli indici sono relativi ai candidati
 		init_seed = findall(x->x==candidates[1], params.current_inds)
 		union!(params.visited,params.current_inds[init_seed])
-		println("prima")
 		seed, hyperplane = seedpoint(possible_seeds, params; given_seed = 1)
-		println("dopo")
 		# da qui in poi indici relativi ai punti correnti
 		R = findall(x->x==candidates[seed], params.current_inds)
 		union!(params.visited,params.current_inds[R])
@@ -42,10 +40,16 @@ function get_hyperplane(params::Initializer; given_seed=nothing::Union{Nothing,I
 	if isnothing(given_seed) # se non è dato
 		# 1. ricerca del seed random
 		candidates = setdiff(params.current_inds,params.visited)
-		possible_seeds = params.PC.coordinates[:,candidates] 	# qui gli indici sono relativi ai candidati
-		seed, hyperplane = seedpoint(possible_seeds, params)
+		possible_seeds = params.PC.coordinates[:,candidates]
+		# indice random
+		rand_idx = rand(1:size(possible_seeds,2))
+		init_seed = findall(x->x==candidates[rand_idx], params.current_inds)
+		union!(params.visited,params.current_inds[init_seed])
+		# qui gli indici sono relativi ai candidati
+		seed, hyperplane = seedpoint(possible_seeds, params; given_seed = rand_idx )
 		# da qui in poi indici relativi ai punti correnti
 		R = findall(x->x==candidates[seed], params.current_inds)
+		union!(params.visited,params.current_inds[R])
 	else
 		# 1. ricerca del seed partendo da uno dato
 		points = params.PC.coordinates[:,params.current_inds]
