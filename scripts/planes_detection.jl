@@ -116,7 +116,7 @@ function main()
 	print("Saving plane segments in .ply... ")
 	plane_dirs = Detection.get_plane_folders(tmp_folder,"PLANES")
 	hyperplanes, _ = Detection.get_hyperplanes(plane_dirs)
-
+	Detection.refine_planes!(hyperplanes)
 	Detection.save_plane_segments_in_ply(hyperplanes, joinpath(cgal_folder,"segments.ply"))
 	println("Done.")
 

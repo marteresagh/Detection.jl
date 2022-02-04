@@ -12,27 +12,82 @@ using PyCall
 
 println("packages OK")
 
-function faces2dxf(candidate_points, triangles, regions, filename)
+
+function save_dxf_vect3D(path_points_fitted, path_points_unfitted, path_polygons, filename)
+
+	# leggi i vari file che ti servono e converti
+	pc_fitted = FileManager.source2pc(path_points_fitted)
+	points_fitted = pc_fitted.coordinates #decimare TODO
+
+	pc_unfitted = FileManager.source2pc(path_points_unfitted)
+	points_unfitted = pc_unfitted.coordinates #decimare TODO
 
 	ezdxf = pyimport("ezdxf")
 	doc = ezdxf.new()
 	msp = doc.modelspace()
+	fitted = "fitted"
+	unfitted = "unfitted"
+	model = "model"
+	doc.layers.add(name=fitted, color=3)
+	doc.layers.add(name=unfitted, color=1)
 
-	for i in 1:length(regions)
-		str_layer = "PLANE_$i"
-		doc.layers.add(name = "$str_layer", color=rand(1:254))
-		region = regions[i]
-		faces = triangles[region]
-		for face in faces
-			points = candidate_points[:,face]
-			points_array = [c[:] for c in eachcol(points)]
-			msp.add_3dface(points_array, dxfattribs=py"{'layer': $str_layer}"o)
+	py"""
+	def add_points_fitted(msp, point):
+		msp.add_point(
+			point,
+			dxfattribs={
+				'layer': 'fitted',
+			},
+		)
+
+	def add_points_unfitted(msp, point):
+		msp.add_point(
+			point,
+			dxfattribs={
+				'layer': 'unfitted',
+			},
+		)
+	"""
+
+	for i in 1:size(points_fitted,2)
+		point = points_fitted[:,i]
+		pp = (point[1],point[2],point[3])
+		py"add_points_fitted"(msp,pp)
+	end
+
+	for i in 1:size(points_unfitted,2)
+		point = points_unfitted[:,i]
+		pp = (point[1],point[2],point[3])
+		py"add_points_unfitted"(msp,pp)
+	end
+
+	poly = msp.add_polyface()
+	for dir in readdir(path_polygons)
+		V = FileManager.load_points(joinpath(path_polygons,dir,"points3D.txt"))
+		io = open(joinpath(path_polygons,dir,"edges.txt"), "r")
+	    LINES = readlines(io)
+	    close(io)
+		color = 6
+		plane = Common.Plane(V)
+
+		if Common.abs(Common.dot(plane.normal,[0.0,0.0,1.])) > 0.9
+			color = 4
+		elseif Common.abs(Common.dot(plane.normal,[.0,0.0,1.])) < 0.1
+			color = 5
+		end
+
+		for line in LINES
+			idx_cycle = tryparse.(Int64,split(line, " "))
+			points = V[:, idx_cycle]
+			tuples = [(p[1],p[2],p[3]) for p in eachcol(points)]
+			poly.append_face(tuples, dxfattribs=py"{'layer': $model, 'color': $color}"o)
 		end
 	end
 
 	doc.saveas(filename)
 
 end
+
 
 ############## count points on faces
 
@@ -242,8 +297,9 @@ function quality_faces(
 
     println("PointCloud stored in: ")
     trie = Clipping.potree2trie(potree)
+	FileManager.cut_trie!(trie, 3)
 
-    Threads.@threads for i = 1:length(faces)
+    for i = 1:length(faces)
         dict_params = Dict{String,Any}()
         dir = FileManager.mkdir_project(folder_faces, "FACE_$i")
 
@@ -253,12 +309,11 @@ function quality_faces(
 
         V = points[:, face]
 
-
         vmap = collect(1:length(face))
         FV = [copy(vmap)]
         edges = edges4faces[i]
         EV = [map(x->vmap[findfirst(y->y==x,face)[1]],edge) for edge in edges]
-        # volume = area*size_extrusion
+
         model_extruded = extrude(V, EV, FV, size_extrusion)
         ###
         open(joinpath(dir, "model.txt"), "w") do s
@@ -266,7 +321,6 @@ function quality_faces(
             write(s, "EV = $(model_extruded[2])\n\n")
             write(s, "FV = $(model_extruded[3])\n\n")
         end
-        # FileManager.save_points_txt(joinpath(dir, "model.txt"), model[1])
         ###
 
         list_points = Vector{Float64}[]
@@ -275,7 +329,7 @@ function quality_faces(
 
         println("Points in volume: $n_points_in_volume")
 
-        if n_points_in_volume > 10 && Common.rank(points_in_model) == 3
+        if n_points_in_volume > 10
             area = Common.getArea(V)
 
             ### get only points nearest the plane
@@ -426,9 +480,6 @@ function main()
     #save boundary polygons
     println("$(length(polygons)) polygons found")
     if !isempty(polygons)
-		# DXF
-		filename = joinpath(polygons_folder,"result.dxf")
-		faces2dxf(candidate_points, triangles, regions, filename)
 
 		# bordi poligoni
         Detection.save_boundary_polygons(
@@ -441,7 +492,13 @@ function main()
             project_folder;
             filename = "polygons_boundary.probe",
         )
+
     end
+
+	filename = joinpath(project_folder, "result.dxf")
+	path_points_fitted = joinpath(project_folder, "POINTCLOUDS/fitted_points.las")
+	path_points_unfitted = joinpath(project_folder, "POINTCLOUDS/unfitted_points.las")
+	save_dxf_vect3D(path_points_fitted, path_points_unfitted, polygons_folder, filename)
 
 end
 

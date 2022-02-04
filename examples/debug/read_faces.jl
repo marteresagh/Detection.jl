@@ -5,23 +5,69 @@ using Visualization
 using Statistics
 using AlphaStructures
 using Features
-function view_face(dir, number)
-	dir_face = joinpath(dir,"FACE_$number")
-	file_model = joinpath(dir_face, "model.txt")
-	include(file_model) #V,EV,FV
-	file_points = joinpath(dir_face, "points_in_model.txt")
-	if isfile(file_points)
-		points_in_model = FileManager.load_points(file_points)
-		Visualization.VIEW([
-		Visualization.GLGrid(V, EV, Visualization.COLORS[12]),
-		Visualization.points(points_in_model; color = Visualization.COLORS[2]),
-		Visualization.points(PC.coordinates;color = Visualization.COLORS[1], alpha = 0.5),
-		])
-	end
+
+function extrude(V, EV, FV, size_extrusion)
+    dim, n = size(V)
+    if dim == 3
+        plane = Common.Plane(V)
+        V2D = Common.apply_matrix(plane.matrix, V)[1:2, :]
+    else
+        V2D = copy(V)
+    end
+
+    new_points = hcat(Common.add_zeta_coordinates(V2D,-size_extrusion/2),Common.add_zeta_coordinates(V2D,size_extrusion/2))
+
+    if dim == 3
+        V_extruded =
+            Common.apply_matrix(Common.inv(plane.matrix), new_points)
+    else
+        V_extruded = copy(new_points)
+    end
+
+    EV_extruded = [EV..., [[i,i+n] for i in 1:n]..., [map(x->x+n,edge) for edge in EV]...]
+
+    FV_extruded = [FV..., [[edge[1],edge[2],edge[2]+n,edge[1]+n] for edge in EV]..., [map(x->x+n,face) for face in FV]...]
+
+    return V_extruded, EV_extruded, FV_extruded
 end
-project_folder = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\stanza_handmade"
-potree = raw"C:\Users\marte\Documents\potreeDirectory\pointclouds\STANZA_IDEALE"
-PC = FileManager.source2pc(potree,-1)
+
+function view_face(dir, number)
+    dir_face = joinpath(dir, "FACE_$number")
+    file_model = joinpath(dir_face, "model.txt")
+    include(file_model) #V,EV,FV
+    file_points = joinpath(dir_face, "points_in_model.txt")
+    Visualization.VIEW([
+        Visualization.GLGrid(V, EV, Visualization.COLORS[12]),
+        Visualization.points(
+            PC.coordinates;
+            color = Visualization.COLORS[1],
+            alpha = 0.5,
+        ),
+    ])
+
+    if isfile(file_points)
+        points_in_model = FileManager.load_points(file_points)
+        Visualization.VIEW([
+            Visualization.GLGrid(V, EV, Visualization.COLORS[12]),
+            Visualization.points(
+                points_in_model;
+                color = Visualization.COLORS[2],
+            ),
+            Visualization.points(
+                PC.coordinates;
+                color = Visualization.COLORS[1],
+                alpha = 0.5,
+            ),
+        ])
+    end
+end
+dir = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\stanza_handmade\tmp\FACES"
+view_face(dir, 1053)
+
+
+project_folder = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\BASIC\vect3D"
+potree = raw"C:\Users\marte\Documents\potreeDirectory\pointclouds\BOXES"
+PC = FileManager.source2pc(potree, -1)
 # read output CGAL
 # final_points, final_faces = Detection.read_OFF(joinpath(output_folder, "output_faces.off"))
 CGAL_folder = joinpath(project_folder, "SEGMENTS")
@@ -29,22 +75,22 @@ candidate_points, candidate_faces =
     Detection.read_OFF(joinpath(CGAL_folder, "candidate_faces.off"))
 candidate_edges = Vector{Vector{Int}}[]
 for face in candidate_faces
-    edges = [[face[end],face[1]]]
-    for i in 1:length(face)-1
-        push!(edges,[face[i],face[i+1]])
+    edges = [[face[end], face[1]]]
+    for i = 1:length(face)-1
+        push!(edges, [face[i], face[i+1]])
     end
-    push!(candidate_edges, edges )
+    push!(candidate_edges, edges)
 end
 
 model = (candidate_points, candidate_edges, candidate_faces)
 
 function get_valid_faces(dict)
     tokeep = []
-    for (k,v) in dict
-        if haskey(v,"covered_area_percent") && v["covered_area_percent"] > 50
-            push!(tokeep,k)
+    for (k, v) in dict
+        if haskey(v, "covered_area_percent") && v["covered_area_percent"] > 50
+            push!(tokeep, k)
         end
-	end
+    end
     return tokeep
 end
 
@@ -52,76 +98,118 @@ faces_folder = joinpath(project_folder, "tmp/FACES")
 dict_faces = Dict{Int,Any}()
 
 for dir in readdir(faces_folder)
-    idx = parse(Int,split(dir,"_")[2])
-    file = joinpath(faces_folder,dir,"faces.js")
-	dict = nothing
-	if isfile(file)
-	    open(file, "r") do f
-		    dict = JSON.parse(f)  # parse and transform data
-		end
-		dict_faces[idx] = dict
-	end
+    idx = parse(Int, split(dir, "_")[2])
+    file = joinpath(faces_folder, dir, "faces.js")
+    dict = nothing
+    if isfile(file)
+        open(file, "r") do f
+            dict = JSON.parse(f)  # parse and transform data
+        end
+        dict_faces[idx] = dict
+    end
 
 end
-function get_faces(dict)
+function get_faces(dict::Dict)
     tokeep = []
-    for (k,v) in dict
-        if haskey(v,"vertices")
-			model = v["vertices"]
-			points = hcat(model...)
-			plane = Common.Plane(points)
-			if Common.abs(Common.dot(plane.normal, [1,0.,0.]))>0.8
-
-            	push!(tokeep,k)
-			end
+    for (k, v) in dict
+        if haskey(v, "vertices")
+            model = v["vertices"]
+            points = hcat(model...)
+            plane = Common.Plane(points[:, 1:3])
+            if Common.abs(Common.dot(plane.normal, [0, 0.0, 1.0])) > 0.5 &&
+               plane.centroid[3] <= 0.5
+                push!(tokeep, k)
+            end
         end
-	end
+    end
     return tokeep
 end
-tokeep = get_faces(dict_faces)
+
+function get_faces(candidate_points, candidate_faces)
+    tokeep = []
+    for k = 1:length(candidate_faces)
+        face = candidate_faces[k]
+        points = candidate_points[:, face]
+
+        plane = Common.Plane(points[:, 1:3])
+
+        if Common.abs(Common.dot(plane.normal, [0, 0.0, 1.0])) > 0.5 &&
+           plane.centroid[3] <= 0.5
+            push!(tokeep, k)
+        end
+    end
+    return tokeep
+end
+brutte = get_faces(dict_faces)
 tokeep = get_valid_faces(dict_faces)
 
-
 faces = candidate_faces[tokeep]
-edges, triangles, regions =
-    Detection.clustering_faces(candidate_points, faces)
+edges, triangles, regions = Detection.clustering_faces(candidate_points, faces)
 mesh = []
-for i in 1:length(regions)
-	push!(mesh, Visualization.GLGrid(candidate_points,triangles[regions[i]],Visualization.COLORS[rand(1:12)]))
+
+for i = 1:length(regions)
+    push!(
+        mesh,
+        Visualization.GLGrid(
+            candidate_points,
+            triangles[regions[i]],
+            Visualization.COLORS[rand(1:12)],
+        ),
+    )
 end
+
 Visualization.VIEW(mesh)
 
-dir = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\stanza_handmade\tmp\FACES"
-for i = 1:12
-	view_face(dir, i)
+polygons = Detection.get_polygons(candidate_points, triangles, regions)
+
+function save_boundary_polygons(folder, points, polygons)
+
+    function lar2cop(CV::Common.Cells)::Common.ChainOp
+        I = Int64[]
+        J = Int64[]
+        Value = Int8[]
+        for k = 1:size(CV, 1)
+            n = length(CV[k])
+            append!(I, k * ones(Int64, n))
+            append!(J, CV[k])
+            append!(Value, ones(Int64, n))
+        end
+        return Common.sparse(I, J, Value)
+    end
+
+
+    function cop2lar(cop::Common.ChainOp)::Common.Cells
+        [Common.findnz(cop[k, :])[1] for k = 1:size(cop, 1)]
+    end
+
+    Threads.@threads for i = 1:length(polygons)
+        folder_polygon = FileManager.mkdir_project(folder, "polygon$(i)")
+        polygon = polygons[i]
+        indx_points = union(polygon...)
+        V3D = points[:,indx_points]
+        plane = Common.Plane(V3D)
+        V2D =  Common.apply_matrix(plane.matrix, V3D)[1:2,:]
+        COPEV = lar2cop(polygon)
+
+        EV = cop2lar(COPEV[:, indx_points])
+
+
+        FileManager.save_points_txt(
+            joinpath(folder_polygon, "points2D.txt"),
+            V2D,
+        )
+
+        FileManager.save_points_txt(
+            joinpath(folder_polygon, "points3D.txt"),
+            V3D,
+        )
+
+        Detection.save_cycles(
+            joinpath(folder_polygon, "edges.txt"),
+            V3D,
+            EV,
+        )
+    end
+
+
 end
-
-
-using PyCall
-
-function faces2dxf(candidate_points, triangles, regions, filename)
-
-	ezdxf = pyimport("ezdxf")
-	doc = ezdxf.new()
-	msp = doc.modelspace()
-
-	for i in 1:length(regions)
-		str_layer = "PLANE_$i"
-		doc.layers.add(name = "$str_layer", color=rand(1:254))
-		region = regions[i]
-		faces = triangles[region]
-		for face in faces
-			points = candidate_points[:,face]
-			points_array = [c[:] for c in eachcol(points)]
-			msp.add_3dface(points_array, dxfattribs=py"{'layer': $str_layer}"o)
-		end
-		println("regione $i fatta")
-	end
-
-	doc.saveas(filename)
-
-end
-
-
-filename = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\prova.dxf"
-faces2dxf(candidate_points, triangles, regions, filename)
