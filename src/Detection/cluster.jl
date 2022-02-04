@@ -135,8 +135,9 @@ function optimize!(points::Points, R::Array{Int64,1}, hyperplane::Hyperplane, pa
 	mu = Statistics.mean(res)
 	rho = Statistics.std(res)
 
+
 	# remove points with large residue
-	filter = [ res[i] < mu for i in 1:length(res)  ]
+	filter = [ res[i] <= mu for i in 1:length(res)  ]
 	tokeep = R[filter]
 
 	listPoint = points[:,tokeep]
