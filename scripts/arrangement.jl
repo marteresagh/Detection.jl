@@ -12,79 +12,120 @@ using PyCall
 
 println("packages OK")
 
+function save_dxf_vect3D(
+    path_points_fitted,
+    path_points_unfitted,
+    candidate_points,
+    triangles,
+    regions,
+    filename,
+)
 
-function save_dxf_vect3D(path_points_fitted, path_points_unfitted, path_polygons, filename)
+    function down_sample(PC::Common.PointCloud,s)
+        # default: 3cm distance threshold
+        py"""
+        import open3d as o3d
+        import numpy as np
 
-	# leggi i vari file che ti servono e converti
-	pc_fitted = FileManager.source2pc(path_points_fitted)
-	points_fitted = pc_fitted.coordinates #decimare TODO
+        def down_sample(points, colors, s):
+            pcd = o3d.geometry.PointCloud()
+            pcd.points = o3d.utility.Vector3dVector(np.array(points))
+            pcd.colors = o3d.utility.Vector3dVector(np.array(colors))
+            return pcd.voxel_down_sample(s)
 
-	pc_unfitted = FileManager.source2pc(path_points_unfitted)
-	points_unfitted = pc_unfitted.coordinates #decimare TODO
+        """
+        array_points = [c[:] for c in eachcol(PC.coordinates)]
+        array_colors = [c[:] for c in eachcol(PC.rgbs)]
 
-	ezdxf = pyimport("ezdxf")
-	doc = ezdxf.new()
-	msp = doc.modelspace()
-	fitted = "fitted"
-	unfitted = "unfitted"
-	model = "model"
-	doc.layers.add(name=fitted, color=3)
-	doc.layers.add(name=unfitted, color=1)
+        pc_sampled = py"down_sample"(array_points,array_colors,s)
 
-	py"""
-	def add_points_fitted(msp, point):
-		msp.add_point(
-			point,
-			dxfattribs={
-				'layer': 'fitted',
-			},
-		)
+        return PointCloud(permutedims(pc_sampled.points),permutedims(pc_sampled.colors))
+    end
 
-	def add_points_unfitted(msp, point):
-		msp.add_point(
-			point,
-			dxfattribs={
-				'layer': 'unfitted',
-			},
-		)
-	"""
 
-	for i in 1:size(points_fitted,2)
-		point = points_fitted[:,i]
-		pp = (point[1],point[2],point[3])
-		py"add_points_fitted"(msp,pp)
-	end
+    ezdxf = pyimport("ezdxf")
+    doc = ezdxf.new()
+    msp = doc.modelspace()
+    fitted = "fitted"
+    unfitted = "unfitted"
+    model = "model"
+    doc.layers.add(name = fitted, color = 3)
+    doc.layers.add(name = unfitted, color = 1)
 
-	for i in 1:size(points_unfitted,2)
-		point = points_unfitted[:,i]
-		pp = (point[1],point[2],point[3])
-		py"add_points_unfitted"(msp,pp)
-	end
+    py"""
+    def add_points_fitted(msp, point):
+        msp.add_point(
+            point,
+            dxfattribs={
+            'layer': 'fitted',
+            },
+        )
 
-	poly = msp.add_polyface()
-	for dir in readdir(path_polygons)
-		V = FileManager.load_points(joinpath(path_polygons,dir,"points3D.txt"))
-		io = open(joinpath(path_polygons,dir,"edges.txt"), "r")
-	    LINES = readlines(io)
-	    close(io)
-		color = 6
-		plane = Common.Plane(V)
+    def add_points_unfitted(msp, point):
+        msp.add_point(
+            point,
+            dxfattribs={
+            'layer': 'unfitted',
+            },
+        )
+    """
 
-		if Common.abs(Common.dot(plane.normal,[0.0,0.0,1.])) > 0.9
-			color = 4
-		elseif Common.abs(Common.dot(plane.normal,[.0,0.0,1.])) < 0.1
-			color = 5
-		end
+    # leggi i vari file che ti servono e converti
+    step = 0.05
+    try
+        PC = FileManager.source2pc(path_points_fitted)
+        pc_fitted = down_sample(PC,step)
 
-		for line in LINES
-			idx_cycle = tryparse.(Int64,split(line, " "))
-			points = V[:, idx_cycle]
-			tuples = [(p[1],p[2],p[3]) for p in eachcol(points)]
-			poly.append_face(tuples, dxfattribs=py"{'layer': $model, 'color': $color}"o)
-		end
-	end
+        points_fitted = pc_fitted.coordinates #decimare TODO
 
-	doc.saveas(filename)
+        for i = 1:size(points_fitted, 2)
+            point = points_fitted[:, i]
+            pp = (point[1], point[2], point[3])
+            py"add_points_fitted"(msp, pp)
+        end
+    catch
+        println("No fitted points")
+    end
+
+    try
+        PC = FileManager.source2pc(path_points_unfitted)
+        pc_unfitted = down_sample(PC,step)
+        points_unfitted = pc_unfitted.coordinates #decimare TODO
+
+        for i = 1:size(points_unfitted, 2)
+            point = points_unfitted[:, i]
+            pp = (point[1], point[2], point[3])
+            py"add_points_unfitted"(msp, pp)
+        end
+    catch
+        println("No unfitted points")
+    end
+
+    for i = 1:length(regions)
+        println("Cluster $i of $(length(regions))")
+        region = regions[i]
+        faces = triangles[region]
+        plane = Common.Plane(candidate_points[:, union(faces...)])
+
+        color = 6
+        if Common.abs(Common.dot(plane.normal, [0.0, 0.0, 1.0])) > 0.9
+            color = 4
+        elseif Common.abs(Common.dot(plane.normal, [0.0, 0.0, 1.0])) < 0.1
+            color = 5
+        end
+
+        for face in faces
+            points = candidate_points[:, face]
+            points_array = [c[:] for c in eachcol(points)]
+            msp.add_3dface(
+                points_array,
+                dxfattribs = py"{'layer': $model, 'color': $color}"o,
+            )
+        end
+
+    end
+
+    doc.saveas(filename)
 
 end
 
@@ -208,17 +249,19 @@ function count_dfs(
 
 end
 
-function countWithControl(
-    params::Clipping.ParametersClipping,
-    list_points,
-)
+function countWithControl(params::Clipping.ParametersClipping, list_points)
     function countWithControl0(file::String)
         header, laspoints = FileManager.read_LAS_LAZ(file) # read file
         for laspoint in laspoints # read each point
             #point = FileManager.xyz(laspoint, header)
             point = Clipping.Point(laspoint, header)
             # @show point.position
-            if Common.point_in_polyhedron(point.position,params.model[1],params.model[2],params.model[3]) # if point in model
+            if Common.point_in_polyhedron(
+                point.position,
+                params.model[1],
+                params.model[2],
+                params.model[3],
+            ) # if point in model
                 params.numPointsProcessed = params.numPointsProcessed + 1
                 push!(list_points, point.position)
             end
@@ -250,45 +293,33 @@ function extrude(V, EV, FV, size_extrusion)
         V2D = copy(V)
     end
 
-    new_points = hcat(Common.add_zeta_coordinates(V2D,-size_extrusion/2),Common.add_zeta_coordinates(V2D,size_extrusion/2))
+    new_points = hcat(
+        Common.add_zeta_coordinates(V2D, -size_extrusion / 2),
+        Common.add_zeta_coordinates(V2D, size_extrusion / 2),
+    )
 
     if dim == 3
-        V_extruded =
-            Common.apply_matrix(Common.inv(plane.matrix), new_points)
+        V_extruded = Common.apply_matrix(Common.inv(plane.matrix), new_points)
     else
         V_extruded = copy(new_points)
     end
 
-    EV_extruded = [EV..., [[i,i+n] for i in 1:n]..., [map(x->x+n,edge) for edge in EV]...]
+    EV_extruded = [
+        EV...,
+        [[i, i + n] for i = 1:n]...,
+        [map(x -> x + n, edge) for edge in EV]...,
+    ]
 
-    FV_extruded = [FV..., [[edge[1],edge[2],edge[2]+n,edge[1]+n] for edge in EV]..., [map(x->x+n,face) for face in FV]...]
+    FV_extruded = [
+        FV...,
+        [[edge[1], edge[2], edge[2] + n, edge[1] + n] for edge in EV]...,
+        [map(x -> x + n, face) for face in FV]...,
+    ]
 
     return V_extruded, EV_extruded, FV_extruded
 end
 
-function getAreaFaces(V,FV)
-	function triangle_area(triangle_points)
-        ret = ones(3, 3)
-        ret[:,1:2] = triangle_points'
-        return Common.abs(0.5 * Common.det(ret))
-    end
-
-	area = 0.
-	for face in FV
-		ptri = V[:,face]
-		area += triangle_area(ptri)
-	end
-	return area
-
-end
-
-
-function quality_faces(
-    potree,
-    model,
-    output_folder;
-    size_extrusion = 0.02,
-)
+function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
 
     points, edges4faces, faces = model
     tmp_folder = FileManager.mkdir_project(output_folder, "tmp")
@@ -297,7 +328,8 @@ function quality_faces(
 
     println("PointCloud stored in: ")
     trie = Clipping.potree2trie(potree)
-	FileManager.cut_trie!(trie, 3)
+    FileManager.cut_trie!(trie, 3)
+    threshold = Features.estimate_threshold(FileManager.source2pc(potree,3), 30)
 
     for i = 1:length(faces)
         dict_params = Dict{String,Any}()
@@ -312,7 +344,10 @@ function quality_faces(
         vmap = collect(1:length(face))
         FV = [copy(vmap)]
         edges = edges4faces[i]
-        EV = [map(x->vmap[findfirst(y->y==x,face)[1]],edge) for edge in edges]
+        EV = [
+            map(x -> vmap[findfirst(y -> y == x, face)[1]], edge)
+            for edge in edges
+        ]
 
         model_extruded = extrude(V, EV, FV, size_extrusion)
         ###
@@ -333,20 +368,21 @@ function quality_faces(
             area = Common.getArea(V)
 
             ### get only points nearest the plane
-            plane = Common.Plane(V[:,1:3])
-    		points_transformed = Common.apply_matrix(plane.matrix, points_in_model)
+            plane = Common.Plane(V[:, 1:3])
+            points_transformed =
+                Common.apply_matrix(plane.matrix, points_in_model)
 
-    		# z_coords = points_transformed[3,:] # points on plnae XY
+            # z_coords = points_transformed[3,:] # points on plnae XY
             #
-        	# mu = Statistics.mean(z_coords)
-    		# std = Statistics.std(z_coords)
+            # mu = Statistics.mean(z_coords)
+            # std = Statistics.std(z_coords)
             #
-        	# tokeep = Int[]
-        	# for i in 1:length(z_coords)
-    		# 	if z_coords[i]>mu-2*std && z_coords[i]<mu+2*std
-    		# 		push!(tokeep,i)
-    		# 	end
-    		# end
+            # tokeep = Int[]
+            # for i in 1:length(z_coords)
+            # 	if z_coords[i]>mu-2*std && z_coords[i]<mu+2*std
+            # 		push!(tokeep,i)
+            # 	end
+            # end
 
             ### Saving
             FileManager.save_points_txt(
@@ -355,18 +391,22 @@ function quality_faces(
             )
 
             ### compute covered area with alpha shapes if it is possible
-    		try
-                points2D = points_transformed[1:2,:]
-    			filtration = AlphaStructures.alphaFilter(points2D);
-    			threshold = Features.estimate_threshold(points2D,10)
-    			_,_,FV = AlphaStructures.alphaSimplex(points2D, filtration,threshold)
+            try
+                points2D = points_transformed[1:2, :]
+                filtration = AlphaStructures.alphaFilter(points2D)
+                # threshold = Features.estimate_threshold(points2D, 10)
+                _, _, FV = AlphaStructures.alphaSimplex(
+                    points2D,
+                    filtration,
+                    threshold,
+                )
 
-    			covered_area = getAreaFaces(points2D,FV)
-    			covered_area_percent = (covered_area / area )*100
+                covered_area = Common.getAreaFaces(points2D, FV)
+                covered_area_percent = (covered_area / area) * 100
                 dict_params["covered_area"] = covered_area
                 dict_params["covered_area_percent"] = covered_area_percent
-    		catch
-    		end
+            catch
+            end
 
 
             dict_params["n_points"] = n_points_in_volume
@@ -394,9 +434,9 @@ end
 
 function get_valid_faces(dict)
     tokeep = []
-    for (k,v) in dict
-        if haskey(v,"covered_area_percent") && v["covered_area_percent"] > 50
-            push!(tokeep,k)
+    for (k, v) in dict
+        if haskey(v, "covered_area_percent") && v["covered_area_percent"] > 50
+            push!(tokeep, k)
         end
     end
     return tokeep
@@ -443,11 +483,11 @@ function main()
         Detection.read_OFF(joinpath(CGAL_folder, "candidate_faces.off"))
     candidate_edges = Vector{Vector{Int}}[]
     for face in candidate_faces
-        edges = [[face[end],face[1]]]
-        for i in 1:length(face)-1
-            push!(edges,[face[i],face[i+1]])
+        edges = [[face[end], face[1]]]
+        for i = 1:length(face)-1
+            push!(edges, [face[i], face[i+1]])
         end
-        push!(candidate_edges, edges )
+        push!(candidate_edges, edges)
     end
 
     model = (candidate_points, candidate_edges, candidate_faces)
@@ -481,7 +521,7 @@ function main()
     println("$(length(polygons)) polygons found")
     if !isempty(polygons)
 
-		# bordi poligoni
+        # bordi poligoni
         Detection.save_boundary_polygons(
             polygons_folder,
             candidate_points,
@@ -495,10 +535,22 @@ function main()
 
     end
 
-	filename = joinpath(project_folder, "result.dxf")
-	path_points_fitted = joinpath(project_folder, "POINTCLOUDS/fitted_points.las")
-	path_points_unfitted = joinpath(project_folder, "POINTCLOUDS/unfitted_points.las")
-	save_dxf_vect3D(path_points_fitted, path_points_unfitted, polygons_folder, filename)
+    filename = joinpath(project_folder, "result.dxf")
+
+    path_points_fitted =
+        joinpath(project_folder, "POINTCLOUDS/fitted_points.las")
+
+    path_points_unfitted =
+        joinpath(project_folder, "POINTCLOUDS/unfitted_points.las")
+
+    save_dxf_vect3D(
+        path_points_fitted,
+        path_points_unfitted,
+        candidate_points,
+        triangles,
+        regions,
+        filename,
+    )
 
 end
 
