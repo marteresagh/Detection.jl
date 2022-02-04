@@ -10,28 +10,123 @@ using PyCall
 
 println("packages OK")
 
-function faces2dxf(candidate_points, triangles, regions, filename)
+function save_dxf_vect3D(
+    path_points_fitted,
+    path_points_unfitted,
+    candidate_points,
+    triangles,
+    regions,
+    filename,
+)
 
-	ezdxf = pyimport("ezdxf")
-	doc = ezdxf.new()
-	msp = doc.modelspace()
+    function down_sample(PC::Common.PointCloud,s)
+        # default: 3cm distance threshold
+        py"""
+        import open3d as o3d
+        import numpy as np
 
-	for i in 1:length(regions)
-		str_layer = "PLANE_$i"
-		doc.layers.add(name = "$str_layer", color=rand(1:254))
-		region = regions[i]
-		faces = triangles[region]
-		for face in faces
-			points = candidate_points[:,face]
-			points_array = [c[:] for c in eachcol(points)]
-			msp.add_3dface(points_array, dxfattribs=py"{'layer': $str_layer}"o)
-		end
-	
-	end
+        def down_sample(points, colors, s):
+            pcd = o3d.geometry.PointCloud()
+            pcd.points = o3d.utility.Vector3dVector(np.array(points))
+            pcd.colors = o3d.utility.Vector3dVector(np.array(colors))
+            return pcd.voxel_down_sample(s)
 
-	doc.saveas(filename)
+        """
+        array_points = [c[:] for c in eachcol(PC.coordinates)]
+        array_colors = [c[:] for c in eachcol(PC.rgbs)]
+
+        pc_sampled = py"down_sample"(array_points,array_colors,s)
+
+        return PointCloud(permutedims(pc_sampled.points),permutedims(pc_sampled.colors))
+    end
+
+
+    ezdxf = pyimport("ezdxf")
+    doc = ezdxf.new()
+    msp = doc.modelspace()
+    fitted = "fitted"
+    unfitted = "unfitted"
+    model = "model"
+    doc.layers.add(name = fitted, color = 3)
+    doc.layers.add(name = unfitted, color = 1)
+
+    py"""
+    def add_points_fitted(msp, point):
+        msp.add_point(
+            point,
+            dxfattribs={
+            'layer': 'fitted',
+            },
+        )
+
+    def add_points_unfitted(msp, point):
+        msp.add_point(
+            point,
+            dxfattribs={
+            'layer': 'unfitted',
+            },
+        )
+    """
+
+    # leggi i vari file che ti servono e converti
+    step = 0.05
+    try
+        PC = FileManager.source2pc(path_points_fitted)
+        pc_fitted = down_sample(PC,step)
+
+        points_fitted = pc_fitted.coordinates #decimare TODO
+
+        for i = 1:size(points_fitted, 2)
+            point = points_fitted[:, i]
+            pp = (point[1], point[2], point[3])
+            py"add_points_fitted"(msp, pp)
+        end
+    catch
+        println("No fitted points")
+    end
+
+    try
+        PC = FileManager.source2pc(path_points_unfitted)
+        pc_unfitted = down_sample(PC,step)
+        points_unfitted = pc_unfitted.coordinates #decimare TODO
+
+        for i = 1:size(points_unfitted, 2)
+            point = points_unfitted[:, i]
+            pp = (point[1], point[2], point[3])
+            py"add_points_unfitted"(msp, pp)
+        end
+    catch
+        println("No unfitted points")
+    end
+
+    for i = 1:length(regions)
+        println("Cluster $i of $(length(regions))")
+        region = regions[i]
+        faces = triangles[region]
+        plane = Common.Plane(candidate_points[:, union(faces...)])
+
+        color = 6
+        if Common.abs(Common.dot(plane.normal, [0.0, 0.0, 1.0])) > 0.9
+            color = 4
+        elseif Common.abs(Common.dot(plane.normal, [0.0, 0.0, 1.0])) < 0.1
+            color = 5
+        end
+
+        for face in faces
+            points = candidate_points[:, face]
+            points_array = [c[:] for c in eachcol(points)]
+            msp.add_3dface(
+                points_array,
+                dxfattribs = py"{'layer': $model, 'color': $color}"o,
+            )
+        end
+
+    end
+
+    doc.saveas(filename)
 
 end
+
 
 function get_valid_faces(dict)
     tokeep = []
@@ -125,9 +220,6 @@ function main()
     println("$(length(polygons)) polygons found")
     if !isempty(polygons)
 		# DXF
-		filename = joinpath(polygons_folder,"result.dxf")
-		faces2dxf(candidate_points, triangles, regions, filename)
-
         Detection.save_boundary_polygons(
             polygons_folder,
             candidate_points,
@@ -139,6 +231,23 @@ function main()
             filename = "polygons_boundary.probe",
         )
     end
+
+	filename = joinpath(project_folder, "result.dxf")
+
+	path_points_fitted =
+		joinpath(project_folder, "POINTCLOUDS/fitted_points.las")
+
+	path_points_unfitted =
+		joinpath(project_folder, "POINTCLOUDS/unfitted_points.las")
+
+	save_dxf_vect3D(
+		path_points_fitted,
+		path_points_unfitted,
+		candidate_points,
+		triangles,
+		regions,
+		filename,
+	)
 
 end
 

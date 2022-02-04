@@ -331,7 +331,7 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
     FileManager.cut_trie!(trie, 3)
     threshold = Features.estimate_threshold(FileManager.source2pc(potree,3), 30)
 
-    for i = 1:length(faces)
+    for i = 1608:length(faces)
         dict_params = Dict{String,Any}()
         dir = FileManager.mkdir_project(folder_faces, "FACE_$i")
 
