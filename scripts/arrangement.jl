@@ -21,7 +21,7 @@ function save_dxf_vect3D(
     filename,
 )
 
-    function down_sample(PC::Common.PointCloud,s)
+    function down_sample(PC::Common.PointCloud, s)
         # default: 3cm distance threshold
         py"""
         import open3d as o3d
@@ -37,9 +37,12 @@ function save_dxf_vect3D(
         array_points = [c[:] for c in eachcol(PC.coordinates)]
         array_colors = [c[:] for c in eachcol(PC.rgbs)]
 
-        pc_sampled = py"down_sample"(array_points,array_colors,s)
+        pc_sampled = py"down_sample"(array_points, array_colors, s)
 
-        return PointCloud(permutedims(pc_sampled.points),permutedims(pc_sampled.colors))
+        return PointCloud(
+            permutedims(pc_sampled.points),
+            permutedims(pc_sampled.colors),
+        )
     end
 
 
@@ -74,7 +77,7 @@ function save_dxf_vect3D(
     step = 0.05
     try
         PC = FileManager.source2pc(path_points_fitted)
-        pc_fitted = down_sample(PC,step)
+        pc_fitted = down_sample(PC, step)
 
         points_fitted = pc_fitted.coordinates #decimare TODO
 
@@ -89,7 +92,7 @@ function save_dxf_vect3D(
 
     try
         PC = FileManager.source2pc(path_points_unfitted)
-        pc_unfitted = down_sample(PC,step)
+        pc_unfitted = down_sample(PC, step)
         points_unfitted = pc_unfitted.coordinates #decimare TODO
 
         for i = 1:size(points_unfitted, 2)
@@ -284,56 +287,25 @@ function countWithoutControl(params::Clipping.ParametersClipping, list_points)
     return countWithoutControl0
 end
 
-function extrude(V, EV, FV, size_extrusion)
-    dim, n = size(V)
-    if dim == 3
-        plane = Common.Plane(V)
-        V2D = Common.apply_matrix(plane.matrix, V)[1:2, :]
-    else
-        V2D = copy(V)
-    end
 
-    new_points = hcat(
-        Common.add_zeta_coordinates(V2D, -size_extrusion / 2),
-        Common.add_zeta_coordinates(V2D, size_extrusion / 2),
-    )
-
-    if dim == 3
-        V_extruded = Common.apply_matrix(Common.inv(plane.matrix), new_points)
-    else
-        V_extruded = copy(new_points)
-    end
-
-    EV_extruded = [
-        EV...,
-        [[i, i + n] for i = 1:n]...,
-        [map(x -> x + n, edge) for edge in EV]...,
-    ]
-
-    FV_extruded = [
-        FV...,
-        [[edge[1], edge[2], edge[2] + n, edge[1] + n] for edge in EV]...,
-        [map(x -> x + n, face) for face in FV]...,
-    ]
-
-    return V_extruded, EV_extruded, FV_extruded
-end
 
 function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
 
     points, edges4faces, faces = model
     tmp_folder = FileManager.mkdir_project(output_folder, "tmp")
     folder_faces = FileManager.mkdir_project(tmp_folder, "FACES")
+    f = open(joinpath(folder_faces, "faces.js"), "w")
     dict_faces = Dict{Int,Any}()
 
     println("PointCloud stored in: ")
     trie = Clipping.potree2trie(potree)
     FileManager.cut_trie!(trie, 3)
-    threshold = Features.estimate_threshold(FileManager.source2pc(potree,3), 30)
+    threshold =
+        Features.estimate_threshold(FileManager.source2pc(potree, 3), 30)
 
-    for i = 1608:length(faces)
+    for i = 1:length(faces)
+        # dir = FileManager.mkdir_project(folder_faces, "FACE_$i")
         dict_params = Dict{String,Any}()
-        dir = FileManager.mkdir_project(folder_faces, "FACE_$i")
 
         println("")
         println("======= Processing face $i of $(length(faces))")
@@ -349,13 +321,13 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
             for edge in edges
         ]
 
-        model_extruded = extrude(V, EV, FV, size_extrusion)
+        model_extruded = Common.centered_extrusion(V, EV, FV, size_extrusion)
         ###
-        open(joinpath(dir, "model.txt"), "w") do s
-            write(s, "V = $(model_extruded[1])\n\n")
-            write(s, "EV = $(model_extruded[2])\n\n")
-            write(s, "FV = $(model_extruded[3])\n\n")
-        end
+        # open(joinpath(dir, "model.txt"), "w") do s
+        #     write(s, "V = $(model_extruded[1])\n\n")
+        #     write(s, "EV = $(model_extruded[2])\n\n")
+        #     write(s, "FV = $(model_extruded[3])\n\n")
+        # end
         ###
 
         list_points = Vector{Float64}[]
@@ -372,23 +344,11 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
             points_transformed =
                 Common.apply_matrix(plane.matrix, points_in_model)
 
-            # z_coords = points_transformed[3,:] # points on plnae XY
-            #
-            # mu = Statistics.mean(z_coords)
-            # std = Statistics.std(z_coords)
-            #
-            # tokeep = Int[]
-            # for i in 1:length(z_coords)
-            # 	if z_coords[i]>mu-2*std && z_coords[i]<mu+2*std
-            # 		push!(tokeep,i)
-            # 	end
-            # end
-
-            ### Saving
-            FileManager.save_points_txt(
-                joinpath(dir, "points_in_model.txt"),
-                points_in_model,
-            )
+            # ### Saving
+            # FileManager.save_points_txt(
+            #     joinpath(dir, "points_in_model.txt"),
+            #     points_in_model,
+            # )
 
             ### compute covered area with alpha shapes if it is possible
             try
@@ -406,6 +366,7 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
                 dict_params["covered_area"] = covered_area
                 dict_params["covered_area_percent"] = covered_area_percent
             catch
+
             end
 
 
@@ -414,20 +375,19 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
             dict_params["density"] = n_points_in_volume / area
             dict_params["vertices"] = [c[:] for c in eachcol(V)]
             dict_params["extrusion"] = size_extrusion
-            dict_params["points_on_face"] = joinpath(dir, "points_in_model.txt")
+            # dict_params["points_on_face"] = joinpath(dir, "points_in_model.txt")
 
             println("Parameters computed")
 
+            dict_faces[i] = dict_params
+            JSON.print(f, i => dict_faces[i], 4)
+            flush(f)
         end
 
-        dict_faces[i] = dict_params
-
-        open(joinpath(dir, "faces.js"), "w") do f
-            JSON.print(f, dict_faces[i], 4)
-        end
         println("=======")
 
     end
+    close(f)
 
     return dict_faces
 end
