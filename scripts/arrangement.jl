@@ -1,6 +1,5 @@
 println("loading packages... ")
 
-# using PyCall
 using ArgParse
 using Clipping
 using AlphaStructures
@@ -11,6 +10,23 @@ using FileManager.JSON
 using PyCall
 
 println("packages OK")
+
+function point_in_poly(delaunay_model, point)
+
+    py"""
+    from scipy.spatial import Delaunay
+
+    def py_point_in_poly(delaunay_model,point):
+        simplices = delaunay_model.find_simplex(point)
+        return simplices
+    """
+    check = py"py_point_in_poly"(delaunay_model, point)
+    return check[1] > 0
+end
+
+############## count points on faces
+
+
 
 function save_dxf_vect3D(
     path_points_fitted,
@@ -213,10 +229,22 @@ function count_dfs(
     list_points,
 )# due callback: 1 con controllo e 1 senza controllo
 
+    py"""
+    from scipy.spatial import Delaunay
+    import numpy as np
+
+    def get_delaunay(poly):
+        poly = np.array(poly)
+        return Delaunay(poly)
+
+    """
+
+
     file = trie.value # path to node file
     nodebb = FileManager.las2aabb(file) # aabb of current octree
     volume_model = Common.getmodel(Common.AABB(params.model[1]))
     inter = Common.modelsdetection(volume_model, nodebb)
+    delaunay_model = py"get_delaunay"([c[:] for c in eachcol(params.model[1])])
 
     if inter == 1
         # intersecato ma non contenuto
@@ -230,7 +258,7 @@ function count_dfs(
         #     )
         # end
 
-        countWithControl(params, list_points)(file) # update with check
+        countWithControl(delaunay_model, params, list_points)(file) # update with check
         for key in collect(keys(trie.children)) # for all children
             count_dfs(trie.children[key], params, list_points)
         end
@@ -246,25 +274,26 @@ function count_dfs(
             #     )
             # end
             file = trie[k]
-            countWithoutControl(params, list_points)(file) # update without check
+            countWithControl(delaunay_model,params, list_points)(file) # update without check
         end
     end
 
 end
 
-function countWithControl(params::Clipping.ParametersClipping, list_points)
+function countWithControl(delaunay_model, params::Clipping.ParametersClipping, list_points)
     function countWithControl0(file::String)
         header, laspoints = FileManager.read_LAS_LAZ(file) # read file
         for laspoint in laspoints # read each point
             #point = FileManager.xyz(laspoint, header)
             point = Clipping.Point(laspoint, header)
             # @show point.position
-            if Common.point_in_polyhedron(
-                point.position,
-                params.model[1],
-                params.model[2],
-                params.model[3],
-            ) # if point in model
+            if point_in_poly(delaunay_model, point.position)
+            # if Common.point_in_polyhedron(
+            #     point.position,
+            #     params.model[1],
+            #     params.model[2],
+            #     params.model[3],
+            # ) # if point in model
                 params.numPointsProcessed = params.numPointsProcessed + 1
                 push!(list_points, point.position)
             end
@@ -294,25 +323,31 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
     points, edges4faces, faces = model
     tmp_folder = FileManager.mkdir_project(output_folder, "tmp")
     folder_faces = FileManager.mkdir_project(tmp_folder, "FACES")
-    f = open(joinpath(folder_faces, "faces.js"), "w")
-    dict_faces = Dict{Int,Any}()
 
+    #open file json
+    f = open(joinpath(folder_faces, "faces.json"), "w")
+    println(f, "{")
+
+    dict_faces = Dict{Int,Any}() # data structures
+
+    # pointcloud
     println("PointCloud stored in: ")
     trie = Clipping.potree2trie(potree)
     FileManager.cut_trie!(trie, 3)
     threshold =
         Features.estimate_threshold(FileManager.source2pc(potree, 3), 30)
 
-    for i = 1:length(faces)
-        # dir = FileManager.mkdir_project(folder_faces, "FACE_$i")
+    n_faces = length(faces)
+    @inbounds for i = 1:n_faces
+
         dict_params = Dict{String,Any}()
 
         println("")
         println("======= Processing face $i of $(length(faces))")
+
+        #extrusion
         face = faces[i]
-
         V = points[:, face]
-
         vmap = collect(1:length(face))
         FV = [copy(vmap)]
         edges = edges4faces[i]
@@ -322,13 +357,6 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
         ]
 
         model_extruded = Common.centered_extrusion(V, EV, FV, size_extrusion)
-        ###
-        # open(joinpath(dir, "model.txt"), "w") do s
-        #     write(s, "V = $(model_extruded[1])\n\n")
-        #     write(s, "EV = $(model_extruded[2])\n\n")
-        #     write(s, "FV = $(model_extruded[3])\n\n")
-        # end
-        ###
 
         list_points = Vector{Float64}[]
         n_points_in_volume = clip(trie, potree, model_extruded, list_points)
@@ -339,16 +367,9 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
         if n_points_in_volume > 10
             area = Common.getArea(V)
 
-            ### get only points nearest the plane
             plane = Common.Plane(V[:, 1:3])
             points_transformed =
                 Common.apply_matrix(plane.matrix, points_in_model)
-
-            # ### Saving
-            # FileManager.save_points_txt(
-            #     joinpath(dir, "points_in_model.txt"),
-            #     points_in_model,
-            # )
 
             ### compute covered area with alpha shapes if it is possible
             try
@@ -366,27 +387,29 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
                 dict_params["covered_area"] = covered_area
                 dict_params["covered_area_percent"] = covered_area_percent
             catch
-
+                println("No covered area")
             end
-
 
             dict_params["n_points"] = n_points_in_volume
             dict_params["area"] = area
             dict_params["density"] = n_points_in_volume / area
             dict_params["vertices"] = [c[:] for c in eachcol(V)]
             dict_params["extrusion"] = size_extrusion
-            # dict_params["points_on_face"] = joinpath(dir, "points_in_model.txt")
 
             println("Parameters computed")
-
             dict_faces[i] = dict_params
-            JSON.print(f, i => dict_faces[i], 4)
+
+            # write json
+            print(f, "\"$i\" : ")
+            JSON.print(f, dict_faces[i], 4)
+            i == n_faces || print(f, ",")
             flush(f)
         end
 
         println("=======")
 
     end
+    print(f, "}")
     close(f)
 
     return dict_faces

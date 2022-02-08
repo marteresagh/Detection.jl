@@ -129,10 +129,10 @@ end
 
 
 function get_valid_faces(dict)
-    tokeep = []
+    tokeep = Int[]
     for (k,v) in dict
         if haskey(v,"covered_area_percent") && v["covered_area_percent"] > 50
-            push!(tokeep,k)
+            push!(tokeep,parse(Int,k))
         end
     end
     return tokeep
@@ -186,21 +186,11 @@ function main()
 
     println("")
     println("=== Read Params ===")
-	faces_folder = joinpath(project_folder, "tmp/FACES")
+	faces_file = joinpath(project_folder, "tmp/FACES/faces.json")
 	dict_faces = Dict{Int,Any}()
-
-	for dir in readdir(faces_folder)
-	    idx = parse(Int,split(dir,"_")[2])
-	    file = joinpath(faces_folder,dir,"faces.js")
-		dict = nothing
-		if isfile(file)
-		    open(file, "r") do f
-			    dict = JSON.parse(f)  # parse and transform data
-			end
-			dict_faces[idx] = dict
-		end
+	open(file, "r") do f
+		dict_faces = JSON.parse(f)  # parse and transform data
 	end
-
     println("")
     println("=== SAVINGS ===")
     tokeep = get_valid_faces(dict_faces)
