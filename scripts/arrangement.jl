@@ -34,7 +34,7 @@ function save_dxf_vect3D(
     filename,
 )
 
-    function down_sample(PC::Common.PointCloud, s)
+    function down_sample(PC::Common.PointCloud, s::Float64)
         # default: 3cm distance threshold
         py"""
         import open3d as o3d
@@ -87,11 +87,11 @@ function save_dxf_vect3D(
     """
 
     # leggi i vari file che ti servono e converti
-    step = 0.05
+    s = 0.05
     try
         PC = FileManager.source2pc(path_points_fitted)
-        println("PC letta")
-        pc_fitted = down_sample(PC, step)
+        println("PC letta $(PC.n_points)")
+        pc_fitted = down_sample(PC, s)
         println("PC decimata")
 
         points_fitted = pc_fitted.coordinates #decimare TODO
@@ -108,7 +108,7 @@ function save_dxf_vect3D(
     try
         PC = FileManager.source2pc(path_points_unfitted)
         println("PC letta")
-        pc_unfitted = down_sample(PC, step)
+        pc_unfitted = down_sample(PC, s)
         println("PC decimata")
         points_unfitted = pc_unfitted.coordinates #decimare TODO
 

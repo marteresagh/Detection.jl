@@ -3,7 +3,7 @@ using Visualization
 using PyCall
 using FileManager
 
-function down_sample(PC::Common.PointCloud,s)
+function down_sample(PC::Common.PointCloud,s::Float64)
     # default: 3cm distance threshold
     py"""
     import open3d as o3d
@@ -24,11 +24,9 @@ function down_sample(PC::Common.PointCloud,s)
     return PointCloud(permutedims(pc_sampled.points),permutedims(pc_sampled.colors))
 end
 
-source = raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\STANZA_ideale\provaprova\POINTCLOUDS\fitted_points.las"
+source = raw""
 
-PC = FileManager.source2pc(source,-1)
-new_PC = down_sample(PC,0.05)
-Visualization.VIEW([Visualization.points(new_PC.coordinates; color = Visualization.COLORS[2])])
-
-
-Visualization.VIEW([Visualization.points(PC.coordinates, PC.rgbs),Visualization.points(new_PC.coordinates; color = Visualization.COLORS[2])])
+PC = FileManager.source2pc(source)
+println("PC letta $(PC.n_points)")
+pc_fitted = down_sample(PC, 0.02)
+println("PC decimata")
