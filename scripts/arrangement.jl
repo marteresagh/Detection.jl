@@ -52,7 +52,7 @@ function save_dxf_vect3D(
 
         pc_sampled = py"down_sample"(array_points, array_colors, s)
 
-        return PointCloud(
+        return Common.PointCloud(
             permutedims(pc_sampled.points),
             permutedims(pc_sampled.colors),
         )
