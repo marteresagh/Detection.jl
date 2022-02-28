@@ -1,7 +1,6 @@
 println("loading packages... ")
 
 using ArgParse
-using Clipping
 using AlphaStructures
 using Detection
 using Features.DataStructures
@@ -10,9 +9,8 @@ using FileManager.JSON
 using PyCall
 
 println("packages OK")
-# clipping ottimizzato
 
-
+# point in polyhedron
 function point_in_poly(delaunay_model, point)
 
     py"""
@@ -26,10 +24,7 @@ function point_in_poly(delaunay_model, point)
     return check[1] > 0
 end
 
-############## count points on faces
-
-
-
+# save DXF
 function save_dxf_vect3D(
     path_points_fitted,
     path_points_unfitted,
@@ -95,7 +90,9 @@ function save_dxf_vect3D(
     step = 0.05
     try
         PC = FileManager.source2pc(path_points_fitted)
+        println("PC letta")
         pc_fitted = down_sample(PC, step)
+        println("PC decimata")
 
         points_fitted = pc_fitted.coordinates #decimare TODO
 
@@ -110,7 +107,9 @@ function save_dxf_vect3D(
 
     try
         PC = FileManager.source2pc(path_points_unfitted)
+        println("PC letta")
         pc_unfitted = down_sample(PC, step)
+        println("PC decimata")
         points_unfitted = pc_unfitted.coordinates #decimare TODO
 
         for i = 1:size(points_unfitted, 2)
@@ -151,9 +150,9 @@ function save_dxf_vect3D(
 end
 
 
-############## count points on faces
+# Clipping
 
-function dfs(trie, trie_faces, points_face, int_face)# due callback: 1 con controllo e 1 senza controllo
+function dfs(trie, trie_faces, points_face, int_face)
 
     file = trie.value # path to node file
     nodebb = FileManager.las2aabb(file) # aabb of current octree
@@ -173,8 +172,6 @@ function dfs(trie, trie_faces, points_face, int_face)# due callback: 1 con contr
     end
 
 end
-
-
 
 function clipping(
     trie,
@@ -202,14 +199,23 @@ function clipping(
         model_lists[i] = (V, EV, FV)
     end
 
+    n_keys = length(keys(trie))
+    current_key = 0
     for key in keys(trie)
-        @show key
+        current_key += 1
+
+        if current_key % 10 == 0
+            println("$current_key points of $n_keys processed")
+            flush(stdout)
+        end
+
+        # read file
         file = trie[key]
-        header, laspoints = FileManager.read_LAS_LAZ(file) # read file
+        header, laspoints = FileManager.read_LAS_LAZ(file)
         for count = 1:length(laspoints) # read each point
-            if count % 10000 == 0
-                println("$count points of $(length(laspoints)) processed")
-            end
+            # if count % 10000 == 0
+            #     println("$count points of $(length(laspoints)) processed")
+            # end
             laspoint = laspoints[count]
             point = FileManager.xyz(laspoint, header)
             for i in trie_faces[key]
@@ -242,7 +248,7 @@ function clipping(
 end
 
 
-
+# description of faces
 function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
 
     candidate_points, candidate_edges, candidate_faces = model
@@ -250,14 +256,14 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
     folder_faces = FileManager.mkdir_project(tmp_folder, "FACES")
     n_faces = length(candidate_faces)
 
-
-    dict_faces = Dict{Int,Any}() # data structures
+    # dict_faces = Dict{Int,Any}() # data structures
 
     # pointcloud
     println("PointCloud stored in: ")
     trie = FileManager.potree2trie(potree)
     trie_faces = FileManager.Trie{Vector{Int64}}()
 
+    println("Create dual trie of intersection face")
     for k in keys(trie)
         faces = Int[]
         trie_faces[k] = faces
@@ -282,13 +288,18 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
         Features.estimate_threshold(FileManager.source2pc(potree, 3), 30)
 
     #open file json
-    f = open(joinpath(folder_faces, "faces.json"), "w")
-    println(f, "{")
-    println("")
+    # f = open(joinpath(folder_faces, "faces.json"), "w")
+    # println(f, "{")
+    # println("")
+    dict_faces = Vector{Union{Nothing,Dict}}(nothing,n_faces)
+    println("Process each face:")
+
     @inbounds for i = 1:n_faces
         dict_params = Dict{String,Any}()
 
-        println("Processing face $i of $(n_faces)")
+        if i % 10 == 0
+            println("   face $i of $(n_faces)")
+        end
         points_in_model = hcat(points_in_models[i]...)
         n_points_in_face = size(points_in_model, 2)
 
@@ -302,10 +313,10 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
             plane = Common.Plane(V[:, 1:3])
             points_transformed =
                 Common.apply_matrix(plane.matrix, points_in_model)
-            FileManager.save_points_txt(
-                joinpath(dir, "points_in_model_$i.txt"),
-                points_transformed[1:2, :],
-            )
+            # FileManager.save_points_txt(
+            #     joinpath(dir, "points_in_model_$i.txt"),
+            #     points_transformed[1:2, :],
+            # )
             ### compute covered area with alpha shapes if it is possible
             try
                 points2D = points_transformed[1:2, :]
@@ -322,7 +333,7 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
                 dict_params["covered_area"] = covered_area
                 dict_params["covered_area_percent"] = covered_area_percent
             catch
-                # println("No covered area")
+                println("No covered area")
             end
 
             dict_params["n_points"] = n_points_in_face
@@ -335,26 +346,29 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
             dict_faces[i] = dict_params
 
             # write json
-            print(f, "\"$i\" : ")
-            JSON.print(f, dict_faces[i], 4)
-            i == n_faces || print(f, ",")
-            flush(f)
+            # print(f, "\"$i\" : ")
+            # JSON.print(f, dict_faces[i], 4)
+            # i == n_faces || print(f, ",")
+            # flush(f)
         end
 
         # println("=======")
 
     end
-    print(f, "}")
-    close(f)
+    # print(f, "}")
+    # close(f)
 
     return dict_faces
 end
 
 function get_valid_faces(dict)
     tokeep = []
-    for (k, v) in dict
-        if haskey(v, "covered_area_percent") && v["covered_area_percent"] > 50
-            push!(tokeep, k)
+    for i in 1:length(dict)
+        v = dict[i]
+        if !isnothing(v)
+            if haskey(v, "covered_area_percent") && v["covered_area_percent"] > 50
+                push!(tokeep, i)
+            end
         end
     end
     return tokeep
@@ -390,12 +404,10 @@ function main()
     println("Output folder  =>  $project_folder")
     println("Potree  =>  $potree")
     println("Size extrusion  =>  $size_extrusion")
-
-
     flush(stdout)
 
+
     # read output CGAL
-    # final_points, final_faces = Detection.read_OFF(joinpath(output_folder, "output_faces.off"))
     CGAL_folder = joinpath(project_folder, "SEGMENTS")
     candidate_points, candidate_faces =
         Detection.read_OFF(joinpath(CGAL_folder, "candidate_faces.off"))
@@ -410,9 +422,10 @@ function main()
 
     model = (candidate_points, candidate_edges, candidate_faces)
 
-
+    # process faces
     println("")
     println("=== PROCESSING ===")
+    flush(stdout)
     dict_faces = quality_faces(
         potree,
         model,
@@ -422,6 +435,7 @@ function main()
 
     println("")
     println("=== SAVINGS ===")
+    flush(stdout)
     tokeep = get_valid_faces(dict_faces)
 
     # clustering valid candidate faces
