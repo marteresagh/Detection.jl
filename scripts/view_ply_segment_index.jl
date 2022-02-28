@@ -4,6 +4,7 @@ using ArgParse
 using Visualization
 using Common
 using FileManager
+using PlyIO
 
 println("packages OK")
 
@@ -31,7 +32,7 @@ function main()
 	flush(stdout)
 
 	println("Read data")
-	ply_datastructures = FileManager.PlyIO.load_ply(source)
+	ply_datastructures = PlyIO.load_ply(source)
 	vertices = ply_datastructures["vertex"]
 	V = permutedims(hcat(vertices["x"],vertices["y"],vertices["z"]))
 	normals = permutedims(hcat(vertices["nx"],vertices["ny"],vertices["nz"]))

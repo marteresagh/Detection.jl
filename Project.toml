@@ -9,3 +9,15 @@ Features = "a126c2c6-2eda-4948-b40c-a494a421c8a7"
 FileManager = "3a9936d4-fe09-4749-8918-4a4e7c2073da"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Search = "747819b4-c676-4122-9f3c-fea06ae3fbba"
+
+[compat]
+Common = "^0.1.0"
+Features = "^0.1.0"
+FileManager = "^0.1.0"
+Search = "^0.1.0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

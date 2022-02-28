@@ -2,6 +2,7 @@ println("loading packages...")
 
 using ArgParse
 using FileManager
+using FileManager.LasIO
 
 println("packages OK")
 
