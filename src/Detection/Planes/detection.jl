@@ -88,7 +88,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; se
 			f = 0
 			i = i+1
 			if i%10 == 0
-				println("$i shapes found")
+				println("$i planes found")
 				flush(stdout)
 			end
 

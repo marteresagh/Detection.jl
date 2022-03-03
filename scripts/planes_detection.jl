@@ -7,7 +7,6 @@ using Search
 
 println("packages OK")
 
-# function boundary_shape
 
 function parse_commandline()
 	s = ArgParseSettings()
@@ -64,9 +63,7 @@ function main()
 	lod = args["lod"]
 	masterseeds = args["masterseeds"]
 
-	# input point cloud
-	PC = FileManager.source2pc(source, lod)
-
+	println()
 	println("== Parameters ==")
 	println("Source  =>  $source")
 	println("Output folder  =>  $output_folder")
@@ -79,8 +76,10 @@ function main()
 	println("Level of detail  =>  $lod")
 
 	flush(stdout)
-
+	println()
 	println("=========== INIT =============")
+	# input point cloud
+	PC = FileManager.source2pc(source, lod)
 	# output directory
 	project_folder = FileManager.mkdir_project(output_folder,project_name)
 	tmp_folder = FileManager.mkdir_project(project_folder,"tmp")
@@ -113,34 +112,40 @@ function main()
 	println("=========== RESULTS =============")
 	# saving planes
 	println("$i planes detected")
-	print("Saving plane segments in .ply... ")
-	plane_dirs = Detection.get_plane_folders(tmp_folder,"PLANES")
-	hyperplanes, _ = Detection.get_hyperplanes(plane_dirs)
-	Detection.refine_planes!(hyperplanes)
-	Detection.save_plane_segments_in_ply(hyperplanes, joinpath(cgal_folder,"segments.ply"))
-	println("Done.")
-
-	# Saving points
-	print("Saving: Fitted and unfitted points... ")
 
 
-	point_cloud = params.PC
+	if i!=0
+		print("Saving plane segments in .ply... ")
+		plane_dirs = Detection.get_plane_folders(tmp_folder,"PLANES")
+		hyperplanes, _ = Detection.get_hyperplanes(plane_dirs)
+		Detection.refine_planes!(hyperplanes)
+		Detection.save_plane_segments_in_ply(hyperplanes, joinpath(cgal_folder,"segments.ply"))
+		println("Done: $(length(hyperplanes)) planes.")
 
-	fitted_idx = params.fitted
-	if !isempty(fitted_idx)
-		PC_fitted = Detection.PointCloud(point_cloud.coordinates[:,fitted_idx],point_cloud.rgbs[:,fitted_idx])
-		FileManager.save_points_rgbs_txt(joinpath(pc_folder,"fitted_points.txt"), PC_fitted)
-		FileManager.save_pointcloud(joinpath(pc_folder,"fitted_points.las"), PC_fitted, "PLANES DETECTION")
+		# Saving points
+		print("Saving: Fitted and unfitted points... ")
+		point_cloud = params.PC
+
+		fitted_idx = params.fitted
+		if !isempty(fitted_idx)
+			PC_fitted = Detection.PointCloud(point_cloud.coordinates[:,fitted_idx],point_cloud.rgbs[:,fitted_idx])
+			FileManager.save_points_rgbs_txt(joinpath(pc_folder,"fitted_points.txt"), PC_fitted)
+			FileManager.save_pointcloud(joinpath(pc_folder,"fitted_points.las"), PC_fitted, "PLANES DETECTION")
+		end
+
+		unfitted_idx = setdiff(collect(1:point_cloud.n_points),fitted_idx)
+		if !isempty(unfitted_idx)
+			PC_unfitted = Detection.PointCloud(point_cloud.coordinates[:,unfitted_idx],point_cloud.rgbs[:,unfitted_idx])
+			FileManager.save_points_rgbs_txt(joinpath(pc_folder,"unfitted_points.txt"), PC_unfitted)
+			FileManager.save_pointcloud(joinpath(pc_folder,"unfitted_points.las"), PC_unfitted, "PLANES DETECTION")
+		end
+
+		println("Done.")
+	else
+		println("No planes found")
 	end
 
-	unfitted_idx = setdiff(collect(1:point_cloud.n_points),fitted_idx)
-	if !isempty(unfitted_idx)
-		PC_unfitted = Detection.PointCloud(point_cloud.coordinates[:,unfitted_idx],point_cloud.rgbs[:,unfitted_idx])
-		FileManager.save_points_rgbs_txt(joinpath(pc_folder,"unfitted_points.txt"), PC_unfitted)
-		FileManager.save_pointcloud(joinpath(pc_folder,"unfitted_points.las"), PC_unfitted, "PLANES DETECTION")
-	end
 
-	println("Done.")
 
 	FileManager.successful(i!=0, project_folder; filename = "plane_detection.probe")
 

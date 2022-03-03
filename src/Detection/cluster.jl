@@ -90,8 +90,8 @@ function search_cluster(R::Array{Int64,1}, hyperplane::Hyperplane, params::Initi
 
 	while !isempty(seeds)
 		tmp = Int[] # new seeds
-		#N = Search.n_inrange(kdtree,points,seeds,visitedverts,params.threshold)
-		N = Search.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k)
+		N = Search.n_inrange(kdtree,points,seeds,visitedverts,params.threshold)
+		# N = Search.neighborhood(kdtree,points,seeds,visitedverts,params.threshold,params.k)
 		union!(visitedverts,N)
 
 		for i in N
@@ -101,7 +101,7 @@ function search_cluster(R::Array{Int64,1}, hyperplane::Hyperplane, params::Initi
 			if PC.dimension == 3
 				# change direction change surface
 				test_dist = residual(hyperplane)(p) < params.par
-				test_normals = Common.angle_between_directions(hyperplane.direction,normals[:,i]) <= pi/4
+				test_normals = Common.abs(Common.dot(hyperplane.direction,normals[:,i])) >= 0.7
 				if test_dist && test_normals
 					push!(tmp,i)
 					push!(R,i)

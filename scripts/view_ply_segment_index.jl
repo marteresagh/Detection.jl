@@ -43,7 +43,6 @@ function main()
 	VVs = Vector{Int}[]
 	for idx in index_planes
 		if idx != -1
-			println("	planes $idx")
 			push!(VVs, findall(x->x==idx, segment_indices))
 		end
 	end

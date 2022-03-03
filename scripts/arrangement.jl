@@ -32,10 +32,10 @@ function save_dxf_vect3D(
     triangles,
     regions,
     filename,
+    size_voxel
 )
 
     function down_sample(PC::Common.PointCloud, s::Float64)
-        # default: 3cm distance threshold
         py"""
         import open3d as o3d
         import numpy as np
@@ -87,13 +87,10 @@ function save_dxf_vect3D(
     """
 
     # leggi i vari file che ti servono e converti
-    s = 0.05
+
     try
         PC = FileManager.source2pc(path_points_fitted)
-        println("PC letta $(PC.n_points)")
-        pc_fitted = down_sample(PC, s)
-        println("PC decimata")
-
+        pc_fitted = down_sample(PC, size_voxel)
         points_fitted = pc_fitted.coordinates #decimare TODO
 
         for i = 1:size(points_fitted, 2)
@@ -107,9 +104,7 @@ function save_dxf_vect3D(
 
     try
         PC = FileManager.source2pc(path_points_unfitted)
-        println("PC letta")
-        pc_unfitted = down_sample(PC, s)
-        println("PC decimata")
+        pc_unfitted = down_sample(PC, size_voxel)
         points_unfitted = pc_unfitted.coordinates #decimare TODO
 
         for i = 1:size(points_unfitted, 2)
@@ -122,7 +117,7 @@ function save_dxf_vect3D(
     end
 
     for i = 1:length(regions)
-        println("Cluster $i of $(length(regions))")
+
         region = regions[i]
         faces = triangles[region]
         plane = Common.Plane(candidate_points[:, union(faces...)])
@@ -144,8 +139,9 @@ function save_dxf_vect3D(
         end
 
     end
-
+    println("Clusters: $(length(regions))")
     doc.saveas(filename)
+    println("Save done")
 
 end
 
@@ -179,7 +175,7 @@ function clipping(
     candidate_points,
     candidate_faces,
     candidate_edges,
-    size_extrusion,
+    dist2plane,
 )
 
     points_in_models = [[] for i = 1:length(candidate_faces)]
@@ -205,7 +201,7 @@ function clipping(
         current_key += 1
 
         if current_key % 10 == 0
-            println("$current_key points of $n_keys processed")
+            println("   $current_key nodes of $n_keys processed")
             flush(stdout)
         end
 
@@ -224,7 +220,7 @@ function clipping(
                 plane = Common.Plane(V[:, 1:3])
                 if Common.distance_point2plane(plane.centroid, plane.normal)(
                     point,
-                ) < size_extrusion
+                ) < dist2plane
                     EV = model_lists[i][2]
                     FV = model_lists[i][3]
 
@@ -249,7 +245,7 @@ end
 
 
 # description of faces
-function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
+function quality_faces(potree, model, output_folder; dist2plane = 0.02)
 
     candidate_points, candidate_edges, candidate_faces = model
     tmp_folder = FileManager.mkdir_project(output_folder, "tmp")
@@ -263,6 +259,7 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
     trie = FileManager.potree2trie(potree)
     trie_faces = FileManager.Trie{Vector{Int64}}()
 
+    println("")
     println("Create dual trie of intersection face")
     for k in keys(trie)
         faces = Int[]
@@ -274,32 +271,35 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
         dfs(trie, trie_faces, points, i)
     end
 
+    println("")
+    println("Find points on each face")
     points_in_models, model_lists = clipping(
         trie,
         trie_faces,
         candidate_points,
         candidate_faces,
         candidate_edges,
-        size_extrusion,
+        dist2plane,
     )
 
     # FileManager.cut_trie!(trie, 3)
     threshold =
-        Features.estimate_threshold(FileManager.source2pc(potree, 3), 30)
+        Features.estimate_threshold(FileManager.source2pc(potree, 3), 30);
 
     #open file json
     # f = open(joinpath(folder_faces, "faces.json"), "w")
     # println(f, "{")
     # println("")
     dict_faces = Vector{Union{Nothing,Dict}}(nothing,n_faces)
-    println("Process each face:")
+    println("")
+    println("Process each face")
 
     @inbounds for i = 1:n_faces
         dict_params = Dict{String,Any}()
 
-        if i % 10 == 0
-            println("   face $i of $(n_faces)")
-        end
+        # if i % 10 == 0
+        #     println("   face $i of $(n_faces)")
+        # end
         points_in_model = hcat(points_in_models[i]...)
         n_points_in_face = size(points_in_model, 2)
 
@@ -340,7 +340,7 @@ function quality_faces(potree, model, output_folder; size_extrusion = 0.02)
             dict_params["area"] = area
             dict_params["density"] = n_points_in_face / area
             dict_params["vertices"] = [c[:] for c in eachcol(V)]
-            dict_params["extrusion"] = size_extrusion
+            dict_params["dist2plane"] = dist2plane
 
             # println("Parameters computed")
             dict_faces[i] = dict_params
@@ -378,16 +378,20 @@ function parse_commandline()
     s = ArgParseSettings()
 
     @add_arg_table! s begin
-        "--output", "-o"
-        help = "Output folder"
-        required = true
+        "--folder", "-o"
+            help = "Project folder"
+            required = true
         "--potree", "-p"
-        help = "Potree"
-        required = true
-        "--extrusion", "-s"
-        help = "size of extrusion"
-        arg_type = Float64
-        default = 0.2
+            help = "Potree"
+            required = true
+        "--par", "-e"
+            help = "Minimum distance of points from face"
+            arg_type = Float64
+            default = 0.02
+        "--voxel", "-v"
+            help = "Size voxel for decimation"
+            arg_type = Float64
+            default = 0.05
     end
 
     return parse_args(s)
@@ -399,11 +403,14 @@ function main()
 
     project_folder = args["output"]
     potree = args["potree"]
-    size_extrusion = args["extrusion"]
+    dist2plane = args["par"]
+    size_voxel = args["voxel"]
+
     println("== Parameters ==")
     println("Output folder  =>  $project_folder")
     println("Potree  =>  $potree")
-    println("Size extrusion  =>  $size_extrusion")
+    println("Distance to plane, for checking point on face  =>  $dist2plane")
+    println("Size voxel for decimation pointcloud in dxf  =>  $size_voxel")
     flush(stdout)
 
 
@@ -430,7 +437,7 @@ function main()
         potree,
         model,
         project_folder;
-        size_extrusion = size_extrusion,
+        dist2plane = dist2plane,
     )
 
     println("")
@@ -482,6 +489,7 @@ function main()
         triangles,
         regions,
         filename,
+        size_voxel
     )
 
 end
