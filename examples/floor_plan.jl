@@ -3,6 +3,7 @@ using Visualization
 using Common
 using FileManager
 using Features
+using ProfileView
 # using Statistics
 
 # fname = "examples/las/wall.las"
@@ -40,7 +41,7 @@ params = Initializer(INPUT_PC,par,threshold,failed,N,k,outliers)
 # given_seeds = FileManager.load_points(masterseeds)
 # seeds = Common.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds)])
 seeds = Int64[]
-@time hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)
+@profview hyperplanes = Detection.iterate_detection(params; seeds = seeds, debug = true)
 
 # hyperplanes,_,_ = Detection.get_hyperplane(params)
 function get_lines(hyperplanes)

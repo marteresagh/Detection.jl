@@ -25,17 +25,19 @@ mutable struct Initializer
 			k::Int64)
 
 		# threashold estimation
+		print("Compute threshold: ")
 		threshold = Features.estimate_threshold(INPUT_PC,2*k)
-		println("Compute threshold: $threshold")
+		println("$threshold")
 
 		# normals
 		if INPUT_PC.dimension == 3
-			println("Compute normals")
+			print("Compute normals... ")
 			INPUT_PC.normals = Features.compute_normals(INPUT_PC.coordinates,threshold,k)
+			println("Done.")
 		end
 
 		println("= Remove points from possible seeds =")
-		println("Search of possible outliers: ")
+		print("	Search of possible outliers: ")
 		outliers = Features.outliers(INPUT_PC, collect(1:INPUT_PC.n_points), k)
 		println("$(length(outliers)) outliers")
 
