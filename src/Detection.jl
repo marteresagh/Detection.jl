@@ -20,6 +20,7 @@ module Detection
     # # lines
     include("Detection/Lines/detection.jl")
     include("Detection/Lines/main.jl")
+    include("Detection/Lines/new/main.jl")
     include("Detection/Lines/saves.jl")
     # # planes
     include("Detection/Planes/detection.jl")

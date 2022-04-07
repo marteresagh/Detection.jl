@@ -26,7 +26,7 @@ function iterate_lines_detection(
 	debug = false
 	)
 
-	inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
+	# inputBuffer,task = monitorInput() # premere 'q' se si vuole uscire dal loop senza perdere i dati
 
 	# 1. - Initialization
 	hyperplane = nothing
@@ -60,14 +60,17 @@ function iterate_lines_detection(
 		end
 	end
 
+	flush(s_2d)
+	flush(s_3d)
+
 	flush(stdout)
 
 	search = true
 	while search
 
-		if isready(inputBuffer) && take!(inputBuffer) == 'q'
-			break # break main loop
-		end
+		# if isready(inputBuffer) && take!(inputBuffer) == 'q'
+		# 	break # break main loop
+		# end
 
 		found = false
 		while !found && f < params.failed
@@ -78,9 +81,9 @@ function iterate_lines_detection(
 				found = true
 			catch y
 				f = f+1
-				if f%10 == 0
-					println("failed = $f")				
-				end
+				# if f%10 == 0
+				# 	println("failed = $f")
+				# end
 			end
 		end
 
@@ -89,7 +92,8 @@ function iterate_lines_detection(
 			i = i+1
 			if i%10 == 0
 				println("$i lines detected")
-				flush(stdout)
+				flush(s_2d)
+				flush(s_3d)
 			end
 
 			write_line(s_2d, s_3d, hyperplane, affine_matrix)
@@ -103,13 +107,13 @@ function iterate_lines_detection(
 
 	end
 
-	if debug # interrompe il task per la lettura da tastiera
-		try
-			Base.throwto(task, InterruptException())
-		catch y
-			println("STOPPED")
-		end
-	end
+	# if debug # interrompe il task per la lettura da tastiera
+	# 	try
+	# 		Base.throwto(task, InterruptException())
+	# 	catch y
+	# 		println("STOPPED")
+	# 	end
+	# end
 
 	return i
 end

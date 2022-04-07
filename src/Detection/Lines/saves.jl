@@ -15,6 +15,7 @@ function save_partitions(PC::PointCloud, params::Initializer, affine_matrix::Mat
 		FileManager.save_points_rgbs_txt(joinpath(dirs.RAW,"fitted2D.pnt"), PC_fitted_2D)
 		FileManager.save_points_rgbs_txt(joinpath(dirs.RAW,"fitted3D.pnt"), PC_fitted_3D)
 	end
+
 	# unfitted
 	points_unfitted = setdiff(collect(1:PC.n_points),params.fitted)
 	if !isempty(points_unfitted)
