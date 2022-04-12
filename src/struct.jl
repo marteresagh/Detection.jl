@@ -12,7 +12,7 @@ mutable struct Initializer
 	visited::Array{Int64,1}
 	current_inds::Array{Int64,1}
 	fitted::Array{Int64,1}
-	lines::Int64
+	hyperplanes::Int64
 
 	Initializer(PC::PointCloud, par::Float64, threshold::Float64, failed::Int64, N::Int64, k::Int64, outliers::Array{Int64,1}, current_inds::Array{Int64,1}) = new(PC, par, threshold, failed, N, k, outliers, copy(outliers), current_inds,Int64[],0)
 	Initializer(PC::PointCloud, par::Float64, threshold::Float64, failed::Int64, N::Int64, k::Int64, outliers::Array{Int64,1}) = new(PC, par, threshold, failed, N, k, outliers, copy(outliers), collect(1:PC.n_points),Int64[],0)

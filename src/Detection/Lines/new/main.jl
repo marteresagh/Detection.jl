@@ -68,7 +68,7 @@ function vect1D(
 	println("=========== RESULTS =============")
 	println("$i lines detected")
 	params.PC = Common.PointCloud()
-	params.lines = i
+	params.hyperplanes = i
 	save_partitions(PC, params, Common.inv(affine_matrix), dirs)
 	return params
 end
