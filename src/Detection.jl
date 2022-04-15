@@ -25,6 +25,7 @@ module Detection
     # # planes
     include("Detection/Planes/detection.jl")
     include("Detection/Planes/main.jl")
+    include("Detection/Planes/new/main.jl")    
     include("Detection/Planes/fileIO.jl")
     include("Detection/Planes/simplify_model.jl")
     include("Detection/Planes/util.jl")

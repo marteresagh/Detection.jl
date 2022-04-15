@@ -14,6 +14,31 @@ function get_plane_folders(folder::String,NAME_PROJ::String)
 	return folders
 end
 
+function get_planes_in_folder(planes_folder::String)
+	hyperplanes = Hyperplane[]
+	# OBBs = Volume[]
+	folders = String[]
+	for (root, dirs, files) in walkdir(planes_folder)
+		for dir in dirs
+			folder_plane = joinpath(root,dir)
+			io = open(joinpath(folder_plane,"finite_plane.txt"), "r")
+			lines = readlines(io)
+			close(io)
+
+			b = [tryparse.(Float64,split(lines[i], " ")) for i in 1:length(lines)]
+			normal = [b[1][1],b[1][2],b[1][3]]
+			centroid = normal*b[1][4]
+			inliers = FileManager.load_points(joinpath(folder_plane,"inliers.txt"))
+
+			hyperplane = Hyperplane(PointCloud(inliers[1:3,:],inliers[4:6,:]), normal, centroid)
+			push!(hyperplanes,hyperplane)
+			# OBB = Volume([b[2][1],b[2][2],b[2][3]],[b[3][1],b[3][2],b[3][3]],[b[4][1],b[4][2],b[4][3]])
+			# push!(OBBs,OBB)
+		end
+	end
+	return hyperplanes
+end
+
 """
 	get_hyperplanes(folders::Array{String,1})
 
