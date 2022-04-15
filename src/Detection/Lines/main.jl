@@ -14,9 +14,8 @@
 Main program.
 Detect lines in a thin slice of point cloud.
 """
-function pc2lines(
+function vect1D(
 	folder::String,
-	project_name::String,
 	PC::PointCloud,
 	par::Float64,
 	failed::Int64,
@@ -31,7 +30,7 @@ function pc2lines(
 	println("=========== INIT =============")
 
 	# output directory
-	dirs = Vect_1D_Dirs(folder, project_name)
+	dirs = Vect_1D_Dirs(folder, "VECT")
 
 	# POINTCLOUDS/FULL
 	println("Slice: $(PC.n_points) points in slice")
@@ -68,7 +67,8 @@ function pc2lines(
 	println()
 	println("=========== RESULTS =============")
 	println("$i lines detected")
+	params.PC = Common.PointCloud()
+	params.hyperplanes = i
 	save_partitions(PC, params, Common.inv(affine_matrix), dirs)
-	FileManager.successful(i!=0, dirs.output_folder)
-
+	return params
 end
