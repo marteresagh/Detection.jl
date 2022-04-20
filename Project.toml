@@ -11,10 +11,10 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Search = "747819b4-c676-4122-9f3c-fea06ae3fbba"
 
 [compat]
-Common = "^0.1.0"
-Features = "^0.1.0"
-FileManager = "^0.1.0"
-Search = "^0.1.0"
+Common = "^1.0.0"
+Features = "^1.0.0"
+FileManager = "^1.0.0"
+Search = "^1.0.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
