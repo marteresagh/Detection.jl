@@ -35,7 +35,7 @@ function refine_planes!(hyperplanes::Vector{Hyperplane})
                 if Common.abs(Common.dot(n1, n2)) > Common.cos(theta)
                     set1on2 = number_of_points_on_plane(s1, s2, avg_max_dist)
                     set2on1 = number_of_points_on_plane(s2, s1, avg_max_dist)
-                    if set1on2 > num_threshold || set2on1 > num_threshold # TODO posso anche usare la distanza dal centro di massa dei punti e confrontarla con una soglia (distanza)
+                    if set1on2 > num_threshold || set2on1 > num_threshold
                         merge(hyperplanes, i, j)
                         merged = true
                         break
@@ -88,4 +88,45 @@ function merge(hyperplanes::Vector{Hyperplane}, indx_s1::Int, indx_s2::Int)
 
     push!(hyperplanes, hyperplane_merged)
     deleteat!(hyperplanes, [indx_s1, indx_s2])
+end
+
+
+
+function refine_planes_meshes!(hyperplanes::Vector{Hyperplane})
+    n_segments = length(hyperplanes)
+
+
+    theta = pi * 10 / 180
+
+    merged = true
+    while merged
+        n_segments = length(hyperplanes)
+        merged = false
+        for i = 1:n_segments
+            s1 = hyperplanes[i]
+            n1 = s1.direction
+
+            for j = i+1:n_segments
+                s2 = hyperplanes[j]
+                n2 = s2.direction
+
+                if Common.abs(Common.dot(n1, n2)) > Common.cos(theta)
+                    set1on2 = Common.distance_point2plane(s2.centroid, s2.direction).(s1.centroid)
+                    set2on1 = Common.distance_point2plane(s1.centroid, s1.direction).(s2.centroid)
+                    if set1on2 <  0.1 || set2on1 < 0.1
+                        merge(hyperplanes, i, j)
+                        merged = true
+                        break
+                    end
+
+                end
+
+            end
+            if merged
+                break
+            end
+        end
+
+    end
+
 end
