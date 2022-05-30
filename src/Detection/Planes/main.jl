@@ -22,6 +22,7 @@ function vect2D(
     N::Int64,
     k::Int64;
     masterseeds = nothing::Union{String,Nothing},
+    goon = true::Bool 
 )
 
     # seeds
@@ -38,7 +39,7 @@ function vect2D(
     # 2. Detection
     println()
     println("=========== PROCESSING =============")
-    i = Detection.iterate_planes_detection(params, planes_folder; seeds = seeds)
+    i = Detection.iterate_planes_detection(params, planes_folder; seeds = seeds, goon = goon )
 
     # 3. Saves
     println()

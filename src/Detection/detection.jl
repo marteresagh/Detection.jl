@@ -45,6 +45,9 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 			end
 
 			union!(params.visited,all_visited_verts)
+			if isempty(setdiff(params.current_inds,params.visited))
+				break
+			end
 
 			# save_plane() |_ save_hyperplane() attenzionecon le linee e con i piani
 			# save_lines() |
@@ -54,23 +57,33 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 
 	search = true
 	while search
+
+
 		#
 		# if isready(inputBuffer) && take!(inputBuffer) == 'q'
 		# 	break # break main loop
 		# end
 
 		found = false
-		while !found && f < params.failed
-			 try
+		nomorepoints = false
+		while !found && f < params.failed && !nomorepoints
 
+			 try
 				hyperplane, cluster, all_visited_verts = get_hyperplane(params)
 				validity(hyperplane, params) # test of validity
 				found = true
-			catch y
+			catch e
+				# println(e)
+				# @error "Something went wrong" exception = (e, catch_backtrace())
 			 	f = f+1
 				if f%10 == 0
 					println("failed = $f")
 				end
+
+				if isempty(setdiff(params.current_inds,params.visited))
+					nomorepoints = true
+				end
+
 			end
 		end
 
@@ -86,10 +99,11 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 			union!(params.fitted,cluster)
 
 			if params.PC.dimension==3
-				 remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
-			end
+			 	 remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
+			 end
 
 			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed
+
 		else
 			search = false
 		end

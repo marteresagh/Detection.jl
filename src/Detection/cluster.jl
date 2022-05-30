@@ -166,7 +166,7 @@ Return consinstent seed and fitted hyperplane.
 function seedpoint(points::Points, params::Initializer; given_seed = rand(1:size(points,2))::Int64)
 
 	kdtree = Search.KDTree(points)
-	idxseeds = Search.neighborhood(kdtree,points,[given_seed],Int64[],params.threshold,params.k)
+	idxseeds = Search.n_inrange(kdtree,points,[given_seed],Int64[],params.threshold)
 	seeds = points[:,idxseeds]
 	direction, centroid = Common.LinearFit(seeds)
 
@@ -196,10 +196,10 @@ function validity(hyperplane::Hyperplane, params::Initializer)
 	pc_on_hyperplane = hyperplane.inliers
 	@assert  pc_on_hyperplane.n_points > params.N "not valid"
 
-	res = residual(hyperplane).([c[:] for c in eachcol(pc_on_hyperplane.coordinates)])
-	mu = Statistics.mean(res)# prova moda
-	rho = Statistics.std(res)
-	@assert mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005 "not valid"  #0.005 che valore è?? come generalizzare??
+	# res = residual(hyperplane).([c[:] for c in eachcol(pc_on_hyperplane.coordinates)])
+	# mu = Statistics.mean(res)# prova moda
+	# rho = Statistics.std(res)
+	# @assert mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005 "not valid"  #0.005 che valore è?? come generalizzare??
 
 end
 

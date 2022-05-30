@@ -29,11 +29,10 @@ Assert the detected hyperplane is valid / interesting
 function validity(hyperplane::Hyperplane, params::Initializer)
 	# VALIDITY
 	pc_on_hyperplane = hyperplane.inliers
-	@assert  pc_on_hyperplane.n_points > params.N "not valid"
+	@assert  pc_on_hyperplane.n_points > params.N "too few points"
 
 	res = Common.residual(hyperplane).([c[:] for c in eachcol(pc_on_hyperplane.coordinates)])
 	mu = Statistics.mean(res)# prova moda
 	rho = Statistics.std(res)
 	@assert mu+2*rho < params.par/2-0.005 || mu+2*rho > params.par/2+0.005 "not valid"  #0.005 che valore è?? come generalizzare??
-
 end
