@@ -23,7 +23,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 	i = 0 # number of hyperplane found
 
 	# 2. - Main loop
-	println("= Start search =")
+	@info("= Start search =")
 
 	for seed in seeds
 		found = false
@@ -36,7 +36,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 
 		if found
 			i = i+1
-			println("$i of $(length(seeds))")
+			@debug("$i of $(length(seeds))")
 			push!(hyperplanes,hyperplane)
 			union!(params.fitted,cluster)
 
@@ -77,7 +77,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 				# @error "Something went wrong" exception = (e, catch_backtrace())
 			 	f = f+1
 				if f%10 == 0
-					println("failed = $f")
+					@debug("failed = $f")
 				end
 
 				if isempty(setdiff(params.current_inds,params.visited))
@@ -93,7 +93,7 @@ function iterate_detection(params::Initializer; seeds = Int64[]::Array{Int64,1},
 			f = 0
 			i = i+1
 			if i%10 == 0
-				println("$i shapes found")
+				@debug("$i shapes found")
 			end
 			push!(hyperplanes,hyperplane)
 			union!(params.fitted,cluster)

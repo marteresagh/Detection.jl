@@ -21,9 +21,10 @@ module Detection
     include("Detection/Lines/detection.jl")
     include("Detection/Lines/main.jl")
     include("Detection/Lines/saves.jl")
+    include("Detection/Lines/merge.jl")
     # # planes
     include("Detection/Planes/detection.jl")
-    include("Detection/Planes/main.jl") 
+    include("Detection/Planes/main.jl")
     include("Detection/Planes/fileIO.jl")
     include("Detection/Planes/simplify_model.jl")
     include("Detection/Planes/util.jl")

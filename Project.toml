@@ -1,7 +1,7 @@
 name = "Detection"
 uuid = "8c84d9e7-d1c0-4468-ae63-6fb7f0258952"
 authors = ["marteresagh <marteresa28@gmail.com>"]
-version = "2.0.0"
+version = "2.0.2"
 
 [deps]
 Common = "1e120bc2-2bd2-483a-9663-793997b3971f"
@@ -11,9 +11,9 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Search = "747819b4-c676-4122-9f3c-fea06ae3fbba"
 
 [compat]
-Common = "^1.0.0"
-Features = "^1.0.0"
-FileManager = "^1.0.0"
+Common = "^1.0.1"
+Features = "^1.1.0"
+FileManager = "^1.1.1"
 Search = "^1.0.0"
 
 [extras]

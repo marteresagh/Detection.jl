@@ -29,7 +29,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; go
 	i = 0 # number of hyperplane found
 
 	# 2. - Main loop
-	println("= Start search =")
+	@info("Searching...")
 
 	for seed in seeds
 		found = false
@@ -51,7 +51,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; go
 
 			####################################
 
-			println("$i of $(length(seeds))")
+			@debug("$i of $(length(seeds))")
 			union!(params.fitted,cluster)
 			remove_points!(params.current_inds,cluster) # tolgo i punti dal modello
 			union!(params.visited,all_visited_verts)
@@ -59,8 +59,6 @@ function iterate_planes_detection(params::Initializer, output_folder::String; go
 
 
 	end
-
-	flush(stdout)
 
 	if goon
 		search = true
@@ -80,7 +78,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; go
 				catch y
 					f = f+1
 					if f%10 == 0
-						println("failed = $f")
+						@debug("failed = $f")
 					end
 				end
 			end
@@ -89,7 +87,7 @@ function iterate_planes_detection(params::Initializer, output_folder::String; go
 				f = 0
 				i = i+1
 				if i%10 == 0
-					println("$i planes found")
+					@debug("$i planes found")
 					flush(stdout)
 				end
 

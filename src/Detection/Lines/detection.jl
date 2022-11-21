@@ -37,7 +37,7 @@ function iterate_lines_detection(
 	i = 0 # number of hyperplane found
 
 	# 2. - Main loop
-	println("= Start search =")
+	@info("= Start search =")
 
 	for seed in seeds
 		found = false
@@ -50,9 +50,9 @@ function iterate_lines_detection(
 
 		if found
 			i = i+1
-			println("$i of $(length(seeds))")
+			@debug("$i of $(length(seeds))")
 
-			write_line(s_2d, s_3d, hyperplane, affine_matrix)
+			write_line(s_2d, s_3d, hyperplane, affine_matrix, params.PC.offset)
 
 			union!(params.fitted,cluster)
 			union!(params.visited,all_visited_verts)
@@ -91,12 +91,12 @@ function iterate_lines_detection(
 			f = 0
 			i = i+1
 			if i%10 == 0
-				println("$i lines detected")
+				@debug("$i lines detected")
 				flush(s_2d)
 				flush(s_3d)
 			end
 
-			write_line(s_2d, s_3d, hyperplane, affine_matrix)
+			write_line(s_2d, s_3d, hyperplane, affine_matrix, params.PC.offset)
 
 			union!(params.fitted,cluster)
 			union!(params.visited,all_visited_verts) # i punti su cui non devo provare a ricercare il seed

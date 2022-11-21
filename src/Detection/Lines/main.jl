@@ -26,14 +26,14 @@ function vect1D(
 	)
 
 	# 1. Initialization
-	println()
-	println("=========== INIT =============")
+
+	@info("Initialization...")
 
 	# output directory
 	dirs = Vect_1D_Dirs(folder, "VECT")
 
 	# POINTCLOUDS/FULL
-	println("Slice: $(PC.n_points) points in slice")
+	@debug("Slice: $(PC.n_points) points in slice")
 	FileManager.save_pointcloud(joinpath(dirs.FULL,"slice.las"), PC, "VECTORIZATION_1D" )
 
 	INPUT_PC = PointCloud(Common.apply_matrix(affine_matrix,PC.coordinates)[1:2,:], PC.rgbs)
@@ -44,15 +44,14 @@ function vect1D(
 	seeds = Int64[]
 	if !isnothing(masterseeds) # if seeds are provided
 		# seeds indices
-		println("Read seeds from file")
-		given_seeds = FileManager.load_points(masterseeds)
+		@debug("Read seeds from file")
+		given_seeds = FileManager.load_points(masterseeds).-PC.offset #TODO traslare dell'offset anche i seeds
 		given_seeds_2D = Common.apply_matrix(affine_matrix,given_seeds)[1:2,:]
 		seeds = Search.consistent_seeds(INPUT_PC).([c[:] for c in eachcol(given_seeds_2D)])
 	end
 
 	# 2. Detection
-	println()
-	println("=========== PROCESSING =============")
+	@info("Start processing...")
 
 	# qui devo aprire segment 2d e segment 3d
 	s_2d = open(joinpath(dirs.RAW,"segment2D.ext"), "w")
@@ -64,9 +63,9 @@ function vect1D(
 	close(s_3d)
 
 	# 3. Saves
-	println()
-	println("=========== RESULTS =============")
-	println("$i lines detected")
+
+	@info("Results")
+	@info("$i lines detected")
 	params.PC = Common.PointCloud()
 	params.hyperplanes = i
 	save_partitions(PC, params, Common.inv(affine_matrix), dirs)

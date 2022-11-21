@@ -22,13 +22,13 @@ function vect2D(
     N::Int64,
     k::Int64;
     masterseeds = nothing::Union{String,Nothing},
-    goon = true::Bool 
+    goon = true::Bool
 )
 
     # seeds
     seeds = Int64[]
     if !isnothing(masterseeds) # if seeds are provided
-        println("Read seeds from file")
+        @info("Read seeds from file")
         given_seeds = FileManager.load_points(masterseeds)
         seeds =
             Search.consistent_seeds(PC).([c[:] for c in eachcol(given_seeds)])
@@ -37,22 +37,22 @@ function vect2D(
     params = Detection.Initializer(PC, par, failed, N, k)
 
     # 2. Detection
-    println()
-    println("=========== PROCESSING =============")
+
+    @info("Start processing...")
     i = Detection.iterate_planes_detection(params, planes_folder; seeds = seeds, goon = goon )
 
     # 3. Saves
-    println()
-    println("=========== RESULTS =============")
-    println("$i lines detected")
+    @info("Results")
+    @info("$i planes detected")
 
     if i != 0
+        @info("Saves...")
         # Saving points
-        print("Saving: Fitted and unfitted points... ")
         point_cloud = params.PC
 
         fitted_idx = params.fitted
         if !isempty(fitted_idx)
+            @debug("saving: fitted points...")
             PC_fitted = Detection.PointCloud(
                 point_cloud.coordinates[:, fitted_idx],
                 point_cloud.rgbs[:, fitted_idx],
@@ -70,6 +70,7 @@ function vect2D(
 
         unfitted_idx = setdiff(collect(1:point_cloud.n_points), fitted_idx)
         if !isempty(unfitted_idx)
+            @debug("saving: unfitted points...")
             PC_unfitted = Detection.PointCloud(
                 point_cloud.coordinates[:, unfitted_idx],
                 point_cloud.rgbs[:, unfitted_idx],
@@ -84,6 +85,7 @@ function vect2D(
                 "PLANES DETECTION",
             )
         end
+        @info("Done. ")
     end
 
     params.PC = Common.PointCloud()
